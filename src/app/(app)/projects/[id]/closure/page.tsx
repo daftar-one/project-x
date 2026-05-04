@@ -1,6 +1,7 @@
 "use client";
 
 import { useRouter, useParams } from 'next/navigation';
+
 import { AppFrame } from '@/components/shared/app-frame';
 import { Icon } from '@/components/shared/icon';
 import { PageTitle } from '@/components/shared/page-title';
