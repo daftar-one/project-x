@@ -34,25 +34,22 @@ export default function VendorProfilePage() {
     <VendorFrame>
       <PageTitle title="Profile" sub="Manage your account details" />
 
-      <div style={{ maxWidth: 520 }}>
+      <div className="max-w-[520px]">
         {/* Header card */}
-        <div className="card card-pad" style={{ display: "flex", alignItems: "center", gap: 16, marginBottom: 16 }}>
+        <div className="card card-pad flex items-center gap-4 mb-4">
           <Avatar name={vendorName} color="#6366f1" size={56} />
-          <div style={{ flex: 1, minWidth: 0 }}>
-            <div style={{ fontSize: 18, fontWeight: 700, letterSpacing: "-.02em", color: "#f9fafb" }}>{vendorName}</div>
-            <div style={{ display: "flex", alignItems: "center", gap: 8, marginTop: 5 }}>
-              <span style={{
-                fontSize: 11, fontWeight: 600, padding: "2px 9px", borderRadius: 999,
-                background: "rgba(99,102,241,.2)", color: "#a5b4fc",
-              }}>Vendor</span>
-              {email && <span style={{ fontSize: 12, color: "#6b7280" }}>{email}</span>}
+          <div className="flex-1 min-w-0">
+            <div className="text-[18px] font-bold tracking-[-0.02em] text-[#f9fafb]">{vendorName}</div>
+            <div className="flex items-center gap-2 mt-[5px]">
+              <span className="text-[11px] font-semibold py-0.5 px-[9px] rounded-[999px] bg-[rgba(99,102,241,.2)] text-[#a5b4fc]">Vendor</span>
+              {email && <span className="text-[12px] text-gray-500">{email}</span>}
             </div>
           </div>
         </div>
 
         {/* Edit card */}
         <div className="card card-pad">
-          <div className="label" style={{ marginBottom: 16 }}>Personal Information</div>
+          <div className="label mb-4">Personal Information</div>
 
           <div className="field">
             <label className="label">Full Name</label>
@@ -69,11 +66,11 @@ export default function VendorProfilePage() {
 
           <div className="field">
             <label className="label">Email Address</label>
-            <div className="input-underline" style={{ opacity: 0.45 }}>
+            <div className="input-underline opacity-[0.45]">
               <Icon name="mail" size={16} />
               <input type="email" value={email ?? ""} disabled />
             </div>
-            <div style={{ fontSize: 11, color: "#4b5563", marginTop: 4 }}>Email cannot be changed</div>
+            <div className="text-[11px] text-gray-600 mt-1">Email cannot be changed</div>
           </div>
 
           <div className="field">
@@ -89,7 +86,7 @@ export default function VendorProfilePage() {
             </div>
           </div>
 
-          <div className="field" style={{ marginBottom: 0 }}>
+          <div className="field mb-0">
             <label className="label">Location</label>
             <div className="input-underline">
               <Icon name="mapPin" size={16} />
@@ -102,7 +99,7 @@ export default function VendorProfilePage() {
             </div>
           </div>
 
-          <div style={{ display: "flex", justifyContent: "flex-end", marginTop: 24 }}>
+          <div className="flex justify-end mt-6">
             <button
               className="btn btn-primary btn-sm"
               disabled={!isDirty || saving || !editName.trim()}

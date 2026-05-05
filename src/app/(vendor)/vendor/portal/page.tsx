@@ -19,12 +19,6 @@ interface Breakdown {
   reason: string;
 }
 
-interface SceneData {
-  scenes: {
-    [scene: string]: Breakdown[];
-  };
-}
-
 interface Payment {
   id: string;
   project: string;
@@ -40,7 +34,6 @@ interface Payment {
 
 /* ─── mock catalogue ─────────────────────────────────────────────────── */
 
-// Breakdowns assigned to this vendor, keyed by project name → scene name
 const VENDOR_BREAKDOWNS: Record<string, Record<string, Breakdown[]>> = {
   "Dhurandhar": {
     "Scene 01 – Action":  [{ id: "bd-a1", reason: "Equipment Rental" }, { id: "bd-a2", reason: "Stunt Coordinator" }],
@@ -84,7 +77,6 @@ const INITIAL_PAYMENTS: Payment[] = [
 /* ─── grouping ───────────────────────────────────────────────────────── */
 
 function groupPayments(payments: Payment[]) {
-  // Preserve first-seen insertion order at every level
   const projectOrder: string[] = [];
   const byProject = new Map<string, Map<string, Map<string, Payment[]>>>();
 
@@ -133,10 +125,10 @@ function fmt(d: string) {
 
 export default function VendorPortalPage() {
   const { name, email } = useVendorStore();
+  void name; void email;
   const [payments, setPayments] = useState<Payment[]>(INITIAL_PAYMENTS);
   const [modalOpen, setModalOpen] = useState(false);
 
-  // form state — each field resets downstream fields when changed
   const [mpProject, setMpProject] = useState(PROJECTS[0].name);
   const [mpScene,   setMpScene]   = useState("");
   const [mpBdId,    setMpBdId]    = useState("");
@@ -152,50 +144,34 @@ export default function VendorPortalPage() {
 
   function resetForm() {
     setMpProject(PROJECTS[0].name);
-    setMpScene("");
-    setMpBdId("");
-    setMpAmount("");
-    setMpUnit("L");
-    setMpFile(null);
+    setMpScene(""); setMpBdId(""); setMpAmount(""); setMpUnit("L"); setMpFile(null);
   }
 
   function handleSubmit() {
     if (!canSubmit || !selectedBreakdown || !mpFile) return;
     const newPayment: Payment = {
       id: `p-${Date.now()}`,
-      project:     mpProject,
-      scene:       mpScene,
-      breakdownId: selectedBreakdown.id,
-      breakdown:   selectedBreakdown.reason,
-      amount:      mpAmountVal,
-      status:      "Pending",
-      submittedAt: new Date().toISOString(),
-      statusChangedAt: null,
+      project: mpProject, scene: mpScene,
+      breakdownId: selectedBreakdown.id, breakdown: selectedBreakdown.reason,
+      amount: mpAmountVal, status: "Pending",
+      submittedAt: new Date().toISOString(), statusChangedAt: null,
       billFileName: mpFile.name,
     };
     setPayments(prev => [newPayment, ...prev]);
-    resetForm();
-    setModalOpen(false);
+    resetForm(); setModalOpen(false);
     toast.success("Bill submitted");
   }
 
-  const unitSelectStyle: React.CSSProperties = {
-    background: "rgba(255,255,255,.07)", border: "1px solid rgba(255,255,255,.12)",
-    borderRadius: 4, padding: "2px 4px", fontSize: 10, fontWeight: 700,
-    color: "#a5b4fc", outline: "none", cursor: "pointer", flexShrink: 0,
-  };
-
   return (
     <VendorFrame>
-      <div style={{ display: "flex", flexDirection: "column", height: "100%" }}>
+      <div className="flex flex-col h-full">
 
         {/* Fixed header */}
-        <div style={{ flexShrink: 0 }}>
+        <div className="shrink-0">
           <PageTitle
             title="Payment History"
             right={
               <button className="btn btn-primary btn-sm" onClick={() => setModalOpen(true)}>
-                {/* <Icon name="plus" size={13} />  */}
                 Request Payment
               </button>
             }
@@ -203,44 +179,35 @@ export default function VendorPortalPage() {
         </div>
 
         {/* Scrollable list */}
-        <div style={{ flex: 1, minHeight: 0, overflowY: "auto" }}>
+        <div className="flex-1 min-h-0 overflow-y-auto">
           {payments.length === 0 ? (
-            <div style={{ textAlign: "center", padding: "60px 20px", color: "#4b5563", fontSize: 13 }}>
+            <div className="text-center py-[60px] px-5 text-gray-600 text-[13px]">
               No payment requests yet.
             </div>
           ) : (
-            <div style={{ display: "flex", flexDirection: "column", gap: 24 }}>
+            <div className="flex flex-col gap-6">
               {groupPayments(payments).map(({ project, scenes }) => (
                 <div key={project}>
                   {/* Movie header */}
-                  <div style={{ display: "flex", alignItems: "center", gap: 10, marginBottom: 12 }}>
-                    <div style={{
-                      width: 26, height: 26, borderRadius: 7, flexShrink: 0,
-                      background: "linear-gradient(135deg,#6366f1,#e83e8c)",
-                      display: "flex", alignItems: "center", justifyContent: "center",
-                    }}>
-                      <Icon name="film" size={13} stroke={1.5} style={{ color: "#fff" }} />
+                  <div className="flex items-center gap-2.5 mb-3">
+                    <div className="w-[26px] h-[26px] rounded-[7px] shrink-0 bg-gradient-to-br from-[#6366f1] to-[#e83e8c] flex items-center justify-center">
+                      <Icon name="film" size={13} stroke={1.5} className="text-white" />
                     </div>
-                    <span style={{ fontSize: 14, fontWeight: 700, color: "#f0f2f5", letterSpacing: "-.01em" }}>{project}</span>
+                    <span className="text-[14px] font-bold text-[#f0f2f5] tracking-[-0.01em]">{project}</span>
                   </div>
 
                   {/* Scenes */}
-                  <div style={{ display: "flex", flexDirection: "column", gap: 12 }}>
+                  <div className="flex flex-col gap-3">
                     {scenes.map(({ scene, total, breakdowns }) => (
-                      <div key={scene} className="card" style={{ overflow: "hidden" }}>
+                      <div key={scene} className="card overflow-hidden">
 
                         {/* Scene header */}
-                        <div style={{
-                          display: "flex", alignItems: "center", justifyContent: "space-between",
-                          padding: "10px 16px",
-                          borderBottom: "1px solid rgba(255,255,255,.06)",
-                          background: "rgba(255,255,255,.02)",
-                        }}>
-                          <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
-                            <Icon name="camera" size={13} stroke={1.5} style={{ color: "#6b7280" }} />
-                            <span style={{ fontSize: 12, fontWeight: 600, color: "#9ca3af" }}>{scene}</span>
+                        <div className="flex items-center justify-between px-4 py-[10px] border-b border-[rgba(255,255,255,.06)] bg-[rgba(255,255,255,.02)]">
+                          <div className="flex items-center gap-2">
+                            <Icon name="camera" size={13} stroke={1.5} className="text-gray-500" />
+                            <span className="text-[12px] font-semibold text-gray-400">{scene}</span>
                           </div>
-                          <span className="num" style={{ fontSize: 12, fontWeight: 600, color: "#6b7280" }}>
+                          <span className="num text-[12px] font-semibold text-gray-500">
                             {fmtShort(total)}
                           </span>
                         </div>
@@ -249,54 +216,43 @@ export default function VendorPortalPage() {
                         {breakdowns.map(({ breakdown, rows }, bIdx) => (
                           <div
                             key={breakdown}
-                            style={{ borderTop: bIdx > 0 ? "1px solid rgba(255,255,255,.06)" : "none" }}
+                            className={bIdx > 0 ? "border-t border-[rgba(255,255,255,.06)]" : ""}
                           >
                             {/* Breakdown label */}
-                            <div style={{
-                              display: "flex", alignItems: "center", justifyContent: "space-between",
-                              padding: "8px 16px 6px",
-                              background: "rgba(255,255,255,.015)",
-                            }}>
-                              <span style={{ fontSize: 11, fontWeight: 600, color: "#6b7280", textTransform: "uppercase", letterSpacing: ".06em" }}>
+                            <div className="flex items-center justify-between px-4 py-2 pb-1.5 bg-[rgba(255,255,255,.015)]">
+                              <span className="text-[11px] font-semibold text-gray-500 uppercase tracking-[0.06em]">
                                 {breakdown}
                               </span>
-                              <span className="num" style={{ fontSize: 11, color: "#4b5563" }}>
+                              <span className="num text-[11px] text-gray-600">
                                 {fmtShort(rows.reduce((s, r) => s + r.amount, 0))}
                               </span>
                             </div>
 
                             {/* Payment rows */}
-                            {rows.map((p, i) => (
-                              <div
-                                key={p.id}
-                                style={{
-                                  display: "flex", alignItems: "center", gap: 14,
-                                  padding: "10px 16px 10px 20px",
-                                  borderTop: "1px solid rgba(255,255,255,.04)",
-                                }}
-                              >
-                                <div style={{
-                                  width: 6, height: 6, borderRadius: "50%", flexShrink: 0,
-                                  background: STATUS_CONFIG[p.status].color,
-                                }} />
-                                <div style={{ flex: 1, minWidth: 0 }}>
-                                  <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
+                            {rows.map(p => (
+                              <div key={p.id} className="flex items-center gap-[14px] px-4 py-[10px] pl-5 border-t border-[rgba(255,255,255,.04)]">
+                                <div
+                                  className="w-1.5 h-1.5 rounded-full shrink-0"
+                                  style={{ background: STATUS_CONFIG[p.status].color }}
+                                />
+                                <div className="flex-1 min-w-0">
+                                  <div className="flex items-center gap-2">
                                     <span className={BADGE_CLASS[p.status]}>{p.status}</span>
-                                    <span style={{ fontSize: 11, color: "#6b7280" }}>
+                                    <span className="text-[11px] text-gray-500">
                                       {fmt(p.submittedAt)}
                                       {p.statusChangedAt && <> → {fmt(p.statusChangedAt)}</>}
                                     </span>
                                   </div>
                                   {p.billFileName && (
-                                    <div style={{ display: "flex", alignItems: "center", gap: 5, marginTop: 3 }}>
-                                      <Icon name="file" size={11} style={{ color: "#4b5563", flexShrink: 0 }} />
-                                      <span style={{ fontSize: 11, color: "#4b5563", overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>
+                                    <div className="flex items-center gap-[5px] mt-[3px]">
+                                      <Icon name="file" size={11} className="text-gray-600 shrink-0" />
+                                      <span className="text-[11px] text-gray-600 overflow-hidden text-ellipsis whitespace-nowrap">
                                         {p.billFileName}
                                       </span>
                                     </div>
                                   )}
                                 </div>
-                                <div className="num" style={{ fontSize: 14, fontWeight: 700, color: "#f0f2f5", flexShrink: 0 }}>
+                                <div className="num text-[14px] font-bold text-[#f0f2f5] shrink-0">
                                   {fmtShort(p.amount)}
                                 </div>
                               </div>
@@ -315,9 +271,9 @@ export default function VendorPortalPage() {
 
       {/* Submit Bill modal */}
       <Modal open={modalOpen} onClose={() => { setModalOpen(false); resetForm(); }}>
-        <div style={{ padding: 32 }}>
-          <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: 24 }}>
-            <h2 style={{ margin: 0, fontSize: 16, fontWeight: 700 }}>Submit Bill</h2>
+        <div className="p-8">
+          <div className="flex items-center justify-between mb-6">
+            <h2 className="m-0 text-[16px] font-bold">Submit Bill</h2>
             <button className="btn btn-ghost btn-sm" onClick={() => { setModalOpen(false); resetForm(); }}>
               <Icon name="x" size={16} />
             </button>
@@ -328,10 +284,7 @@ export default function VendorPortalPage() {
             <label className="label">Movie</label>
             <div className="input-underline">
               <Icon name="film" size={16} />
-              <select
-                value={mpProject}
-                onChange={e => { setMpProject(e.target.value); setMpScene(""); setMpBdId(""); }}
-              >
+              <select value={mpProject} onChange={e => { setMpProject(e.target.value); setMpScene(""); setMpBdId(""); }}>
                 {PROJECTS.map(p => <option key={p.name} value={p.name}>{p.name}</option>)}
               </select>
             </div>
@@ -342,32 +295,25 @@ export default function VendorPortalPage() {
             <label className="label">Scene</label>
             <div className="input-underline">
               <Icon name="camera" size={16} />
-              <select
-                value={mpScene}
-                onChange={e => { setMpScene(e.target.value); setMpBdId(""); }}
-              >
+              <select value={mpScene} onChange={e => { setMpScene(e.target.value); setMpBdId(""); }}>
                 <option value="">Select scene…</option>
                 {availableScenes.map(s => <option key={s} value={s}>{s}</option>)}
               </select>
             </div>
           </div>
 
-          {/* Breakdown — only visible once scene is selected */}
+          {/* Breakdown */}
           <div className="field">
             <label className="label">Breakdown</label>
             <div className="input-underline" style={{ opacity: mpScene ? 1 : 0.4, pointerEvents: mpScene ? "auto" : "none" }}>
               <Icon name="list" size={16} />
-              <select
-                value={mpBdId}
-                onChange={e => setMpBdId(e.target.value)}
-                disabled={!mpScene}
-              >
+              <select value={mpBdId} onChange={e => setMpBdId(e.target.value)} disabled={!mpScene}>
                 <option value="">Select breakdown…</option>
                 {availableBreakdowns.map(b => <option key={b.id} value={b.id}>{b.reason}</option>)}
               </select>
             </div>
             {mpScene && availableBreakdowns.length === 0 && (
-              <div style={{ fontSize: 11, color: "#6b7280", marginTop: 4 }}>No breakdowns assigned to you for this scene.</div>
+              <div className="text-[11px] text-gray-500 mt-1">No breakdowns assigned to you for this scene.</div>
             )}
           </div>
 
@@ -376,72 +322,57 @@ export default function VendorPortalPage() {
             <label className="label">Amount</label>
             <div className="input-underline">
               <Icon name="rupee" size={16} />
-              <input
-                type="number"
-                value={mpAmount}
-                onChange={e => setMpAmount(e.target.value)}
-                placeholder="0"
-              />
-              <select value={mpUnit} onChange={e => setMpUnit(e.target.value as AmountUnit)} style={unitSelectStyle}>
+              <input type="number" value={mpAmount} onChange={e => setMpAmount(e.target.value)} placeholder="0" />
+              <select
+                value={mpUnit}
+                onChange={e => setMpUnit(e.target.value as AmountUnit)}
+                className="bg-[rgba(255,255,255,.07)] border border-[rgba(255,255,255,.12)] rounded text-[10px] font-bold text-[#a5b4fc] outline-none cursor-pointer shrink-0 py-0.5 px-1"
+              >
                 <option value="K">K</option>
                 <option value="L">L</option>
                 <option value="Cr">Cr</option>
               </select>
             </div>
             {mpAmountVal > 0 && (
-              <div style={{ fontSize: 11, color: "#6b7280", marginTop: 4 }}>= {fmtShort(mpAmountVal)}</div>
+              <div className="text-[11px] text-gray-500 mt-1">= {fmtShort(mpAmountVal)}</div>
             )}
           </div>
 
           {/* Bill / Invoice upload */}
-          <div className="field" style={{ marginBottom: 0 }}>
+          <div className="field mb-0">
             <label className="label">Invoice / Bill</label>
             {mpFile ? (
-              <div style={{
-                display: "flex", alignItems: "center", gap: 10,
-                padding: "10px 12px",
-                background: "rgba(99,102,241,.08)", border: "1px solid rgba(99,102,241,.2)",
-                borderRadius: 6,
-              }}>
-                <Icon name="file" size={15} style={{ color: "#a5b4fc", flexShrink: 0 }} />
-                <span style={{ flex: 1, fontSize: 13, color: "#e5e7eb", overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>
+              <div className="flex items-center gap-2.5 px-3 py-[10px] bg-[rgba(99,102,241,.08)] border border-[rgba(99,102,241,.2)] rounded-[6px]">
+                <Icon name="file" size={15} className="text-[#a5b4fc] shrink-0" />
+                <span className="flex-1 text-[13px] text-[#e5e7eb] overflow-hidden text-ellipsis whitespace-nowrap">
                   {mpFile.name}
                 </span>
                 <button
-                  className="btn btn-ghost btn-sm"
-                  style={{ padding: 0, width: 22, height: 22, flexShrink: 0 }}
+                  className="btn btn-ghost btn-sm p-0 w-[22px] h-[22px] shrink-0"
                   onClick={() => setMpFile(null)}
                 >
                   <Icon name="x" size={13} />
                 </button>
               </div>
             ) : (
-              <label style={{
-                display: "flex", alignItems: "center", gap: 10,
-                padding: "10px 12px", cursor: "pointer",
-                border: "1px dashed rgba(255,255,255,.15)", borderRadius: 6,
-                transition: "border-color .15s ease, background .15s ease",
-              }}
-                onMouseEnter={e => { e.currentTarget.style.borderColor = "rgba(99,102,241,.4)"; e.currentTarget.style.background = "rgba(99,102,241,.04)"; }}
-                onMouseLeave={e => { e.currentTarget.style.borderColor = "rgba(255,255,255,.15)"; e.currentTarget.style.background = "transparent"; }}
-              >
-                <Icon name="upload" size={15} style={{ color: "#6b7280", flexShrink: 0 }} />
-                <span style={{ fontSize: 13, color: "#6b7280" }}>Click to attach PDF or image…</span>
+              <label className="flex items-center gap-2.5 px-3 py-[10px] cursor-pointer border border-dashed border-[rgba(255,255,255,.15)] rounded-[6px] transition-[border-color,background] hover:border-[rgba(99,102,241,.4)] hover:bg-[rgba(99,102,241,.04)]">
+                <Icon name="upload" size={15} className="text-gray-500 shrink-0" />
+                <span className="text-[13px] text-gray-500">Click to attach PDF or image…</span>
                 <input
                   type="file"
                   accept=".pdf,.jpg,.jpeg,.png,.webp"
-                  style={{ display: "none" }}
+                  className="hidden"
                   onChange={e => setMpFile(e.target.files?.[0] ?? null)}
                 />
               </label>
             )}
           </div>
 
-          <div style={{ display: "flex", gap: 10, marginTop: 24 }}>
+          <div className="flex gap-2.5 mt-6">
             <button className="btn btn-secondary" onClick={() => { setModalOpen(false); resetForm(); }}>
               Cancel
             </button>
-            <div style={{ flex: 1 }} />
+            <div className="flex-1" />
             <button className="btn btn-primary" disabled={!canSubmit} onClick={handleSubmit}>
               Submit Request
             </button>

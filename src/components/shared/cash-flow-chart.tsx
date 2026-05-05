@@ -106,28 +106,20 @@ export function CashFlowChart({ periods, planned, actual, timeframe, onTimeframe
     y: PAD_T + chartH * (1 - f),
   }));
 
-  const btnBase: React.CSSProperties = {
-    padding: '3px 10px', borderRadius: 5, border: 'none', cursor: 'pointer',
-    fontSize: 11, fontWeight: 600, transition: 'background .12s, color .12s',
-  };
-
   return (
-    <div style={{ width: '100%' }}>
+    <div className="w-full">
       {/* Header: title + toggle */}
-      <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 12 }}>
+      <div className="flex items-center justify-between mb-3">
         <div>
-          <div className="label" style={{ marginBottom: 2 }}>Planned vs Actual Expenses</div>
-          {/* <div style={{ fontSize: 11, color: '#6b7280' }}>
-            {timeframe === 'monthly' ? 'Last 6 months' : 'Last 8 weeks'}
-          </div> */}
+          <div className="label mb-[2px]">Planned vs Actual Expenses</div>
         </div>
-        <div style={{ display: 'flex', gap: 4, background: 'rgba(255,255,255,.06)', borderRadius: 7, padding: 3 }}>
+        <div className="flex gap-1 bg-[rgba(255,255,255,.06)] rounded-[7px] p-[3px]">
           {(['monthly', 'weekly'] as Timeframe[]).map(t => (
             <button
               key={t}
               onClick={() => onTimeframeChange(t)}
+              className="px-[10px] py-[3px] rounded-[5px] border-0 cursor-pointer text-[11px] font-semibold transition-[background,color] duration-[120ms]"
               style={{
-                ...btnBase,
                 background: timeframe === t ? 'rgba(99,102,241,.25)' : 'transparent',
                 color: timeframe === t ? '#a5b4fc' : '#6b7280',
               }}
@@ -138,8 +130,8 @@ export function CashFlowChart({ periods, planned, actual, timeframe, onTimeframe
         </div>
       </div>
 
-      <div ref={containerRef} style={{ width: '100%' }}>
-        <svg width={W} height={H} style={{ display: 'block' }}>
+      <div ref={containerRef} className="w-full">
+        <svg width={W} height={H} className="block">
           {/* y-axis grid lines + labels */}
           {yGridValues.map(({ f, label, y }) => (
             <g key={f}>
@@ -179,14 +171,14 @@ export function CashFlowChart({ periods, planned, actual, timeframe, onTimeframe
       </div>
 
       {/* Legend */}
-      <div style={{ display: 'flex', gap: 20, marginTop: 8 }}>
-        <div style={{ display: 'flex', alignItems: 'center', gap: 6 }}>
-          <div style={{ width: 12, height: 2, background: '#34d399', borderRadius: 1 }} />
-          <span style={{ fontSize: 12, color: '#6b7280' }}>Planned</span>
+      <div className="flex gap-5 mt-2">
+        <div className="flex items-center gap-1.5">
+          <div className="w-3 h-0.5 bg-[#34d399] rounded-[1px]" />
+          <span className="text-[12px] text-gray-500">Planned</span>
         </div>
-        <div style={{ display: 'flex', alignItems: 'center', gap: 6 }}>
-          <div style={{ width: 12, height: 2, background: '#f87171', borderRadius: 1 }} />
-          <span style={{ fontSize: 12, color: '#6b7280' }}>Actual</span>
+        <div className="flex items-center gap-1.5">
+          <div className="w-3 h-0.5 bg-[#f87171] rounded-[1px]" />
+          <span className="text-[12px] text-gray-500">Actual</span>
         </div>
       </div>
     </div>

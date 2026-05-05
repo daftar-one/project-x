@@ -125,13 +125,8 @@ export default function VendorVerifyPage() {
         }
       `}</style>
 
-      <div style={{
-        minHeight: '100vh', background: '#080e1e',
-        display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center',
-        padding: 24, position: 'relative', overflow: 'hidden',
-        fontFamily: 'var(--font-inter, ui-sans-serif, system-ui, sans-serif)',
-      }}>
-        <div style={{ position: 'fixed', inset: 0, pointerEvents: 'none', zIndex: 0 }}>
+      <div className="min-h-screen bg-[#080e1e] flex flex-col items-center justify-center p-6 relative overflow-hidden font-[var(--font-inter,ui-sans-serif,system-ui,sans-serif)]">
+        <div className="fixed inset-0 pointer-events-none z-0">
           <div style={{
             position: 'absolute', inset: 0,
             backgroundImage: 'linear-gradient(rgba(255,255,255,.025) 1px, transparent 1px), linear-gradient(90deg, rgba(255,255,255,.025) 1px, transparent 1px)',
@@ -153,48 +148,29 @@ export default function VendorVerifyPage() {
           }} />
         </div>
 
-        <div style={{ position: 'relative', zIndex: 1, width: '100%', maxWidth: 400, display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 28 }}>
+        <div className="relative z-[1] w-full max-w-[400px] flex flex-col items-center gap-7">
 
-          <Link href="/" style={{ display: 'flex', alignItems: 'center', gap: 10, textDecoration: 'none' }}>
-            <div style={{
-              width: 34, height: 34, borderRadius: 9,
-              background: 'linear-gradient(135deg,#6366f1,#e83e8c)',
-              display: 'flex', alignItems: 'center', justifyContent: 'center',
-              color: '#fff', fontSize: 12, fontWeight: 800, letterSpacing: '-.02em',
-            }}>PX</div>
-            <span style={{ fontWeight: 700, fontSize: 16, letterSpacing: '-.02em', color: '#f0f2f5' }}>Project X</span>
+          <Link href="/" className="flex items-center gap-2.5 no-underline">
+            <div className="w-[34px] h-[34px] rounded-[9px] bg-gradient-to-br from-[#6366f1] to-[#e83e8c] flex items-center justify-center text-white text-[12px] font-extrabold tracking-[-0.02em]">PX</div>
+            <span className="font-bold text-[16px] tracking-[-0.02em] text-[#f0f2f5]">Project X</span>
           </Link>
 
-          <div className="auth-card" style={{
-            width: '100%',
-            background: 'rgba(20,26,48,.9)',
-            backdropFilter: 'blur(20px)',
-            border: '1px solid rgba(255,255,255,.09)',
-            borderRadius: 16,
-            padding: '36px 32px 28px',
-            boxShadow: '0 32px 64px -16px rgba(0,0,0,.6), 0 0 0 1px rgba(99,102,241,.08)',
-          }}>
-            <div style={{ display: 'flex', justifyContent: 'center', marginBottom: 20 }}>
-              <div style={{
-                width: 52, height: 52, borderRadius: 14,
-                background: 'rgba(99,102,241,.12)',
-                border: '1px solid rgba(99,102,241,.2)',
-                display: 'flex', alignItems: 'center', justifyContent: 'center',
-                color: '#818cf8',
-              }}>
+          <div className="auth-card w-full bg-[rgba(20,26,48,.9)] backdrop-blur-[20px] border border-[rgba(255,255,255,.09)] rounded-2xl pt-9 px-8 pb-7 shadow-[0_32px_64px_-16px_rgba(0,0,0,.6),0_0_0_1px_rgba(99,102,241,.08)]">
+            <div className="flex justify-center mb-5">
+              <div className="w-[52px] h-[52px] rounded-[14px] bg-[rgba(99,102,241,.12)] border border-[rgba(99,102,241,.2)] flex items-center justify-center text-[#818cf8]">
                 <Icon name="shield" size={22} />
               </div>
             </div>
 
-            <h1 style={{ fontSize: 20, fontWeight: 600, textAlign: 'center', margin: '0 0 6px', letterSpacing: '-.02em', color: '#f9fafb' }}>
+            <h1 className="text-[20px] font-semibold text-center m-0 mb-1.5 tracking-[-0.02em] text-[#f9fafb]">
               Check your email
             </h1>
-            <p style={{ fontSize: 13, color: '#6b7280', textAlign: 'center', margin: '0 0 28px', lineHeight: 1.6 }}>
+            <p className="text-[13px] text-gray-500 text-center m-0 mb-7 leading-[1.6]">
               We sent a 6-digit code to{' '}
-              <span style={{ color: '#c4c7ce', fontWeight: 500 }}>{email}</span>
+              <span className="text-[#c4c7ce] font-medium">{email}</span>
             </p>
 
-            <div style={{ display: 'flex', gap: 8, justifyContent: 'center', marginBottom: 24 }}>
+            <div className="flex gap-2 justify-center mb-6">
               {digits.map((d, i) => (
                 <input
                   key={i}
@@ -218,15 +194,15 @@ export default function VendorVerifyPage() {
               {loading ? 'Verifying…' : 'Verify & continue'}
             </button>
 
-            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginTop: 20, fontSize: 12 }}>
-              <button className="btn btn-ghost btn-sm" style={{ padding: 0 }} onClick={() => router.push(backHref)}>
+            <div className="flex justify-between items-center mt-5 text-[12px]">
+              <button className="btn btn-ghost btn-sm p-0" onClick={() => router.push(backHref)}>
                 <Icon name="arrowLeft" size={12} /> Go back
               </button>
-              <span style={{ color: '#4b5563' }}>
+              <span className="text-gray-600">
                 {countdown > 0
                   ? `Resend in 0:${countdown.toString().padStart(2, '0')}`
                   : (
-                    <button className="btn btn-ghost btn-sm" style={{ padding: 0, color: '#818cf8' }} onClick={handleResend}>
+                    <button className="btn btn-ghost btn-sm p-0 text-[#818cf8]" onClick={handleResend}>
                       Resend code
                     </button>
                   )
@@ -235,7 +211,7 @@ export default function VendorVerifyPage() {
             </div>
           </div>
 
-          <div style={{ fontSize: 11, color: '#374151', display: 'flex', gap: 8 }}>
+          <div className="text-[11px] text-[#374151] flex gap-2">
             <span>Project X</span>
             <span>·</span>
             <span>v0.9 · staging</span>

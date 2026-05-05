@@ -13,6 +13,8 @@ const GENRES = [
   'Documentary', 'Sci-Fi', 'Fantasy', 'Animation', 'Biographical', 'Other',
 ];
 
+const inputCls = "w-full bg-transparent border-0 border-b border-[rgba(255,255,255,.15)] text-[#f9fafb] text-[14px] py-2 pl-7 pr-0 outline-none transition-[border-color]";
+
 export function ModalNewProject({ open, onClose }: { open: boolean; onClose: () => void }) {
   const [filmName, setFilmName] = useState('');
   const [genre, setGenre]       = useState('');
@@ -32,42 +34,26 @@ export function ModalNewProject({ open, onClose }: { open: boolean; onClose: () 
     handleClose();
   }
 
-  const inputStyle: React.CSSProperties = {
-    width: '100%', background: 'transparent', border: 'none',
-    borderBottom: '1px solid rgba(255,255,255,.15)', color: '#f9fafb',
-    fontSize: 14, padding: '8px 0 8px 28px', outline: 'none', transition: 'border-color .15s',
-  };
-  const iconWrap: React.CSSProperties = {
-    position: 'absolute', left: 0, top: '50%', transform: 'translateY(-50%)',
-    color: '#6b7280', display: 'flex', alignItems: 'center',
-  };
-  const field: React.CSSProperties = { position: 'relative', width: '100%' };
-  const lbl: React.CSSProperties = {
-    fontSize: 11, fontWeight: 600, color: '#6b7280', textTransform: 'uppercase',
-    letterSpacing: '.07em', marginBottom: 4, display: 'block',
-  };
-
   return (
     <Modal open={open} onClose={handleClose}>
-      <div style={{ padding: 32 }}>
-        <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 28 }}>
-          <div style={{ fontSize: 16, fontWeight: 700, color: '#f9fafb' }}>New Movie</div>
-          <button onClick={handleClose} style={{
-            width: 28, height: 28, borderRadius: 6, background: 'rgba(255,255,255,.06)',
-            border: 'none', color: '#9ca3af', cursor: 'pointer',
-            display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0,
-          }}>
+      <div className="p-8">
+        <div className="flex items-center justify-between mb-7">
+          <div className="text-[16px] font-bold text-[#f9fafb]">New Movie</div>
+          <button
+            onClick={handleClose}
+            className="w-7 h-7 rounded-[6px] bg-[rgba(255,255,255,.06)] border-0 text-gray-400 cursor-pointer flex items-center justify-center shrink-0"
+          >
             <Icon name="x" size={14} />
           </button>
         </div>
 
-        <div style={{ display: 'flex', flexDirection: 'column', gap: 24 }}>
+        <div className="flex flex-col gap-6">
           <div>
-            <label style={lbl}>Movie Name *</label>
-            <div style={field}>
-              <span style={iconWrap}><Icon name="film" size={15} /></span>
+            <label className="text-[11px] font-semibold text-gray-500 uppercase tracking-[0.07em] mb-1 block">Movie Name *</label>
+            <div className="relative w-full">
+              <span className="absolute left-0 top-1/2 -translate-y-1/2 text-gray-500 flex items-center"><Icon name="film" size={15} /></span>
               <input
-                style={inputStyle}
+                className={inputCls}
                 placeholder="Enter movie name…"
                 value={filmName}
                 onChange={e => setFilmName(e.target.value)}
@@ -77,19 +63,19 @@ export function ModalNewProject({ open, onClose }: { open: boolean; onClose: () 
             </div>
           </div>
           <div>
-            <label style={lbl}>Genre</label>
-            <div style={field}>
-              <span style={iconWrap}><Icon name="file" size={15} /></span>
-              <select style={{ ...inputStyle, cursor: 'pointer' }} value={genre} onChange={e => { setGenre(e.target.value); setCustomGenre(''); }}>
+            <label className="text-[11px] font-semibold text-gray-500 uppercase tracking-[0.07em] mb-1 block">Genre</label>
+            <div className="relative w-full">
+              <span className="absolute left-0 top-1/2 -translate-y-1/2 text-gray-500 flex items-center"><Icon name="file" size={15} /></span>
+              <select className={`${inputCls} cursor-pointer`} value={genre} onChange={e => { setGenre(e.target.value); setCustomGenre(''); }}>
                 <option value="">Select genre…</option>
                 {GENRES.map(g => <option key={g} value={g}>{g}</option>)}
               </select>
             </div>
             {genre === 'Other' && (
-              <div style={{ ...field, marginTop: 10 }}>
-                <span style={iconWrap}><Icon name="file" size={15} /></span>
+              <div className="relative w-full mt-[10px]">
+                <span className="absolute left-0 top-1/2 -translate-y-1/2 text-gray-500 flex items-center"><Icon name="file" size={15} /></span>
                 <input
-                  style={inputStyle}
+                  className={inputCls}
                   placeholder="Enter custom genre…"
                   value={customGenre}
                   onChange={e => setCustomGenre(e.target.value)}
@@ -98,26 +84,9 @@ export function ModalNewProject({ open, onClose }: { open: boolean; onClose: () 
               </div>
             )}
           </div>
-          {/* <div>
-            <label style={lbl}>Total Budget (₹) *</label>
-            <div style={field}>
-              <span style={iconWrap}><Icon name="rupee" size={15} /></span>
-              <input
-                type="number"
-                style={inputStyle}
-                placeholder="0"
-                value={totalBudget}
-                onChange={e => setTotalBudget(e.target.value)}
-                min={0}
-              />
-            </div>
-            {budget > 0 && (
-              <div style={{ fontSize: 12, color: '#9ca3af', marginTop: 6 }}>{fmt(budget)}</div>
-            )}
-          </div> */}
         </div>
 
-        <div style={{ display: 'flex', gap: 8, justifyContent: 'flex-end', marginTop: 32 }}>
+        <div className="flex gap-2 justify-end mt-8">
           <button className="btn btn-ghost btn-sm" onClick={handleClose}>Cancel</button>
           <button
             className="btn btn-primary btn-sm"
@@ -178,14 +147,11 @@ export function AppFrame({ children, secondarySidebar, projectSubnav, innerBg }:
     <div className="app">
       <aside className="app-sidebar">
         {/* Logo */}
-        <div style={{ display: 'flex', alignItems: 'center', gap: 10, padding: '4px 20px 16px' }}>
-          <div style={{
-            width: 30, height: 30, borderRadius: 8, flexShrink: 0,
-            background: 'linear-gradient(135deg,#6366f1,#e83e8c)',
-            display: 'flex', alignItems: 'center', justifyContent: 'center',
-            color: '#fff',
-          }}><Icon name="film" size={16} stroke={1.5} /></div>
-          <span style={{ fontSize: 14, fontWeight: 700, color: '#f0f2f5', letterSpacing: '-.02em' }}>Project X</span>
+        <div className="flex items-center gap-2.5 px-5 pt-1 pb-4">
+          <div className="w-[30px] h-[30px] rounded-lg shrink-0 bg-gradient-to-br from-[#6366f1] to-[#e83e8c] flex items-center justify-center text-white">
+            <Icon name="film" size={16} stroke={1.5} />
+          </div>
+          <span className="text-[14px] font-bold text-[#f0f2f5] tracking-[-0.02em]">Project X</span>
         </div>
 
         {/* Main nav */}
@@ -210,33 +176,25 @@ export function AppFrame({ children, secondarySidebar, projectSubnav, innerBg }:
                 onClick={() => router.push(`/projects/${p.id}`)}
                 title={p.name}
               >
-                <div style={{
-                  width: 6, height: 6, borderRadius: 2, flexShrink: 0,
-                  background: activeProjectId === p.id ? '#a5b4fc' : '#374151',
-                }} />
-                <span style={{ overflow: 'hidden', textOverflow: 'ellipsis', flex: 1 }}>{p.name}</span>
+                <div
+                  className="w-1.5 h-1.5 rounded-[2px] shrink-0"
+                  style={{ background: activeProjectId === p.id ? '#a5b4fc' : '#374151' }}
+                />
+                <span className="overflow-hidden text-ellipsis flex-1">{p.name}</span>
               </div>
               {activeProjectId === p.id && projectSubnav}
             </Fragment>
           ))}
 
           {projects.length === 0 && (
-            <div style={{ fontSize: 12, color: '#4b5563', padding: '6px 20px 6px 32px' }}>No movies</div>
+            <div className="text-[12px] text-gray-600 py-1.5 pl-8 pr-5">No movies</div>
           )}
         </div>
 
         {/* Logout button */}
         <button
           onClick={handleLogout}
-          style={{
-            display: 'flex', alignItems: 'center', gap: 10,
-            padding: '8px 12px', margin: '0 8px 2px',
-            borderRadius: 8, border: 'none', cursor: 'pointer', background: 'transparent',
-            color: '#6b7280', fontSize: 13, fontWeight: 500, width: 'calc(100% - 16px)',
-            transition: 'background .12s ease, color .12s ease',
-          }}
-          onMouseEnter={e => { e.currentTarget.style.background = 'rgba(239,68,68,.08)'; e.currentTarget.style.color = '#fca5a5'; }}
-          onMouseLeave={e => { e.currentTarget.style.background = 'transparent'; e.currentTarget.style.color = '#6b7280'; }}
+          className="flex items-center gap-2.5 px-3 py-2 mx-2 mb-0.5 rounded-lg border-0 cursor-pointer bg-transparent text-gray-500 text-[13px] font-medium w-[calc(100%-16px)] transition-[background,color] duration-[120ms] hover:bg-[rgba(239,68,68,.08)] hover:text-[#fca5a5]"
         >
           <Icon name="logout" size={15} />
           <span>Log out</span>
@@ -244,16 +202,14 @@ export function AppFrame({ children, secondarySidebar, projectSubnav, innerBg }:
 
         {/* Profile */}
         <div
-          style={{ display: 'flex', alignItems: 'center', gap: 10, padding: '8px 20px 8px', cursor: 'pointer', borderRadius: 8, margin: '0 8px 4px' }}
+          className="flex items-center gap-2.5 px-5 py-2 cursor-pointer rounded-lg mx-2 mb-1 hover:bg-[rgba(255,255,255,.04)]"
           onClick={() => router.push('/profile')}
           title="View profile"
-          onMouseEnter={e => (e.currentTarget.style.background = 'rgba(255,255,255,.04)')}
-          onMouseLeave={e => (e.currentTarget.style.background = 'transparent')}
         >
           <Avatar name={userName} color={userColor} size={28} />
-          <div style={{ minWidth: 0, flex: 1 }}>
-            <div style={{ fontSize: 12, fontWeight: 600, color: '#e5e7eb', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>{userName}</div>
-            <div style={{ fontSize: 10, color: '#6b7280', textTransform: 'uppercase', letterSpacing: '.05em' }}>{userRole}</div>
+          <div className="min-w-0 flex-1">
+            <div className="text-[12px] font-semibold text-[#e5e7eb] whitespace-nowrap overflow-hidden text-ellipsis">{userName}</div>
+            <div className="text-[10px] text-gray-500 uppercase tracking-[0.05em]">{userRole}</div>
           </div>
         </div>
       </aside>
@@ -268,15 +224,11 @@ export function AppFrame({ children, secondarySidebar, projectSubnav, innerBg }:
         <div className={`app-canvas${innerBg === 'light' ? ' app-canvas-white' : ''}`}>
           {children}
         </div>
-        <div style={{ padding: '8px 24px', borderTop: '1px solid rgba(255,255,255,.04)', fontSize: 11, color: '#374151', textAlign: 'center', flexShrink: 0 }}>
+        <div className="px-6 py-2 border-t border-[rgba(255,255,255,.04)] text-[11px] text-[#374151] text-center shrink-0">
           Powered by{' '}
-          <a href="https://daftar.one" target="_blank" rel="noopener noreferrer" style={{ color: '#4b5563', textDecoration: 'none' }}
-            onMouseEnter={e => (e.currentTarget.style.color = '#9ca3af')}
-            onMouseLeave={e => (e.currentTarget.style.color = '#4b5563')}
-          >Daftar.One</a>
+          <a href="https://daftar.one" target="_blank" rel="noopener noreferrer" className="text-[#4b5563] no-underline hover:text-gray-400">Daftar.One</a>
         </div>
       </div>
-
     </div>
   );
 }

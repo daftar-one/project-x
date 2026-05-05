@@ -90,7 +90,7 @@ function TeamContent({ projectId, isLP }: { projectId: string; isLP: boolean }) 
 
   return (
     <div>
-      <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 16 }}>
+      <div className="flex items-center justify-between mb-4">
         <Tabs tabs={[{ id: 'team', label: 'Team', count: team.length }, { id: 'vendors', label: 'Vendors', count: vendors.length }]} active={tab} onChange={setTab} />
         {isLP && (
           tab === 'team'
@@ -106,15 +106,15 @@ function TeamContent({ projectId, isLP }: { projectId: string; isLP: boolean }) 
               <thead><tr><th>Member</th><th>Email</th><th>Status</th>{isLP && <th></th>}</tr></thead>
               <tbody>
                 {team.length === 0 ? (
-                  <tr><td colSpan={4} style={{ textAlign: 'center', color: '#9ca3af', padding: 32 }}>No team members yet</td></tr>
+                  <tr><td colSpan={4} className="text-center text-gray-400 p-8">No team members yet</td></tr>
                 ) : team.map(m => {
                   const displayName = m.user_full_name || m.user_email;
                   return (
                     <tr key={m.id}>
-                      <td><div style={{ display: 'flex', alignItems: 'center', gap: 10 }}><Avatar name={displayName} size={30} /><div style={{ fontWeight: 600 }}>{displayName}</div></div></td>
-                      <td style={{ color: '#6b7280' }}>{m.user_email}</td>
-                      <td><span style={{ display: 'inline-flex', padding: '3px 9px', borderRadius: 999, fontSize: 11, fontWeight: 600, background: m.status === 'accepted' ? 'rgba(16,185,129,.2)' : 'rgba(245,158,11,.2)', color: m.status === 'accepted' ? '#34d399' : '#fbbf24' }}>{m.status === 'accepted' ? 'Accepted' : 'Invited'}</span></td>
-                      {isLP && <td style={{ textAlign: 'right' }}><button className="btn btn-danger-ghost btn-sm" onClick={() => handleRemoveMember(m.id, displayName)} title="Remove"><Icon name="trash" size={13} /></button></td>}
+                      <td><div className="flex items-center gap-[10px]"><Avatar name={displayName} size={30} /><div className="font-semibold">{displayName}</div></div></td>
+                      <td className="text-gray-500">{m.user_email}</td>
+                      <td><span className="inline-flex py-[3px] px-[9px] rounded-[999px] text-[11px] font-semibold" style={{ background: m.status === 'accepted' ? 'rgba(16,185,129,.2)' : 'rgba(245,158,11,.2)', color: m.status === 'accepted' ? '#34d399' : '#fbbf24' }}>{m.status === 'accepted' ? 'Accepted' : 'Invited'}</span></td>
+                      {isLP && <td className="text-right"><button className="btn btn-danger-ghost btn-sm" onClick={() => handleRemoveMember(m.id, displayName)} title="Remove"><Icon name="trash" size={13} /></button></td>}
                     </tr>
                   );
                 })}
@@ -131,14 +131,14 @@ function TeamContent({ projectId, isLP }: { projectId: string; isLP: boolean }) 
               <thead><tr><th>Name</th><th>Location</th><th>Email</th><th>Status</th>{isLP && <th></th>}</tr></thead>
               <tbody>
                 {vendors.length === 0 ? (
-                  <tr><td colSpan={5} style={{ textAlign: 'center', color: '#9ca3af', padding: 32 }}>No vendors yet</td></tr>
+                  <tr><td colSpan={5} className="text-center text-gray-400 p-8">No vendors yet</td></tr>
                 ) : vendors.map(v => (
                   <tr key={v.id}>
-                    <td style={{ fontWeight: 600 }}>{v.name}</td>
-                    <td style={{ color: '#6b7280' }}>{v.location ?? '—'}</td>
-                    <td style={{ color: '#6b7280' }}>{v.email ?? '—'}</td>
-                    <td><span style={{ display: 'inline-flex', padding: '3px 9px', borderRadius: 999, fontSize: 11, fontWeight: 600, background: v.status === 'Active' ? 'rgba(16,185,129,.2)' : 'rgba(255,255,255,.1)', color: v.status === 'Active' ? '#34d399' : '#9ca3af' }}>{v.status}</span></td>
-                    {isLP && <td style={{ textAlign: 'right' }}><button className="btn btn-ghost btn-sm" style={{ color: '#ef4444' }} onClick={() => handleDeleteVendor(v)}><Icon name="trash" size={13} /></button></td>}
+                    <td className="font-semibold">{v.name}</td>
+                    <td className="text-gray-500">{v.location ?? '—'}</td>
+                    <td className="text-gray-500">{v.email ?? '—'}</td>
+                    <td><span className="inline-flex py-[3px] px-[9px] rounded-[999px] text-[11px] font-semibold" style={{ background: v.status === 'Active' ? 'rgba(16,185,129,.2)' : 'rgba(255,255,255,.1)', color: v.status === 'Active' ? '#34d399' : '#9ca3af' }}>{v.status}</span></td>
+                    {isLP && <td className="text-right"><button className="btn btn-ghost btn-sm text-[#ef4444]" onClick={() => handleDeleteVendor(v)}><Icon name="trash" size={13} /></button></td>}
                   </tr>
                 ))}
               </tbody>
@@ -149,30 +149,30 @@ function TeamContent({ projectId, isLP }: { projectId: string; isLP: boolean }) 
 
       {/* Invite modal */}
       <Modal open={inviteOpen} onClose={() => { setInviteOpen(false); resetInviteModal(); }}>
-        <div style={{ padding: 28 }}>
-          <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 16 }}>
-            <h2 style={{ margin: 0, fontSize: 18, fontWeight: 600 }}>Invite Member</h2>
+        <div className="p-7">
+          <div className="flex items-center justify-between mb-4">
+            <h2 className="m-0 text-[18px] font-semibold">Invite Member</h2>
             <button className="btn btn-ghost btn-sm" onClick={() => { setInviteOpen(false); resetInviteModal(); }}><Icon name="x" size={16} /></button>
           </div>
-          {inviteError && <div style={{ background: 'rgba(239,68,68,.12)', border: '1px solid rgba(239,68,68,.25)', borderRadius: 6, padding: '10px 14px', marginBottom: 14, fontSize: 13, color: '#fca5a5' }}>{inviteError}</div>}
+          {inviteError && <div className="bg-[rgba(239,68,68,.12)] border border-[rgba(239,68,68,.25)] rounded-[6px] px-[14px] py-[10px] mb-[14px] text-[13px] text-[#fca5a5]">{inviteError}</div>}
           {collaborators.length > 0 && (
-            <div className="field" style={{ position: 'relative' }}>
+            <div className="field relative">
               <label className="label">Previous collaborators</label>
               {selectedCol ? (
-                <div style={{ display: 'flex', alignItems: 'center', gap: 10, padding: '8px 12px', borderRadius: 8, background: 'rgba(99,102,241,.12)', border: '1px solid rgba(99,102,241,.3)' }}>
+                <div className="flex items-center gap-[10px] py-2 px-3 rounded-lg bg-[rgba(99,102,241,.12)] border border-[rgba(99,102,241,.3)]">
                   <Avatar name={selectedCol.full_name || selectedCol.email} size={28} />
-                  <div style={{ flex: 1, minWidth: 0 }}><div style={{ fontSize: 13, fontWeight: 600, color: '#f0f2f5' }}>{selectedCol.full_name || selectedCol.email}</div><div style={{ fontSize: 11, color: '#9ca3af' }}>{selectedCol.email}</div></div>
+                  <div className="flex-1 min-w-0"><div className="text-[13px] font-semibold text-[#f0f2f5]">{selectedCol.full_name || selectedCol.email}</div><div className="text-[11px] text-gray-400">{selectedCol.email}</div></div>
                   <button className="btn btn-ghost btn-sm" onClick={() => { setSelectedCol(null); setInviteEmail(''); setColSearch(''); }}><Icon name="x" size={13} /></button>
                 </div>
               ) : (
                 <>
                   <div className="input-underline"><Icon name="users" size={16} /><input value={colSearch} onChange={e => { setColSearch(e.target.value); setColOpen(true); }} onFocus={() => setColOpen(true)} placeholder="Search by name or email…" /></div>
                   {colOpen && filteredCollaborators.length > 0 && (
-                    <div style={{ position: 'absolute', top: '100%', left: 0, right: 0, zIndex: 50, background: '#1a2235', border: '1px solid rgba(255,255,255,.1)', borderRadius: 8, marginTop: 4, overflow: 'hidden', boxShadow: '0 8px 24px rgba(0,0,0,.4)', maxHeight: 180, overflowY: 'auto' }}>
+                    <div className="absolute top-full left-0 right-0 z-50 bg-[#1a2235] border border-[rgba(255,255,255,.1)] rounded-lg mt-1 overflow-hidden shadow-[0_8px_24px_rgba(0,0,0,.4)] max-h-[180px] overflow-y-auto">
                       {filteredCollaborators.map(c => (
-                        <div key={c.id} onClick={() => { setSelectedCol(c); setInviteEmail(c.email); setInviteRole(c.role === 'line_producer' ? 'executive_producer' : c.role); setColOpen(false); setColSearch(''); }} style={{ display: 'flex', alignItems: 'center', gap: 10, padding: '9px 14px', cursor: 'pointer' }} onMouseEnter={e => (e.currentTarget.style.background = 'rgba(255,255,255,.06)')} onMouseLeave={e => (e.currentTarget.style.background = 'transparent')}>
+                        <div key={c.id} onClick={() => { setSelectedCol(c); setInviteEmail(c.email); setInviteRole(c.role === 'line_producer' ? 'executive_producer' : c.role); setColOpen(false); setColSearch(''); }} className="flex items-center gap-[10px] py-[9px] px-[14px] cursor-pointer hover:bg-[rgba(255,255,255,.06)]">
                           <Avatar name={c.full_name || c.email} size={26} />
-                          <div style={{ flex: 1, minWidth: 0 }}><div style={{ fontSize: 12, fontWeight: 600, color: '#f0f2f5' }}>{c.full_name || c.email}</div></div>
+                          <div className="flex-1 min-w-0"><div className="text-[12px] font-semibold text-[#f0f2f5]">{c.full_name || c.email}</div></div>
                         </div>
                       ))}
                     </div>
@@ -183,24 +183,24 @@ function TeamContent({ projectId, isLP }: { projectId: string; isLP: boolean }) 
           )}
           <div className="field"><label className="label">Email</label><div className="input-underline"><Icon name="mail" size={16} /><input value={inviteEmail} onChange={e => setInviteEmail(e.target.value)} placeholder="name@company.in" /></div></div>
           <div className="field"><label className="label">Role</label><div className="input-underline"><Icon name="user" size={16} /><select value={inviteRole} onChange={e => setInviteRole(e.target.value)}><option value="executive_producer">Executive Producer</option><option value="accounts_manager">Accounts Manager</option></select></div></div>
-          <button className="btn btn-primary btn-full" style={{ marginTop: 10 }} onClick={handleInvite} disabled={inviting}>{inviting ? 'Inviting…' : 'Send Invite'}</button>
+          <button className="btn btn-primary btn-full mt-[10px]" onClick={handleInvite} disabled={inviting}>{inviting ? 'Inviting…' : 'Send Invite'}</button>
         </div>
       </Modal>
 
       {/* Invite vendor modal */}
       <Modal open={vendorModalOpen} onClose={() => setVendorModalOpen(false)}>
-        <div style={{ padding: 32 }}>
-          <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 20 }}>
-            <h2 style={{ margin: 0, fontSize: 18, fontWeight: 600 }}>Invite Vendor</h2>
+        <div className="p-8">
+          <div className="flex items-center justify-between mb-5">
+            <h2 className="m-0 text-[18px] font-semibold">Invite Vendor</h2>
             <button className="btn btn-ghost btn-sm" onClick={() => setVendorModalOpen(false)}><Icon name="x" size={16} /></button>
           </div>
-          {vendorError && <div style={{ background: 'rgba(239,68,68,.12)', border: '1px solid rgba(239,68,68,.25)', borderRadius: 6, padding: '10px 14px', marginBottom: 14, fontSize: 13, color: '#fca5a5' }}>{vendorError}</div>}
-          <div style={{ display: 'flex', flexDirection: 'column', gap: 4 }}>
+          {vendorError && <div className="bg-[rgba(239,68,68,.12)] border border-[rgba(239,68,68,.25)] rounded-[6px] px-[14px] py-[10px] mb-[14px] text-[13px] text-[#fca5a5]">{vendorError}</div>}
+          <div className="flex flex-col gap-1">
             <div className="field"><label className="label">Vendor Name</label><div className="input-underline"><Icon name="building" size={16} /><input value={vendorName} onChange={e => setVendorName(e.target.value)} placeholder="e.g. Mumbai Location Services" autoFocus /></div></div>
             <div className="field"><label className="label">Location</label><div className="input-underline"><Icon name="map" size={16} /><input value={vendorLocation} onChange={e => setVendorLocation(e.target.value)} placeholder="e.g. Mumbai, Maharashtra" /></div></div>
             <div className="field"><label className="label">Email</label><div className="input-underline"><Icon name="mail" size={16} /><input type="email" value={vendorEmail} onChange={e => setVendorEmail(e.target.value)} placeholder="vendor@example.com" /></div></div>
           </div>
-          <div style={{ display: 'flex', gap: 10, marginTop: 24 }}><button className="btn btn-secondary" onClick={() => setVendorModalOpen(false)} disabled={savingVendor}>Cancel</button><div style={{ flex: 1 }} /><button className="btn btn-primary" onClick={handleSaveVendor} disabled={savingVendor || !vendorName.trim()}>{savingVendor ? 'Saving…' : 'Invite'}</button></div>
+          <div className="flex gap-[10px] mt-6"><button className="btn btn-secondary" onClick={() => setVendorModalOpen(false)} disabled={savingVendor}>Cancel</button><div className="flex-1" /><button className="btn btn-primary" onClick={handleSaveVendor} disabled={savingVendor || !vendorName.trim()}>{savingVendor ? 'Saving…' : 'Invite'}</button></div>
         </div>
       </Modal>
     </div>
@@ -290,7 +290,7 @@ export default function ProjectPage() {
 
   /* ── project subnav (renders inline in primary sidebar below this project) ── */
   const projectSubnav = (
-    <div style={{ borderLeft: '2px solid rgba(99,102,241,.25)', marginLeft: 18, paddingBottom: 4 }}>
+    <div className="border-l-2 border-[rgba(99,102,241,.25)] ml-[18px] pb-1">
       {/* Add Scene */}
       {isLP && (
         <div className="side-subnav-item" onClick={handleAddScene}>
@@ -303,10 +303,10 @@ export default function ProjectPage() {
         <Icon name="users" size={13} /> Team & Vendors
       </div>
 
-      <div style={{ height: 1, background: 'rgba(255,255,255,.06)', margin: '6px 6px 6px 0' }} />
+      <div className="h-px bg-[rgba(255,255,255,.06)] mt-[6px] mr-[6px] mb-[6px]" />
 
       {/* Scenes label */}
-      <div style={{ padding: '2px 8px 3px 10px', fontSize: 9.5, fontWeight: 600, color: '#4b5563', textTransform: 'uppercase', letterSpacing: '.07em' }}>
+      <div className="pt-[2px] pr-2 pb-[3px] pl-[10px] text-[9.5px] font-semibold text-[#4b5563] uppercase tracking-[.07em]">
         Scenes
       </div>
 
@@ -316,15 +316,15 @@ export default function ProjectPage() {
           className={`side-subnav-scene${isDraftView ? ' active' : ''}`}
           onClick={() => setView({ sceneId: draftSceneId, isDraft: true })}
         >
-          <span style={{ fontSize: 9, fontWeight: 700, color: isDraftView ? '#a5b4fc' : '#4b5563', flexShrink: 0, textTransform: 'uppercase' }}>New</span>
-          <span style={{ overflow: 'hidden', textOverflow: 'ellipsis', flex: 1, fontStyle: 'italic', color: isDraftView ? '#c4b5fd' : '#6b7280' }}>{draftSceneName || 'New Scene'}</span>
+          <span className="text-[9px] font-bold shrink-0 uppercase" style={{ color: isDraftView ? '#a5b4fc' : '#4b5563' }}>New</span>
+          <span className="overflow-hidden text-ellipsis flex-1 italic" style={{ color: isDraftView ? '#c4b5fd' : '#6b7280' }}>{draftSceneName || 'New Scene'}</span>
         </div>
       )}
 
       {scenesLoading ? (
-        <div style={{ padding: '6px 8px 6px 10px', fontSize: 11, color: '#6b7280' }}>Loading…</div>
+        <div className="pt-[6px] pr-2 pb-[6px] pl-[10px] text-[11px] text-[#6b7280]">Loading…</div>
       ) : scenes.length === 0 && !draftSceneId ? (
-        <div style={{ padding: '4px 8px 6px 10px', fontSize: 11, color: '#4b5563' }}>No scenes yet</div>
+        <div className="pt-1 pr-2 pb-[6px] pl-[10px] text-[11px] text-[#4b5563]">No scenes yet</div>
       ) : scenes.map((s, idx) => {
         const isSelected = activeSceneId === s.id && !isDraftView;
         return (
@@ -333,8 +333,8 @@ export default function ProjectPage() {
             className={`side-subnav-scene${isSelected ? ' active' : ''}`}
             onClick={() => setView({ sceneId: s.id })}
           >
-            <span style={{ fontSize: 10, fontWeight: 700, color: isSelected ? '#a5b4fc' : '#4b5563', flexShrink: 0 }}>{String(idx + 1).padStart(2, '0')}</span>
-            <span style={{ overflow: 'hidden', textOverflow: 'ellipsis', flex: 1 }}>{s.name}</span>
+            <span className="text-[10px] font-bold shrink-0" style={{ color: isSelected ? '#a5b4fc' : '#4b5563' }}>{String(idx + 1).padStart(2, '0')}</span>
+            <span className="overflow-hidden text-ellipsis flex-1">{s.name}</span>
           </div>
         );
       })}
@@ -346,9 +346,9 @@ export default function ProjectPage() {
     <AppFrame projectSubnav={projectSubnav}>
 
       {/* ── Project header + KPIs (always shown for this project) ── */}
-      <div style={{ marginBottom: 20 }}>
-        <div style={{ display: 'flex', alignItems: 'center', gap: 12, marginBottom: 2 }}>
-          <div style={{ fontSize: 20, fontWeight: 700, letterSpacing: '-.02em', color: '#f0f2f5', flex: 1 }}>{p.name}</div>
+      <div className="mb-5">
+        <div className="flex items-center gap-3 mb-0.5">
+          <div className="text-[20px] font-bold tracking-[-0.02em] text-[#f0f2f5] flex-1">{p.name}</div>
           {(projectWrapped || p.status === 'Wrapped' || p.status === 'Closed') ? (
             <span className="badge badge-wrapped">Wrapped</span>
           ) : (
@@ -363,8 +363,8 @@ export default function ProjectPage() {
             </button>
           )}
         </div>
-        {p.genre && <div style={{ fontSize: 13, color: '#6b7280', marginBottom: 14 }}>{p.genre}</div>}
-        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: 12 }}>
+        {p.genre && <div className="text-[13px] text-gray-500 mb-[14px]">{p.genre}</div>}
+        <div className="grid grid-cols-3 gap-3">
           <KPI label="Planned Budget" value={fmtShort(p.total_budget)} icon="wallet" />
           <KPI label="Actual Spent" value={fmtShort(p.spent)} icon="trend" />
           <KPI label="Difference Planned vs Actual" value={fmtShort(variance)} icon="trend" />
@@ -379,7 +379,7 @@ export default function ProjectPage() {
       {/* Team */}
       {view === 'team' && (
         <>
-          <div style={{ fontSize: 16, fontWeight: 700, letterSpacing: '-.02em', color: '#f0f2f5', marginBottom: 16 }}>Team & Vendors</div>
+          <div className="text-[16px] font-bold tracking-[-0.02em] text-[#f0f2f5] mb-4">Team & Vendors</div>
           <TeamContent projectId={id} isLP={isLP} />
         </>
       )}
@@ -392,8 +392,8 @@ export default function ProjectPage() {
             const activeScene = !isDraftView ? scenes.find(s => s.id === activeSceneId) : null;
             const isSceneWrapped = activeScene?.status === 'Wrapped' || wrappedSceneIds.has(activeSceneId ?? '');
             return (
-              <div style={{ display: 'flex', alignItems: 'center', gap: 12, marginBottom: 16 }}>
-                <div style={{ fontSize: 16, fontWeight: 700, letterSpacing: '-.02em', color: '#f0f2f5', flex: 1 }}>
+              <div className="flex items-center gap-3 mb-4">
+                <div className="text-[16px] font-bold tracking-[-0.02em] text-[#f0f2f5] flex-1">
                   {isDraftView ? (draftSceneName || 'New Scene') : (activeScene?.name ?? 'Scene')}
                 </div>
                 {!isDraftView && (

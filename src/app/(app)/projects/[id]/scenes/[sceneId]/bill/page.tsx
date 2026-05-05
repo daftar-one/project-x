@@ -52,14 +52,14 @@ export default function BillReviewPage() {
 
   return (
     <AppFrame>
-      <div style={{ display: 'flex', alignItems: 'center', gap: 10, marginBottom: 6, color: '#9ca3af', fontSize: 12 }}>
-        <span style={{ cursor: 'pointer' }} onClick={() => router.push('/projects')}>Movies</span>
+      <div className="flex items-center gap-[10px] mb-[6px] text-gray-400 text-[12px]">
+        <span className="cursor-pointer" onClick={() => router.push('/projects')}>Movies</span>
         <Icon name="chevronRight" size={12} />
-        <span style={{ cursor: 'pointer' }} onClick={() => router.push(`/projects/${id}`)}>{project?.name ?? '…'}</span>
+        <span className="cursor-pointer" onClick={() => router.push(`/projects/${id}`)}>{project?.name ?? '…'}</span>
         <Icon name="chevronRight" size={12} />
-        <span style={{ cursor: 'pointer' }} onClick={() => router.push(`/projects/${id}/scenes/${sceneId}`)}>Scene</span>
+        <span className="cursor-pointer" onClick={() => router.push(`/projects/${id}/scenes/${sceneId}`)}>Scene</span>
         <Icon name="chevronRight" size={12} />
-        <span style={{ color: '#fff' }}>Bill Review</span>
+        <span className="text-white">Bill Review</span>
       </div>
 
       <PageTitle
@@ -67,11 +67,11 @@ export default function BillReviewPage() {
         sub={`${bill.vendor_name ?? '—'} · ${bill.bill_type} · ${bill.bill_date ?? '—'}`}
       />
 
-      <div style={{ display: 'grid', gridTemplateColumns: '1.1fr 1fr', gap: 20 }}>
+      <div className="grid grid-cols-[1.1fr_1fr] gap-5">
         {/* Bill detail */}
         <div className="card card-pad">
-          <div className="label" style={{ marginBottom: 16 }}>Bill Summary</div>
-          <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 16, fontSize: 13 }}>
+          <div className="label mb-4">Bill Summary</div>
+          <div className="grid grid-cols-2 gap-4 text-[13px]">
             {[
               ['Vendor', bill.vendor_name ?? '—'],
               ['Bill Type', bill.bill_type],
@@ -81,16 +81,16 @@ export default function BillReviewPage() {
             ].map(([label, value]) => (
               <div key={label}>
                 <div className="label">{label}</div>
-                <div style={{ fontWeight: 600, marginTop: 2 }}>{value}</div>
+                <div className="font-semibold mt-0.5">{value}</div>
               </div>
             ))}
             <div>
               <div className="label">Amount</div>
-              <div className="num" style={{ fontSize: 20, fontWeight: 700, color: '#f0f2f5', marginTop: 2 }}>{fmt(bill.amount)}</div>
+              <div className="num text-[20px] font-bold text-[#f0f2f5] mt-0.5">{fmt(bill.amount)}</div>
             </div>
           </div>
           {bill.rejection_reason && (
-            <div style={{ marginTop: 16, background: 'rgba(239,68,68,.12)', border: '1px solid rgba(239,68,68,.25)', borderRadius: 6, padding: 10, fontSize: 12, color: '#fca5a5' }}>
+            <div className="mt-4 bg-[rgba(239,68,68,.12)] border border-[rgba(239,68,68,.25)] rounded-[6px] p-[10px] text-[12px] text-[#fca5a5]">
               <strong>Rejection reason:</strong> {bill.rejection_reason}
             </div>
           )}
@@ -104,15 +104,14 @@ export default function BillReviewPage() {
                 <div className="card card-pad">
                   <div className="label">Rejection Reason</div>
                   <textarea
-                    className="input-box" rows={4}
+                    className="input-box mt-[6px] mb-3" rows={4}
                     placeholder="Explain why this bill is being rejected…"
                     value={reason} onChange={e => setReason(e.target.value)}
-                    style={{ marginTop: 6, marginBottom: 12 }}
                   />
-                  <div style={{ display: 'flex', gap: 10 }}>
+                  <div className="flex gap-[10px]">
                     <button className="btn btn-secondary" onClick={() => setMode(null)}>Cancel</button>
                     <button
-                      style={{ flex: 1, background: '#ef4444', color: '#fff', borderRadius: 6, fontWeight: 500, fontSize: 13, cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center', border: 'none', padding: '10px 16px' }}
+                      className="flex-1 bg-[#ef4444] text-white rounded-[6px] font-medium text-[13px] cursor-pointer flex items-center justify-center border-0 px-4 py-[10px]"
                       disabled={!reason}
                       onClick={handleReject}
                     >
@@ -121,11 +120,11 @@ export default function BillReviewPage() {
                   </div>
                 </div>
               ) : (
-                <div style={{ display: 'flex', gap: 10 }}>
-                  <button className="btn btn-secondary" style={{ flex: 1 }} onClick={() => setMode('reject')}>
+                <div className="flex gap-[10px]">
+                  <button className="btn btn-secondary flex-1" onClick={() => setMode('reject')}>
                     <Icon name="x" size={14} /> Reject
                   </button>
-                  <button className="btn btn-primary" style={{ flex: 2 }} onClick={handleApprove}>
+                  <button className="btn btn-primary [flex:2]" onClick={handleApprove}>
                     <Icon name="check" size={14} /> Approve Bill
                   </button>
                 </div>
@@ -135,7 +134,7 @@ export default function BillReviewPage() {
 
           {bill.status === 'Approved' && (
             <div className="card card-pad">
-              <div style={{ fontSize: 13, color: '#6b7280', marginBottom: 16 }}>
+              <div className="text-[13px] text-gray-500 mb-4">
                 This bill has been approved. Record payment when funds are transferred.
               </div>
               <button className="btn btn-primary btn-full" onClick={handlePay}>
@@ -145,17 +144,17 @@ export default function BillReviewPage() {
           )}
 
           {bill.status === 'Paid' && (
-            <div className="card card-pad" style={{ textAlign: 'center' }}>
-              <div style={{ color: '#10b981', fontWeight: 600, fontSize: 14, marginBottom: 8 }}>
+            <div className="card card-pad text-center">
+              <div className="text-[#10b981] font-semibold text-[14px] mb-2">
                 <Icon name="check" size={16} /> Payment Recorded
               </div>
-              <div style={{ fontSize: 13, color: '#6b7280' }}>This bill has been paid.</div>
+              <div className="text-[13px] text-gray-500">This bill has been paid.</div>
             </div>
           )}
 
           {bill.status === 'Rejected' && (
-            <div className="card card-pad" style={{ textAlign: 'center' }}>
-              <div style={{ color: '#ef4444', fontWeight: 600, fontSize: 14 }}>Bill Rejected</div>
+            <div className="card card-pad text-center">
+              <div className="text-[#ef4444] font-semibold text-[14px]">Bill Rejected</div>
             </div>
           )}
         </div>

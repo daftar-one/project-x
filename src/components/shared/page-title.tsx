@@ -9,10 +9,10 @@ interface PageTitleProps {
 
 export function PageTitle({ title, sub, right }: PageTitleProps) {
   return (
-    <div style={{ display: 'flex', alignItems: 'flex-end', marginBottom: 20, gap: 16, flexWrap: 'wrap' }}>
-      <div style={{ flex: 1, minWidth: 0 }}>
-        <h1 style={{ fontSize: 22, fontWeight: 600, margin: 0, letterSpacing: '-.02em', color: '#f0f2f5' }}>{title}</h1>
-        {sub && <div style={{ fontSize: 13, color: '#6b7280', marginTop: 4 }}>{sub}</div>}
+    <div className="flex items-end mb-5 gap-4 flex-wrap">
+      <div className="flex-1 min-w-0">
+        <h1 className="text-[22px] font-semibold m-0 tracking-[-0.02em] text-[#f0f2f5]">{title}</h1>
+        {sub && <div className="text-[13px] text-gray-500 mt-1">{sub}</div>}
       </div>
       {right}
     </div>

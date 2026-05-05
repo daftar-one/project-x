@@ -38,33 +38,21 @@ export default function OnboardingPage() {
   }
 
   return (
-    <div style={{
-      minHeight: '100vh', background: '#0f1729',
-      display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center',
-      padding: 24,
-    }}>
-      <div style={{
-        background: '#fff', borderRadius: 16, padding: '44px 40px 36px',
-        width: '100%', maxWidth: 440,
-        boxShadow: '0 20px 60px -12px rgba(0,0,0,.4)',
-      }}>
-        <div style={{ display: 'flex', justifyContent: 'center', marginBottom: 22 }}>
-          <div style={{
-            width: 56, height: 56, borderRadius: 16,
-            background: 'linear-gradient(135deg,#eef2ff,#fce7f3)',
-            display: 'flex', alignItems: 'center', justifyContent: 'center', color: '#6366f1',
-          }}>
+    <div className="min-h-screen bg-[#0f1729] flex flex-col items-center justify-center p-6">
+      <div className="bg-white rounded-2xl pt-[44px] px-[40px] pb-9 w-full max-w-[440px] shadow-[0_20px_60px_-12px_rgba(0,0,0,.4)]">
+        <div className="flex justify-center mb-[22px]">
+          <div className="w-14 h-14 rounded-2xl bg-gradient-to-br from-[#eef2ff] to-[#fce7f3] flex items-center justify-center text-[#6366f1]">
             <Icon name="building" size={24} />
           </div>
         </div>
-        <h1 style={{ fontSize: 22, fontWeight: 600, textAlign: 'center', margin: 0, letterSpacing: '-.02em' }}>
+        <h1 className="text-[22px] font-semibold text-center m-0 tracking-[-0.02em]">
           Set up your Production House
         </h1>
-        <p style={{ fontSize: 13, color: '#6b7280', textAlign: 'center', margin: '8px 0 0' }}>
+        <p className="text-[13px] text-gray-500 text-center m-0 mt-2">
           Everything you create — projects, scenes, budgets — lives under your house.
         </p>
 
-        <div style={{ marginTop: 28 }}>
+        <div className="mt-7">
           <div className="field">
             <label className="label">Your Full Name</label>
             <div className="input-underline">
@@ -92,39 +80,36 @@ export default function OnboardingPage() {
           <div className="field">
             <label className="label">
               Logo{' '}
-              <span style={{ color: '#9ca3af', textTransform: 'none', letterSpacing: 0 }}>(optional)</span>
+              <span className="text-gray-400 normal-case tracking-normal">(optional)</span>
             </label>
             <input
               ref={fileInputRef}
               type="file"
               accept="image/png,image/jpeg,image/jpg,image/svg+xml,image/webp"
-              style={{ display: 'none' }}
+              className="hidden"
               onChange={handleFileChange}
             />
             <div
-              style={{
-                display: 'flex', alignItems: 'center', gap: 14,
-                border: '1.5px dashed #e5e7eb', borderRadius: 8, padding: 14, cursor: 'pointer',
-              }}
+              className="flex items-center gap-[14px] border-[1.5px] border-dashed border-[#e5e7eb] rounded-lg p-[14px] cursor-pointer"
               onClick={() => fileInputRef.current?.click()}
             >
-              <div style={{
-                width: 44, height: 44, borderRadius: 8, overflow: 'hidden', flexShrink: 0,
-                background: logoPreview ? 'transparent' : '#f9fafb',
-                border: logoPreview ? 'none' : '1px dashed #d4d6db',
-                display: 'flex', alignItems: 'center', justifyContent: 'center',
-                color: '#9ca3af',
-              }}>
+              <div
+                className="w-11 h-11 rounded-lg overflow-hidden shrink-0 flex items-center justify-center text-gray-400"
+                style={{
+                  background: logoPreview ? 'transparent' : '#f9fafb',
+                  border: logoPreview ? 'none' : '1px dashed #d4d6db',
+                }}
+              >
                 {logoPreview
-                  ? <img src={logoPreview} alt="Logo preview" style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
+                  ? <img src={logoPreview} alt="Logo preview" className="w-full h-full object-cover" />
                   : <Icon name="upload" size={16} />
                 }
               </div>
-              <div style={{ flex: 1, minWidth: 0 }}>
-                <div style={{ fontSize: 13, fontWeight: 500, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
+              <div className="flex-1 min-w-0">
+                <div className="text-[13px] font-medium overflow-hidden text-ellipsis whitespace-nowrap">
                   {logoFile ? logoFile.name : 'Click to upload or drag & drop'}
                 </div>
-                <div style={{ fontSize: 11, color: '#9ca3af' }}>PNG, SVG, JPG or WebP · up to 2 MB · square recommended</div>
+                <div className="text-[11px] text-gray-400">PNG, SVG, JPG or WebP · up to 2 MB · square recommended</div>
               </div>
               {logoFile && (
                 <button className="btn btn-ghost btn-sm" onClick={handleRemoveLogo}>
@@ -136,8 +121,7 @@ export default function OnboardingPage() {
         </div>
 
         <button
-          className="btn btn-primary btn-full"
-          style={{ marginTop: 8 }}
+          className="btn btn-primary btn-full mt-2"
           onClick={handleSubmit}
           disabled={!fullName.trim() || !name.trim() || loading}
         >

@@ -23,7 +23,7 @@ export function Tabs({ tabs, active, onChange }: TabsProps) {
         >
           {t.label}
           {typeof t.count === 'number' && (
-            <span style={{ marginLeft: 6, color: '#9ca3af' }}>{t.count}</span>
+            <span className="ml-1.5 text-gray-400">{t.count}</span>
           )}
         </div>
       ))}

@@ -14,31 +14,8 @@ interface Props {
   sceneId?: string;
 }
 
-const inputStyle: React.CSSProperties = {
-  width: '100%', background: 'transparent', border: 'none',
-  borderBottom: '1px solid rgba(255,255,255,.15)', color: '#f9fafb',
-  fontSize: 14, padding: '8px 0 8px 28px', outline: 'none', transition: 'border-color .15s',
-  appearance: 'none',
-};
-
-const readonlyStyle: React.CSSProperties = {
-  ...inputStyle,
-  color: '#6b7280',
-  cursor: 'default',
-  borderBottomColor: 'rgba(255,255,255,.07)',
-};
-
-const lbl: React.CSSProperties = {
-  fontSize: 11, fontWeight: 600, color: '#6b7280', textTransform: 'uppercase',
-  letterSpacing: '.07em', marginBottom: 4, display: 'block',
-};
-
-const field: React.CSSProperties = { position: 'relative', width: '100%' };
-
-const iconWrap: React.CSSProperties = {
-  position: 'absolute', left: 0, top: '50%', transform: 'translateY(-50%)',
-  color: '#6b7280', display: 'flex', alignItems: 'center',
-};
+const inputCls = "w-full bg-transparent border-0 border-b border-[rgba(255,255,255,.15)] text-[#f9fafb] text-[14px] py-2 pl-7 pr-0 outline-none transition-[border-color] appearance-none";
+const readonlyCls = "w-full bg-transparent border-0 border-b border-[rgba(255,255,255,.07)] text-gray-500 text-[14px] py-2 pl-7 pr-0 cursor-default";
 
 export function AddFundsDialog({ open, onClose, scope = 'ph', projectId, sceneId }: Props) {
   const [selectedMovieId, setSelectedMovieId] = useState(projectId ?? '');
@@ -91,40 +68,31 @@ export function AddFundsDialog({ open, onClose, scope = 'ph', projectId, sceneId
   return (
     <div
       onClick={handleBackdrop}
-      style={{
-        position: 'fixed', inset: 0, zIndex: 1000,
-        background: 'rgba(0,0,0,.55)', backdropFilter: 'blur(4px)',
-        display: 'flex', alignItems: 'center', justifyContent: 'center',
-      }}
+      className="fixed inset-0 z-[1000] bg-[rgba(0,0,0,.55)] backdrop-blur-sm flex items-center justify-center"
     >
-      <div style={{
-        background: '#1a1d23', border: '1px solid rgba(255,255,255,.1)',
-        borderRadius: 12, padding: 32, width: 380, maxWidth: '90vw',
-        boxShadow: '0 20px 60px rgba(0,0,0,.6)',
-      }}>
+      <div className="bg-[#1a1d23] border border-[rgba(255,255,255,.1)] rounded-xl p-8 w-[380px] max-w-[90vw] shadow-[0_20px_60px_rgba(0,0,0,.6)]">
         {/* Header */}
-        <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 28 }}>
-          <div style={{ fontSize: 16, fontWeight: 700, color: '#f9fafb' }}>Add Funds</div>
-          <button onClick={onClose} style={{
-            width: 28, height: 28, borderRadius: 6, background: 'rgba(255,255,255,.06)',
-            border: 'none', color: '#9ca3af', cursor: 'pointer',
-            display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0,
-          }}>
+        <div className="flex items-center justify-between mb-7">
+          <div className="text-[16px] font-bold text-[#f9fafb]">Add Funds</div>
+          <button
+            onClick={onClose}
+            className="w-7 h-7 rounded-[6px] bg-[rgba(255,255,255,.06)] border-0 text-gray-400 cursor-pointer flex items-center justify-center shrink-0"
+          >
             <Icon name="x" size={14} />
           </button>
         </div>
 
-        <div style={{ display: 'flex', flexDirection: 'column', gap: 24 }}>
+        <div className="flex flex-col gap-6">
           {/* Movie */}
           <div>
-            <label style={lbl}>Movie</label>
-            <div style={field}>
-              <span style={iconWrap}><Icon name="film" size={15} /></span>
+            <label className="text-[11px] font-semibold text-gray-500 uppercase tracking-[0.07em] mb-1 block">Movie</label>
+            <div className="relative w-full">
+              <span className="absolute left-0 top-1/2 -translate-y-1/2 text-gray-500 flex items-center"><Icon name="film" size={15} /></span>
               {scope === 'ph' ? (
                 <select
                   value={selectedMovieId}
                   onChange={e => handleMovieChange(e.target.value)}
-                  style={inputStyle}
+                  className={inputCls}
                 >
                   <option value="" disabled>Select a movie…</option>
                   {MOCK_PROJECTS.map(p => (
@@ -132,18 +100,18 @@ export function AddFundsDialog({ open, onClose, scope = 'ph', projectId, sceneId
                   ))}
                 </select>
               ) : (
-                <div style={readonlyStyle}>{prefilledMovie?.name ?? '—'}</div>
+                <div className={readonlyCls}>{prefilledMovie?.name ?? '—'}</div>
               )}
             </div>
           </div>
 
           {/* Scene */}
           <div>
-            <label style={lbl}>Scene</label>
-            <div style={field}>
-              <span style={iconWrap}><Icon name="camera" size={15} /></span>
+            <label className="text-[11px] font-semibold text-gray-500 uppercase tracking-[0.07em] mb-1 block">Scene</label>
+            <div className="relative w-full">
+              <span className="absolute left-0 top-1/2 -translate-y-1/2 text-gray-500 flex items-center"><Icon name="camera" size={15} /></span>
               {scope === 'scene' ? (
-                <div style={readonlyStyle}>
+                <div className={readonlyCls}>
                   {prefilledScene ? `${prefilledScene.num} · ${prefilledScene.name}` : '—'}
                 </div>
               ) : (
@@ -151,7 +119,8 @@ export function AddFundsDialog({ open, onClose, scope = 'ph', projectId, sceneId
                   value={selectedSceneId}
                   onChange={e => setSelectedSceneId(e.target.value)}
                   disabled={!movieIdForScenes}
-                  style={{ ...inputStyle, opacity: movieIdForScenes ? 1 : 0.45 }}
+                  className={inputCls}
+                  style={{ opacity: movieIdForScenes ? 1 : 0.45 }}
                 >
                   <option value="" disabled>
                     {movieIdForScenes ? 'Select a scene…' : 'Select a movie first'}
@@ -166,9 +135,9 @@ export function AddFundsDialog({ open, onClose, scope = 'ph', projectId, sceneId
 
           {/* Amount */}
           <div>
-            <label style={lbl}>Amount (₹)</label>
-            <div style={field}>
-              <span style={iconWrap}><Icon name="rupee" size={15} /></span>
+            <label className="text-[11px] font-semibold text-gray-500 uppercase tracking-[0.07em] mb-1 block">Amount (₹)</label>
+            <div className="relative w-full">
+              <span className="absolute left-0 top-1/2 -translate-y-1/2 text-gray-500 flex items-center"><Icon name="rupee" size={15} /></span>
               <input
                 type="number"
                 placeholder="0"
@@ -176,13 +145,13 @@ export function AddFundsDialog({ open, onClose, scope = 'ph', projectId, sceneId
                 onChange={e => setAmount(e.target.value)}
                 onKeyDown={e => e.key === 'Enter' && handleSubmit()}
                 autoFocus
-                style={inputStyle}
+                className={inputCls}
               />
             </div>
           </div>
         </div>
 
-        <div style={{ display: 'flex', gap: 8, justifyContent: 'flex-end', marginTop: 32 }}>
+        <div className="flex gap-2 justify-end mt-8">
           <button className="btn btn-ghost btn-sm" onClick={onClose}>Cancel</button>
           <button
             className="btn btn-primary btn-sm"

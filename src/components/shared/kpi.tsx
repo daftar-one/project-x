@@ -21,17 +21,13 @@ interface KPIProps {
 export function KPI({ label, value, sub, tone, icon }: KPIProps) {
   const t = tone ? TONE_MAP[tone] : undefined;
   return (
-    <div className="card card-pad" style={{
-      borderColor: t?.border,
-      background: t?.bg,
-      flex: 1, minWidth: 0,
-    }}>
-      <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginBottom: 10 }}>
+    <div className="card card-pad flex-1 min-w-0" style={{ borderColor: t?.border, background: t?.bg }}>
+      <div className="flex items-center gap-2 mb-[10px]">
         {icon && <Icon name={icon} size={14} style={{ color: t?.color ?? '#6b7280' }} />}
-        <div className="label" style={{ marginBottom: 0, color: t?.color ?? '#6b7280' }}>{label}</div>
+        <div className="label mb-0" style={{ color: t?.color ?? '#6b7280' }}>{label}</div>
       </div>
-      <div className="num" style={{ fontSize: 22, fontWeight: 600, letterSpacing: '-.02em', color: t?.color ?? '#f0f2f5' }}>{value}</div>
-      {sub && <div className="num" style={{ fontSize: 12, color: '#6b7280', marginTop: 4 }}>{sub}</div>}
+      <div className="num text-[22px] font-semibold tracking-[-0.02em]" style={{ color: t?.color ?? '#f0f2f5' }}>{value}</div>
+      {sub && <div className="num text-[12px] text-gray-500 mt-1">{sub}</div>}
     </div>
   );
 }

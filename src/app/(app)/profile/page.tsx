@@ -46,21 +46,18 @@ export default function ProfilePage() {
       <PageTitle title="My Profile" sub="Account details and settings" />
 
       {/* Header card */}
-      <div className="card card-pad" style={{ display: 'flex', alignItems: 'center', gap: 24, marginBottom: 16 }}>
+      <div className="card card-pad flex items-center gap-6 mb-4">
         <Avatar name={user.full_name || user.email} size={72} />
-        <div style={{ flex: 1, minWidth: 0 }}>
-          <div style={{ fontSize: 22, fontWeight: 700, letterSpacing: '-.02em' }}>
+        <div className="flex-1 min-w-0">
+          <div className="text-[22px] font-bold tracking-[-0.02em]">
             {user.full_name || '—'}
           </div>
-          <div style={{ display: 'flex', alignItems: 'center', gap: 12, marginTop: 6, flexWrap: 'wrap' }}>
-            <span style={{
-              fontSize: 12, fontWeight: 500, padding: '2px 10px', borderRadius: 999,
-              background: 'rgba(99,102,241,.2)', color: '#a5b4fc',
-            }}>{roleLabel}</span>
+          <div className="flex items-center gap-3 mt-1.5 flex-wrap">
+            <span className="text-[12px] font-medium px-[10px] py-0.5 rounded-[999px] bg-[rgba(99,102,241,.2)] text-[#a5b4fc]">
+              {roleLabel}
+            </span>
             {isLP && house && (
-              <span style={{ fontSize: 13, color: '#6b7280' }}>
-                {house.name}
-              </span>
+              <span className="text-[13px] text-gray-500">{house.name}</span>
             )}
           </div>
         </div>
@@ -72,29 +69,25 @@ export default function ProfilePage() {
       </div>
 
       {/* Details grid */}
-      <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 16 }}>
+      <div className="grid grid-cols-2 gap-4">
 
         {/* Personal info */}
         <div className="card card-pad">
-          <div className="label" style={{ marginBottom: 16 }}>Personal Information</div>
+          <div className="label mb-4">Personal Information</div>
 
           <Field label="Email" icon="mail" value={user.email} />
 
           {editing ? (
-            <div style={{ padding: '14px 0', borderBottom: '1px solid rgba(255,255,255,.08)' }}>
-              <div style={{ fontSize: 11, color: '#9ca3af', marginBottom: 6 }}>Full Name</div>
+            <div className="py-[14px] border-b border-[rgba(255,255,255,.08)]">
+              <div className="text-[11px] text-gray-400 mb-1.5">Full Name</div>
               <input
                 value={fullName}
                 onChange={e => setFullName(e.target.value)}
                 onKeyDown={e => { if (e.key === 'Enter') handleSave(); if (e.key === 'Escape') handleCancel(); }}
                 autoFocus
-                style={{
-                  width: '100%', fontSize: 14, fontWeight: 500, boxSizing: 'border-box',
-                  border: '1.5px solid #6366f1', borderRadius: 6, padding: '7px 10px', outline: 'none',
-                  background: 'rgba(255,255,255,.07)', color: '#f0f2f5',
-                }}
+                className="w-full text-[14px] font-medium border-[1.5px] border-[#6366f1] rounded-[6px] px-[10px] py-[7px] outline-none bg-[rgba(255,255,255,.07)] text-[#f0f2f5]"
               />
-              <div style={{ display: 'flex', gap: 8, marginTop: 10 }}>
+              <div className="flex gap-2 mt-[10px]">
                 <button className="btn btn-primary btn-sm" onClick={handleSave} disabled={saving || !fullName.trim()}>
                   {saving ? 'Saving…' : 'Save'}
                 </button>
@@ -108,7 +101,7 @@ export default function ProfilePage() {
 
         {/* Account info */}
         <div className="card card-pad">
-          <div className="label" style={{ marginBottom: 16 }}>Account</div>
+          <div className="label mb-4">Account</div>
           <Field label="Role" icon="shield" value={roleLabel} />
           {isLP && <Field label="Production House" icon="building" value={house?.name ?? '—'} />}
         </div>
@@ -120,12 +113,12 @@ export default function ProfilePage() {
 
 function Field({ label, icon, value }: { label: string; icon: string; value: string }) {
   return (
-    <div style={{ padding: '12px 0', borderBottom: '1px solid rgba(255,255,255,.08)' }}>
-      <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
-        <Icon name={icon} size={13} style={{ color: '#9ca3af', flexShrink: 0 }} />
-        <span style={{ fontSize: 11, color: '#9ca3af' }}>{label}</span>
+    <div className="py-3 border-b border-[rgba(255,255,255,.08)]">
+      <div className="flex items-center gap-2">
+        <Icon name={icon} size={13} className="text-gray-400 shrink-0" />
+        <span className="text-[11px] text-gray-400">{label}</span>
       </div>
-      <div style={{ fontSize: 14, fontWeight: 500, marginTop: 4, paddingLeft: 21 }}>{value}</div>
+      <div className="text-[14px] font-medium mt-1 pl-[21px]">{value}</div>
     </div>
   );
 }

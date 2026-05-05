@@ -38,45 +38,32 @@ export function TransactionHistory({ walletBalance, walletCredits, onAddMoney, i
     setShowAdd(false);
   }
 
-  const unitSel: React.CSSProperties = {
-    background: 'rgba(255,255,255,.07)', border: '1px solid rgba(255,255,255,.12)',
-    borderRadius: 4, padding: '2px 4px', fontSize: 10, fontWeight: 700,
-    color: '#a5b4fc', outline: 'none', cursor: 'pointer', flexShrink: 0,
-  };
-
-  const inputBase: React.CSSProperties = {
-    background: 'none', border: 'none', borderBottom: '1px solid rgba(255,255,255,.18)',
-    color: '#f0f2f5', fontSize: 13, padding: '4px 0', outline: 'none', flex: 1, minWidth: 0,
-  };
-
   return (
-    <div className="card" style={{ display: 'flex', flexDirection: 'column', height: '100%' }}>
-      <div style={{ padding: '12px 14px', flexShrink: 0 }}>
+    <div className="card flex flex-col h-full">
+      <div className="px-[14px] py-3 shrink-0">
         {/* Label */}
-        <div style={{ fontSize: 9, fontWeight: 700, color: '#6b7280', textTransform: 'uppercase', letterSpacing: '.07em', marginBottom: 5 }}>
+        <div className="text-[9px] font-bold text-gray-500 uppercase tracking-[0.07em] mb-[5px]">
           Wallet Balance
         </div>
 
         {/* Balance amount */}
-        <div className="num" style={{
-          fontSize: 20, fontWeight: 700, letterSpacing: '-.02em', marginBottom: 14,
-          color: isDraft ? '#4b5563' : '#f0f2f5',
-        }}>
+        <div
+          className="num text-[20px] font-bold tracking-[-0.02em] mb-[14px]"
+          style={{ color: isDraft ? '#4b5563' : '#f0f2f5' }}
+        >
           {isDraft ? '—' : fmtShort(walletBalance)}
         </div>
 
         {!isDraft && !showAdd && (
-          <div style={{ display: 'flex', flexDirection: 'column', gap: 6 }}>
+          <div className="flex flex-col gap-1.5">
             <button
-              className="btn btn-primary btn-sm"
-              style={{ width: '100%', justifyContent: 'center' }}
+              className="btn btn-primary btn-sm w-full justify-center"
               onClick={() => setShowAdd(true)}
             >
               <Icon name="plus" size={12} /> Add Money
             </button>
             <button
-              className="btn btn-secondary btn-sm"
-              style={{ width: '100%', justifyContent: 'center' }}
+              className="btn btn-secondary btn-sm w-full justify-center"
               onClick={() => setHistoryOpen(true)}
             >
               <Icon name="clock" size={12} /> History
@@ -85,34 +72,33 @@ export function TransactionHistory({ walletBalance, walletCredits, onAddMoney, i
         )}
 
         {!isDraft && showAdd && (
-          <div style={{ display: 'flex', flexDirection: 'column', gap: 10 }}>
-            <div style={{ fontSize: 11, fontWeight: 600, color: '#a5b4fc' }}>Add Money</div>
+          <div className="flex flex-col gap-[10px]">
+            <div className="text-[11px] font-semibold text-[#a5b4fc]">Add Money</div>
 
-            <div style={{ display: 'flex', alignItems: 'center', gap: 6 }}>
+            <div className="flex items-center gap-1.5">
               <input
                 type="number"
                 autoFocus
                 value={addAmount}
                 onChange={e => setAddAmount(e.target.value)}
                 placeholder="0"
-                style={inputBase}
+                className="bg-transparent border-0 border-b border-[rgba(255,255,255,.18)] text-[#f0f2f5] text-[13px] py-1 outline-none flex-1 min-w-0"
                 onKeyDown={e => e.key === 'Enter' && handleAdd()}
               />
-              <select value={addUnit} onChange={e => setAddUnit(e.target.value as AmountUnit)} style={unitSel}>
+              <select
+                value={addUnit}
+                onChange={e => setAddUnit(e.target.value as AmountUnit)}
+                className="bg-[rgba(255,255,255,.07)] border border-[rgba(255,255,255,.12)] rounded text-[10px] font-bold text-[#a5b4fc] outline-none cursor-pointer shrink-0 py-0.5 px-1"
+              >
                 <option value="K">K</option>
                 <option value="L">L</option>
                 <option value="Cr">Cr</option>
               </select>
             </div>
 
-            {/* {addAmountVal > 0 && (
-              <div style={{ fontSize: 10, color: '#6b7280' }}>= {fmtShort(addAmountVal)}</div>
-            )} */}
-
-            <div style={{ display: 'flex', gap: 6 }}>
+            <div className="flex gap-1.5">
               <button
-                className="btn btn-primary btn-sm"
-                style={{ flex: 1, justifyContent: 'center' }}
+                className="btn btn-primary btn-sm flex-1 justify-center"
                 onClick={handleAdd}
                 disabled={addAmountVal <= 0}
               >
@@ -131,18 +117,14 @@ export function TransactionHistory({ walletBalance, walletCredits, onAddMoney, i
 
       {/* History Modal */}
       <Modal open={historyOpen} onClose={() => setHistoryOpen(false)}>
-        <div style={{ padding: '20px 0 0' }}>
+        <div className="pt-5">
           {/* Header */}
-          <div style={{
-            display: 'flex', alignItems: 'flex-start', justifyContent: 'space-between',
-            padding: '0 20px 16px', borderBottom: '1px solid rgba(255,255,255,.06)',
-          }}>
+          <div className="flex items-start justify-between px-5 pb-4 border-b border-[rgba(255,255,255,.06)]">
             <div>
-              <div style={{ fontSize: 14, fontWeight: 700, color: '#f9fafb' }}>Wallet History</div>
-              {/* <div style={{ fontSize: 11, color: '#6b7280', marginTop: 2 }}>Money added to this scene wallet</div> */}
+              <div className="text-[14px] font-bold text-[#f9fafb]">Wallet History</div>
             </div>
             <button
-              style={{ background: 'none', border: 'none', color: '#6b7280', cursor: 'pointer', padding: 4, marginTop: -2 }}
+              className="bg-transparent border-0 text-gray-500 cursor-pointer p-1 -mt-0.5"
               onClick={() => setHistoryOpen(false)}
             >
               <Icon name="x" size={16} />
@@ -150,28 +132,17 @@ export function TransactionHistory({ walletBalance, walletCredits, onAddMoney, i
           </div>
 
           {/* Credits list */}
-          <div style={{ maxHeight: 360, overflowY: 'auto' }}>
+          <div className="max-h-[360px] overflow-y-auto">
             {walletCredits.length === 0 ? (
-              <div style={{ fontSize: 12, color: '#4b5563', padding: '24px 20px', textAlign: 'center' }}>
+              <div className="text-[12px] text-gray-600 px-5 py-6 text-center">
                 No funds added yet
               </div>
             ) : (
               [...walletCredits].reverse().map(c => (
-                <div key={c.id} style={{
-                  display: 'flex', alignItems: 'center', gap: 12,
-                  padding: '12px 20px', borderBottom: '1px solid rgba(255,255,255,.04)',
-                }}>
-                  {/* <div style={{
-                    width: 32, height: 32, borderRadius: 9, flexShrink: 0,
-                    background: 'rgba(16,185,129,.12)', border: '1px solid rgba(16,185,129,.18)',
-                    display: 'flex', alignItems: 'center', justifyContent: 'center',
-                  }}>
-                    <Icon name="trend" size={13} style={{ color: '#34d399' }} />
-                  </div> */}
-                  <div style={{ flex: 1, minWidth: 0 }}>
-                    {/* <div style={{ fontSize: 13, color: '#e5e7eb', fontWeight: 500 }}>Funds Added</div> */}
-                    <div style={{ fontSize: 11, color: '#6b7280', display: 'flex', flexDirection: 'column', gap: 1 }}>
-                      {c.addedBy && <span style={{ color: '#9ca3af' }}>{c.addedBy}</span>}
+                <div key={c.id} className="flex items-center gap-3 px-5 py-3 border-b border-[rgba(255,255,255,.04)]">
+                  <div className="flex-1 min-w-0">
+                    <div className="text-[11px] text-gray-500 flex flex-col gap-0">
+                      {c.addedBy && <span className="text-gray-400">{c.addedBy}</span>}
                       <span>
                         {new Date(c.createdAt).toLocaleDateString('en-IN', { day: 'numeric', month: 'short', year: 'numeric' })}
                         {' · '}
@@ -179,22 +150,13 @@ export function TransactionHistory({ walletBalance, walletCredits, onAddMoney, i
                       </span>
                     </div>
                   </div>
-                  <div className="num" style={{ fontSize: 13, fontWeight: 700, color: '#34d399', flexShrink: 0 }}>
+                  <div className="num text-[13px] font-bold text-[#34d399] shrink-0">
                     +{fmtShort(c.amount)}
                   </div>
                 </div>
               ))
             )}
           </div>
-
-          {/* <div style={{ padding: '14px 20px', borderTop: '1px solid rgba(255,255,255,.06)' }}>
-            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-              <span style={{ fontSize: 11, color: '#6b7280', textTransform: 'uppercase', letterSpacing: '.06em', fontWeight: 600 }}>Total Added</span>
-              <span className="num" style={{ fontSize: 13, fontWeight: 700, color: '#f0f2f5' }}>
-                {fmtShort(walletCredits.reduce((s, c) => s + c.amount, 0))}
-              </span>
-            </div>
-          </div> */}
         </div>
       </Modal>
     </div>

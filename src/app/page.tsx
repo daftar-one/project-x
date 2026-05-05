@@ -61,36 +61,27 @@ function HeroCard() {
         filter: 'blur(24px)', pointerEvents: 'none',
       }} />
 
-      <div style={{
-        background: 'rgba(20,26,48,.85)',
-        backdropFilter: 'blur(20px)',
-        border: '1px solid rgba(255,255,255,.1)',
-        borderRadius: 16,
-        padding: 20,
-        boxShadow: '0 32px 64px -16px rgba(0,0,0,.6), 0 0 0 1px rgba(99,102,241,.1)',
-        width: '100%', maxWidth: 380,
-        position: 'relative',
-      }}>
+      <div className="relative w-full max-w-[380px] bg-[rgba(20,26,48,.85)] backdrop-blur-[20px] border border-[rgba(255,255,255,.1)] rounded-2xl p-5 shadow-[0_32px_64px_-16px_rgba(0,0,0,.6),0_0_0_1px_rgba(99,102,241,.1)]">
 
         {/* Card header */}
-        <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 16 }}>
-          <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
-            <div style={{ width: 26, height: 26, borderRadius: 7, background: 'linear-gradient(135deg,#6366f1,#e83e8c)', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 10, fontWeight: 700, color: '#fff' }}>PX</div>
-            <span style={{ fontWeight: 600, fontSize: 13, color: '#f0f2f5' }}>Sholay</span>
+        <div className="flex items-center justify-between mb-4">
+          <div className="flex items-center gap-2">
+            <div className="w-[26px] h-[26px] rounded-[7px] bg-gradient-to-br from-[#6366f1] to-[#e83e8c] flex items-center justify-center text-[10px] font-bold text-white">PX</div>
+            <span className="font-semibold text-[13px] text-[#f0f2f5]">Sholay</span>
           </div>
-          <div style={{ display: 'flex', alignItems: 'center', gap: 5, fontSize: 11, color: '#34d399' }}>
-            <span style={{ width: 6, height: 6, borderRadius: '50%', background: '#10b981', display: 'inline-block', animation: 'pulse 2s ease-in-out infinite' }} />
+          <div className="flex items-center gap-[5px] text-[11px] text-[#34d399]">
+            <span className="w-[6px] h-[6px] rounded-full bg-[#10b981] inline-block" style={{ animation: 'pulse 2s ease-in-out infinite' }} />
             Live
           </div>
         </div>
 
         {/* Overall budget bar */}
-        <div style={{ marginBottom: 18 }}>
-          <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: 11, color: '#9ca3af', marginBottom: 6 }}>
+        <div className="mb-[18px]">
+          <div className="flex justify-between text-[11px] text-gray-400 mb-[6px]">
             <span>Working Budget</span>
-            <span style={{ color: '#f0f2f5', fontWeight: 600 }}>₹42.7L / ₹58L</span>
+            <span className="text-[#f0f2f5] font-semibold">₹42.7L / ₹58L</span>
           </div>
-          <div style={{ height: 6, background: 'rgba(255,255,255,.08)', borderRadius: 999, overflow: 'hidden' }}>
+          <div className="h-[6px] bg-[rgba(255,255,255,.08)] rounded-[999px] overflow-hidden">
             <div style={{
               height: '100%', borderRadius: 999,
               background: 'linear-gradient(90deg, #6366f1, #818cf8)',
@@ -98,41 +89,41 @@ function HeroCard() {
               transition: 'width 1.2s cubic-bezier(.4,0,.2,1) .4s',
             }} />
           </div>
-          <div style={{ fontSize: 10, color: '#6b7280', marginTop: 4 }}>73% burned</div>
+          <div className="text-[10px] text-gray-500 mt-1">73% burned</div>
         </div>
 
         {/* Divider */}
-        <div style={{ height: 1, background: 'rgba(255,255,255,.06)', marginBottom: 14 }} />
+        <div className="h-px bg-[rgba(255,255,255,.06)] mb-[14px]" />
 
         {/* Scene rows */}
-        <div style={{ fontSize: 11, color: '#6b7280', marginBottom: 10, fontWeight: 600, textTransform: 'uppercase', letterSpacing: '.06em' }}>Scene Status</div>
-        <div style={{ display: 'flex', flexDirection: 'column', gap: 10, marginBottom: 18 }}>
+        <div className="text-[11px] text-gray-500 mb-[10px] font-semibold uppercase tracking-[.06em]">Scene Status</div>
+        <div className="flex flex-col gap-[10px] mb-[18px]">
           {SCENES.map((s, i) => (
             <div key={s.label} style={{ opacity: ready ? 1 : 0, transform: ready ? 'none' : 'translateY(8px)', transition: `opacity .4s ${.6 + i * .15}s, transform .4s ${.6 + i * .15}s` }}>
-              <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 4 }}>
-                <span style={{ fontSize: 11, color: '#c4c7ce' }}>{s.label}</span>
-                <span style={{ fontSize: 10, padding: '1px 7px', borderRadius: 999, background: s.badgeColor, color: s.badgeText, fontWeight: 600 }}>{s.badge}</span>
+              <div className="flex justify-between items-center mb-1">
+                <span className="text-[11px] text-[#c4c7ce]">{s.label}</span>
+                <span className="text-[10px] py-[1px] px-[7px] rounded-[999px] font-semibold" style={{ background: s.badgeColor, color: s.badgeText }}>{s.badge}</span>
               </div>
-              <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
-                <div style={{ flex: 1, height: 4, background: 'rgba(255,255,255,.07)', borderRadius: 999, overflow: 'hidden' }}>
+              <div className="flex items-center gap-2">
+                <div className="flex-1 h-1 bg-[rgba(255,255,255,.07)] rounded-[999px] overflow-hidden">
                   <div style={{
                     height: '100%', borderRadius: 999, background: s.color,
                     width: ready ? `${s.pct}%` : '0%',
                     transition: `width 1s cubic-bezier(.4,0,.2,1) ${.7 + i * .18}s`,
                   }} />
                 </div>
-                <span style={{ fontSize: 10, color: '#6b7280', minWidth: 28, textAlign: 'right' }}>{s.pct}%</span>
+                <span className="text-[10px] text-gray-500 min-w-[28px] text-right">{s.pct}%</span>
               </div>
             </div>
           ))}
         </div>
 
         {/* Divider */}
-        <div style={{ height: 1, background: 'rgba(255,255,255,.06)', marginBottom: 14 }} />
+        <div className="h-px bg-[rgba(255,255,255,.06)] mb-[14px]" />
 
         {/* Sparkline */}
-        <div style={{ fontSize: 11, color: '#6b7280', marginBottom: 8, fontWeight: 600, textTransform: 'uppercase', letterSpacing: '.06em' }}>Spend Trend</div>
-        <svg width="100%" viewBox="0 0 128 48" style={{ display: 'block', overflow: 'visible' }}>
+        <div className="text-[11px] text-gray-500 mb-2 font-semibold uppercase tracking-[.06em]">Spend Trend</div>
+        <svg width="100%" viewBox="0 0 128 48" className="block overflow-visible">
           <defs>
             <linearGradient id="sparkGrad" x1="0" y1="0" x2="0" y2="1">
               <stop offset="0%" stopColor="#6366f1" stopOpacity=".3" />
@@ -164,12 +155,12 @@ function HeroCard() {
           whiteSpace: 'nowrap',
           animation: 'toastIn .4s cubic-bezier(.22,.68,0,1.2) both',
         }}>
-          <div style={{ width: 28, height: 28, borderRadius: 8, background: 'rgba(245,158,11,.15)', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+          <div className="w-7 h-7 rounded-lg bg-[rgba(245,158,11,.15)] flex items-center justify-center">
             <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#f59e0b" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/></svg>
           </div>
           <div>
-            <div style={{ fontSize: 12, fontWeight: 600, color: '#f0f2f5' }}>New bill submitted</div>
-            <div style={{ fontSize: 11, color: '#9ca3af' }}>Mehta Rigging · ₹2,40,000</div>
+            <div className="text-[12px] font-semibold text-[#f0f2f5]">New bill submitted</div>
+            <div className="text-[11px] text-gray-400">Mehta Rigging · ₹2,40,000</div>
           </div>
         </div>
       )}
@@ -192,19 +183,16 @@ function FeatureCard({ icon, title, desc, delay }: { icon: React.ReactNode; titl
   }, []);
 
   return (
-    <div ref={ref} style={{
-      background: 'rgba(20,26,48,.7)',
-      border: '1px solid rgba(255,255,255,.07)',
-      borderRadius: 14, padding: '28px 24px',
+    <div ref={ref} className="bg-[rgba(20,26,48,.7)] border border-[rgba(255,255,255,.07)] rounded-[14px] py-7 px-6" style={{
       opacity: vis ? 1 : 0,
       transform: vis ? 'translateY(0)' : 'translateY(28px)',
       transition: `opacity .55s ease ${delay}s, transform .55s ease ${delay}s`,
     }}>
-      <div style={{ width: 44, height: 44, borderRadius: 11, background: 'rgba(99,102,241,.12)', color: '#818cf8', display: 'flex', alignItems: 'center', justifyContent: 'center', marginBottom: 16 }}>
+      <div className="w-11 h-11 rounded-[11px] bg-[rgba(99,102,241,.12)] text-[#818cf8] flex items-center justify-center mb-4">
         {icon}
       </div>
-      <h3 style={{ fontSize: 15, fontWeight: 600, margin: '0 0 8px', color: '#f0f2f5' }}>{title}</h3>
-      <p style={{ fontSize: 13.5, color: '#6b7280', lineHeight: 1.65, margin: 0 }}>{desc}</p>
+      <h3 className="text-[15px] font-semibold m-0 mb-2 text-[#f0f2f5]">{title}</h3>
+      <p className="text-[13.5px] text-gray-500 leading-[1.65] m-0">{desc}</p>
     </div>
   );
 }
@@ -293,10 +281,10 @@ export default function LandingPage() {
         }
       `}</style>
 
-      <div style={{ background: '#080e1e', minHeight: '100vh', color: '#f0f2f5', fontFamily: 'var(--font-inter, ui-sans-serif, system-ui, sans-serif)', overflowX: 'hidden' }}>
+      <div className="bg-[#080e1e] min-h-screen text-[#f0f2f5] font-[var(--font-inter,ui-sans-serif,system-ui,sans-serif)] overflow-x-hidden">
 
         {/* ── Animated background ──────────────────────────────────────── */}
-        <div style={{ position: 'fixed', inset: 0, pointerEvents: 'none', zIndex: 0 }}>
+        <div className="fixed inset-0 pointer-events-none z-0">
           {/* Grid */}
           <div style={{
             position: 'absolute', inset: 0,
@@ -331,54 +319,44 @@ export default function LandingPage() {
           <div style={{ position: 'absolute', inset: 0, background: 'radial-gradient(ellipse at 50% 0%, transparent 60%, rgba(8,14,30,.8) 100%)' }} />
         </div>
 
-        <div style={{ position: 'relative', zIndex: 1 }}>
+        <div className="relative z-[1]">
 
           {/* ── Nav ────────────────────────────────────────────────────── */}
-          <nav style={{ borderBottom: '1px solid rgba(255,255,255,.05)', backdropFilter: 'blur(12px)', position: 'sticky', top: 0, zIndex: 50 }}>
-            <div className="land-wrap" style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', height: 60 }}>
-              <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
-                <div style={{
-                  width: 30, height: 30, borderRadius: 8,
-                  background: 'linear-gradient(135deg,#6366f1,#e83e8c)',
-                  display: 'flex', alignItems: 'center', justifyContent: 'center',
-                  color: '#fff', fontSize: 11, fontWeight: 800, letterSpacing: '-.02em',
-                }}>PX</div>
-                <span style={{ fontWeight: 700, fontSize: 15, letterSpacing: '-.02em' }}>Project X</span>
+          <nav className="border-b border-[rgba(255,255,255,.05)] backdrop-blur-[12px] sticky top-0 z-50">
+            <div className="land-wrap flex items-center justify-between h-[60px]">
+              <div className="flex items-center gap-[10px]">
+                <div className="w-[30px] h-[30px] rounded-lg bg-gradient-to-br from-[#6366f1] to-[#e83e8c] flex items-center justify-center text-white text-[11px] font-extrabold tracking-[-0.02em]">PX</div>
+                <span className="font-bold text-[15px] tracking-[-0.02em]">Project X</span>
               </div>
-              <button className="btn-nav" style={{ cursor: 'pointer', border: '1px solid rgba(255,255,255,.1)' }} onClick={openWaitlist}>Join Waitlist</button>
+              <button className="btn-nav cursor-pointer" onClick={openWaitlist}>Join Waitlist</button>
             </div>
           </nav>
 
           {/* ── Hero ───────────────────────────────────────────────────── */}
-          <section style={{ padding: '80px 24px 100px' }}>
+          <section className="pt-[80px] pb-[100px] px-6">
             <div className="land-wrap">
-              <div className="hero-grid" style={{ display: 'flex', alignItems: 'center', gap: 64 }}>
+              <div className="hero-grid flex items-center gap-16">
 
                 {/* Left */}
-                <div className="hero-left" style={{ flex: '0 0 auto', maxWidth: 500 }}>
-                  <div className="hero-badge" style={{
-                    display: 'inline-flex', alignItems: 'center', gap: 6,
-                    background: 'rgba(99,102,241,.1)', border: '1px solid rgba(99,102,241,.25)',
-                    borderRadius: 999, padding: '4px 14px', fontSize: 12, fontWeight: 500,
-                    color: '#a5b4fc', marginBottom: 24, letterSpacing: '.02em',
-                  }}>
-                    <span style={{ width: 6, height: 6, borderRadius: '50%', background: '#6366f1', display: 'inline-block', animation: 'pulse 2s ease-in-out infinite' }} />
+                <div className="hero-left shrink-0 max-w-[500px]">
+                  <div className="hero-badge inline-flex items-center gap-[6px] bg-[rgba(99,102,241,.1)] border border-[rgba(99,102,241,.25)] rounded-[999px] py-1 px-[14px] text-[12px] font-medium text-[#a5b4fc] mb-6 tracking-[.02em]">
+                    <span className="w-[6px] h-[6px] rounded-full bg-[#6366f1] inline-block" style={{ animation: 'pulse 2s ease-in-out infinite' }} />
                     Built for Indian film &amp; TV production
                   </div>
 
-                  <h1 className="hero-h1" style={{ fontSize: 'clamp(2.2rem,4.5vw,3.4rem)', fontWeight: 800, letterSpacing: '-.04em', lineHeight: 1.1, margin: '0 0 20px', color: '#f9fafb' }}>
+                  <h1 className="hero-h1 m-0 mb-5 text-[#f9fafb]" style={{ fontSize: 'clamp(2.2rem,4.5vw,3.4rem)', fontWeight: 800, letterSpacing: '-.04em', lineHeight: 1.1 }}>
                     Production<br />budgets{' '}
-                    <span style={{ background: 'linear-gradient(90deg,#818cf8 0%,#e879f9 100%)', WebkitBackgroundClip: 'text', WebkitTextFillColor: 'transparent' }}>
+                    <span className="bg-gradient-to-r from-[#818cf8] to-[#e879f9] bg-clip-text text-transparent">
                       under control.
                     </span>
                   </h1>
 
-                  <p className="hero-p" style={{ fontSize: 16, color: '#9ca3af', lineHeight: 1.75, margin: '0 0 36px', maxWidth: 420 }}>
+                  <p className="hero-p text-[16px] text-gray-400 leading-[1.75] m-0 mb-9 max-w-[420px]">
                     Scene-by-scene budget management for line producers, executive producers, and accounts teams. From work orders to bill approvals — in one place.
                   </p>
 
-                  <div className="hero-ctas land-ctas" style={{ display: 'flex', gap: 12, flexWrap: 'wrap' }}>
-                    <button className="btn-primary-lg" onClick={openWaitlist} style={{ cursor: 'pointer', border: 'none' }}>
+                  <div className="hero-ctas land-ctas flex gap-3 flex-wrap">
+                    <button className="btn-primary-lg cursor-pointer border-0" onClick={openWaitlist}>
                       Join the Waitlist
                       <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round"><line x1="5" y1="12" x2="19" y2="12"/><polyline points="12 5 19 12 12 19"/></svg>
                     </button>
@@ -387,7 +365,7 @@ export default function LandingPage() {
                 </div>
 
                 {/* Right — animated card */}
-                <div className="hero-right" style={{ flex: 1, display: 'flex', justifyContent: 'center', paddingBottom: 32 }}>
+                <div className="hero-right flex-1 flex justify-center pb-8">
                   {mounted && <HeroCard />}
                 </div>
               </div>
@@ -395,15 +373,15 @@ export default function LandingPage() {
           </section>
 
           {/* ── Features ───────────────────────────────────────────────── */}
-          <section style={{ padding: '0 24px 96px' }}>
+          <section className="px-6 pb-24">
             <div className="land-wrap">
-              <div style={{ textAlign: 'center', marginBottom: 48 }}>
-                <div style={{ fontSize: 12, fontWeight: 600, color: '#6366f1', textTransform: 'uppercase', letterSpacing: '.12em', marginBottom: 12 }}>Everything you need</div>
-                <h2 style={{ fontSize: 'clamp(1.6rem,3vw,2.2rem)', fontWeight: 700, letterSpacing: '-.03em', margin: 0 }}>
+              <div className="text-center mb-12">
+                <div className="text-[12px] font-semibold text-[#6366f1] uppercase tracking-[.12em] mb-3">Everything you need</div>
+                <h2 className="m-0" style={{ fontSize: 'clamp(1.6rem,3vw,2.2rem)', fontWeight: 700, letterSpacing: '-.03em' }}>
                   One platform, every phase of production
                 </h2>
               </div>
-              <div className="feat-grid" style={{ display: 'grid', gridTemplateColumns: 'repeat(2, 1fr)', gap: 16 }}>
+              <div className="feat-grid grid grid-cols-2 gap-4">
                 {FEATURES.map((f, i) => (
                   <FeatureCard key={f.title} {...f} delay={i * 0.1} />
                 ))}
@@ -412,7 +390,7 @@ export default function LandingPage() {
           </section>
 
           {/* ── CTA strip ──────────────────────────────────────────────── */}
-          <section style={{ padding: '0 24px 96px' }}>
+          <section className="px-6 pb-24">
             <div className="land-wrap">
               <div style={{
                 background: 'linear-gradient(135deg, rgba(99,102,241,.14) 0%, rgba(232,62,140,.1) 100%)',
@@ -421,13 +399,13 @@ export default function LandingPage() {
                 textAlign: 'center',
                 boxShadow: '0 0 80px rgba(99,102,241,.08)',
               }}>
-                <h2 style={{ fontSize: 'clamp(1.5rem,3vw,2rem)', fontWeight: 700, letterSpacing: '-.03em', margin: '0 0 12px' }}>
+                <h2 className="m-0 mb-3" style={{ fontSize: 'clamp(1.5rem,3vw,2rem)', fontWeight: 700, letterSpacing: '-.03em' }}>
                   Every buck accounted for.
                 </h2>
-                <p style={{ fontSize: 15, color: '#9ca3af', margin: '0 0 32px' }}>
+                <p className="text-[15px] text-gray-400 m-0 mb-8">
                   Join production teams already using Project X to manage their shoots.
                 </p>
-                <button className="btn-primary-lg" onClick={openWaitlist} style={{ fontSize: 15, padding: '13px 28px', cursor: 'pointer', border: 'none' }}>
+                <button className="btn-primary-lg cursor-pointer border-0" style={{ fontSize: 15, padding: '13px 28px' }} onClick={openWaitlist}>
                   Join the Waitlist
                   <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round"><line x1="5" y1="12" x2="19" y2="12"/><polyline points="12 5 19 12 12 19"/></svg>
                 </button>
@@ -436,14 +414,11 @@ export default function LandingPage() {
           </section>
 
           {/* ── Footer ─────────────────────────────────────────────────── */}
-          <footer style={{ borderTop: '1px solid rgba(255,255,255,.05)', padding: '28px 24px', textAlign: 'center', fontSize: 12, color: '#374151' }}>
-            <div style={{ marginBottom: 6 }}>© {new Date().getFullYear()} Project X · Built for Indian film &amp; TV production</div>
+          <footer className="border-t border-[rgba(255,255,255,.05)] py-7 px-6 text-center text-[12px] text-[#374151]">
+            <div className="mb-[6px]">© {new Date().getFullYear()} Project X · Built for Indian film &amp; TV production</div>
             <div>
               Powered by{' '}
-              <a href="https://daftar.one" target="_blank" rel="noopener noreferrer" style={{ color: '#6b7280', textDecoration: 'none', fontWeight: 500 }}
-                onMouseEnter={e => (e.currentTarget.style.color = '#9ca3af')}
-                onMouseLeave={e => (e.currentTarget.style.color = '#6b7280')}
-              >Daftar.One</a>
+              <a href="https://daftar.one" target="_blank" rel="noopener noreferrer" className="text-gray-500 no-underline font-medium hover:text-gray-400">Daftar.One</a>
             </div>
           </footer>
 
@@ -453,28 +428,23 @@ export default function LandingPage() {
       {/* ── Waitlist dialog ─────────────────────────────────────────── */}
       {waitlistOpen && (
         <div
-          style={{ position: 'fixed', inset: 0, background: 'rgba(0,0,0,.65)', zIndex: 200, display: 'flex', alignItems: 'center', justifyContent: 'center', padding: 24 }}
+          className="fixed inset-0 bg-[rgba(0,0,0,.65)] z-[200] flex items-center justify-center p-6"
           onClick={e => { if (e.target === e.currentTarget) setWaitlistOpen(false); }}
         >
-          <div style={{
-            background: '#0f1629', border: '1px solid rgba(255,255,255,.1)', borderRadius: 16,
-            padding: 36, maxWidth: 420, width: '100%',
-            boxShadow: '0 32px 64px rgba(0,0,0,.6)',
-            animation: 'heroCardIn .35s cubic-bezier(.22,.68,0,1.2) both',
-          }}>
+          <div className="bg-[#0f1629] border border-[rgba(255,255,255,.1)] rounded-2xl p-9 max-w-[420px] w-full shadow-[0_32px_64px_rgba(0,0,0,.6)]" style={{ animation: 'heroCardIn .35s cubic-bezier(.22,.68,0,1.2) both' }}>
             {!waitlistDone ? (
               <>
-                <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 20 }}>
-                  <div style={{ fontSize: 18, fontWeight: 700, color: '#f0f2f5', letterSpacing: '-.02em' }}>Join the Waitlist</div>
-                  <button onClick={() => setWaitlistOpen(false)} style={{ background: 'rgba(255,255,255,.06)', border: 'none', borderRadius: 6, width: 28, height: 28, cursor: 'pointer', color: '#9ca3af', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+                <div className="flex items-center justify-between mb-5">
+                  <div className="text-[18px] font-bold text-[#f0f2f5] tracking-[-0.02em]">Join the Waitlist</div>
+                  <button onClick={() => setWaitlistOpen(false)} className="bg-[rgba(255,255,255,.06)] border-0 rounded-[6px] w-7 h-7 cursor-pointer text-gray-400 flex items-center justify-center">
                     <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
                   </button>
                 </div>
-                <p style={{ fontSize: 13.5, color: '#9ca3af', lineHeight: 1.65, margin: '0 0 24px' }}>
+                <p className="text-[13.5px] text-gray-400 leading-[1.65] m-0 mb-6">
                   Be the first to know when Project X opens to new productions. We'll reach out as soon as a spot opens up.
                 </p>
-                <div style={{ marginBottom: 16 }}>
-                  <label style={{ fontSize: 11, fontWeight: 600, color: '#6b7280', textTransform: 'uppercase', letterSpacing: '.07em', display: 'block', marginBottom: 8 }}>Email address</label>
+                <div className="mb-4">
+                  <label className="text-[11px] font-semibold text-gray-500 uppercase tracking-[.07em] block mb-2">Email address</label>
                   <input
                     type="email"
                     value={waitlistEmail}
@@ -482,32 +452,28 @@ export default function LandingPage() {
                     onKeyDown={e => e.key === 'Enter' && handleJoinWaitlist()}
                     placeholder="you@studio.com"
                     autoFocus
-                    style={{
-                      width: '100%', background: 'rgba(255,255,255,.05)', border: '1px solid rgba(255,255,255,.1)',
-                      borderRadius: 8, color: '#f0f2f5', fontSize: 14, padding: '10px 14px',
-                      outline: 'none', boxSizing: 'border-box',
-                    }}
+                    className="w-full bg-[rgba(255,255,255,.05)] border border-[rgba(255,255,255,.1)] rounded-lg text-[#f0f2f5] text-[14px] px-[14px] py-[10px] outline-none box-border"
                   />
                 </div>
                 <button
-                  className="btn-primary-lg"
+                  className="btn-primary-lg w-full justify-center border-0 cursor-pointer"
                   onClick={handleJoinWaitlist}
                   disabled={!waitlistEmail.trim() || !waitlistEmail.includes('@')}
-                  style={{ width: '100%', justifyContent: 'center', border: 'none', cursor: 'pointer', opacity: (!waitlistEmail.trim() || !waitlistEmail.includes('@')) ? 0.45 : 1 }}
+                  style={{ opacity: (!waitlistEmail.trim() || !waitlistEmail.includes('@')) ? 0.45 : 1 }}
                 >
                   Request Early Access
                 </button>
               </>
             ) : (
-              <div style={{ textAlign: 'center', padding: '12px 0' }}>
-                <div style={{ width: 56, height: 56, borderRadius: '50%', background: 'rgba(99,102,241,.15)', display: 'flex', alignItems: 'center', justifyContent: 'center', margin: '0 auto 20px' }}>
+              <div className="text-center py-3">
+                <div className="w-14 h-14 rounded-full bg-[rgba(99,102,241,.15)] flex items-center justify-center mx-auto mb-5">
                   <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="#818cf8" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round"><polyline points="20 6 9 17 4 12"/></svg>
                 </div>
-                <div style={{ fontSize: 18, fontWeight: 700, color: '#f0f2f5', marginBottom: 10 }}>You're on the list!</div>
-                <p style={{ fontSize: 13.5, color: '#9ca3af', lineHeight: 1.65, margin: '0 0 24px' }}>
+                <div className="text-[18px] font-bold text-[#f0f2f5] mb-[10px]">You're on the list!</div>
+                <p className="text-[13.5px] text-gray-400 leading-[1.65] m-0 mb-6">
                   We've noted your interest. We'll be in touch when your spot is ready.
                 </p>
-                <button onClick={() => setWaitlistOpen(false)} className="btn-ghost-lg" style={{ border: '1px solid rgba(255,255,255,.1)', cursor: 'pointer' }}>Close</button>
+                <button onClick={() => setWaitlistOpen(false)} className="btn-ghost-lg border border-[rgba(255,255,255,.1)] cursor-pointer">Close</button>
               </div>
             )}
           </div>

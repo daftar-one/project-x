@@ -11,10 +11,10 @@ import { fmt, fmtShort } from '@/lib/format';
 function Stat({ label, value, sub, tone, border }: { label: string; value: string; sub?: string; tone?: 'over' | 'ok'; border?: boolean }) {
   const color = tone === 'over' ? '#ef4444' : tone === 'ok' ? '#10b981' : '#111827';
   return (
-    <div style={{ padding: 18, borderLeft: border ? '1px solid #e5e7eb' : '0' }}>
+    <div className="p-[18px]" style={{ borderLeft: border ? '1px solid #e5e7eb' : '0' }}>
       <div className="label">{label}</div>
-      <div className="num" style={{ fontSize: 20, fontWeight: 700, marginTop: 4, color, letterSpacing: '-.02em' }}>{value}</div>
-      {sub && <div className="num" style={{ fontSize: 11, color: '#6b7280', marginTop: 2 }}>{sub}</div>}
+      <div className="num text-[20px] font-bold mt-1 tracking-[-0.02em]" style={{ color }}>{value}</div>
+      {sub && <div className="num text-[11px] text-gray-500 mt-0.5">{sub}</div>}
     </div>
   );
 }
@@ -30,15 +30,15 @@ export default function ClosurePage() {
     <AppFrame>
       <PageTitle title={`Movie Closure · ${p.name}`} sub="All 42 scenes wrapped. All bills settled. Ready to archive." />
 
-      <div className="card card-pad" style={{ marginBottom: 20, textAlign: 'center', padding: '40px 24px' }}>
-        <div style={{ width: 64, height: 64, borderRadius: 16, margin: '0 auto 18px', background: 'linear-gradient(135deg,#10b981,#059669)', display: 'flex', alignItems: 'center', justifyContent: 'center', color: '#fff' }}>
+      <div className="card text-center py-10 px-6 mb-5">
+        <div className="w-16 h-16 rounded-[16px] mx-auto mb-[18px] bg-gradient-to-br from-[#10b981] to-[#059669] flex items-center justify-center text-white">
           <Icon name="check" size={32} stroke={2} />
         </div>
-        <h2 style={{ margin: 0, fontSize: 22, fontWeight: 600, letterSpacing: '-.02em' }}>Shoot wrapped — congratulations.</h2>
-        <p style={{ margin: '6px 0 0', color: '#6b7280', fontSize: 13 }}>
+        <h2 className="m-0 text-[22px] font-semibold tracking-[-0.02em]">Shoot wrapped — congratulations.</h2>
+        <p className="mt-[6px] mb-0 text-gray-500 text-[13px]">
           Jan 14 → Apr 18, 2026 · 95 days · 42 scenes · 58 vendors · 186 bills settled
         </p>
-        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(4, 1fr)', gap: 0, marginTop: 30, border: '1px solid #e5e7eb', borderRadius: 10, overflow: 'hidden' }}>
+        <div className="grid grid-cols-4 mt-[30px] border border-[#e5e7eb] rounded-[10px] overflow-hidden">
           <Stat label="Budget"         value={fmtShort(p.totalBudget)} />
           <Stat label="Final Cost"     value={fmtShort(finalCost)} border />
           <Stat label="Final Variance" value={(variance < 0 ? '−' : '+') + fmtShort(Math.abs(variance))} tone={variance < 0 ? 'ok' : 'over'} border />
@@ -46,14 +46,14 @@ export default function ClosurePage() {
         </div>
       </div>
 
-      <div style={{ display: 'grid', gridTemplateColumns: '1.3fr 1fr', gap: 16 }}>
+      <div className="grid grid-cols-[1.3fr_1fr] gap-4">
         <div className="card card-pad">
-          <div className="label" style={{ marginBottom: 12 }}>Scene-by-Scene Summary</div>
+          <div className="label mb-3">Scene-by-Scene Summary</div>
           <table className="tbl">
             <thead><tr>
               <th>Scene</th>
-              <th style={{ textAlign: 'right' }}>Budget</th>
-              <th style={{ textAlign: 'right' }}>Actual</th>
+              <th className="text-right">Budget</th>
+              <th className="text-right">Actual</th>
               <th>Variance</th>
             </tr></thead>
             <tbody>
@@ -62,10 +62,10 @@ export default function ClosurePage() {
                 const v = actual - s.budget;
                 return (
                   <tr key={s.id}>
-                    <td><div style={{ fontWeight: 600, fontSize: 12 }}>{s.num} · {s.name}</div></td>
-                    <td className="num" style={{ textAlign: 'right' }}>{fmtShort(s.budget)}</td>
-                    <td className="num" style={{ textAlign: 'right', fontWeight: 600 }}>{fmtShort(actual)}</td>
-                    <td className="num" style={{ color: v > 0 ? '#ef4444' : '#10b981', fontWeight: 600, fontSize: 12 }}>
+                    <td><div className="font-semibold text-[12px]">{s.num} · {s.name}</div></td>
+                    <td className="num text-right">{fmtShort(s.budget)}</td>
+                    <td className="num text-right font-semibold">{fmtShort(actual)}</td>
+                    <td className="num font-semibold text-[12px]" style={{ color: v > 0 ? '#ef4444' : '#10b981' }}>
                       {v > 0 ? '+' : ''}{Math.round(v / s.budget * 100)}%
                     </td>
                   </tr>
@@ -76,7 +76,7 @@ export default function ClosurePage() {
         </div>
 
         <div className="card card-pad">
-          <div className="label" style={{ marginBottom: 12 }}>Top 5 Vendors by Spend</div>
+          <div className="label mb-3">Top 5 Vendors by Spend</div>
           {[
             { v: 'Aperture Camera Rentals',  amt: 4820000 },
             { v: 'Mumbai Location Services', amt: 3240000 },
@@ -84,20 +84,20 @@ export default function ClosurePage() {
             { v: 'Setworks Art Dept.',       amt: 1940000 },
             { v: 'Bolt Action Stunts',       amt: 1720000 },
           ].map((r, i) => (
-            <div key={i} style={{ marginBottom: 12 }}>
-              <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: 12, marginBottom: 5 }}>
-                <span style={{ fontWeight: 500 }}>{i + 1}. {r.v}</span>
-                <span className="num" style={{ fontWeight: 600 }}>{fmtShort(r.amt)}</span>
+            <div key={i} className="mb-3">
+              <div className="flex justify-between text-[12px] mb-[5px]">
+                <span className="font-medium">{i + 1}. {r.v}</span>
+                <span className="num font-semibold">{fmtShort(r.amt)}</span>
               </div>
-              <div style={{ height: 4, background: 'rgba(255,255,255,.1)', borderRadius: 999, overflow: 'hidden' }}>
-                <div style={{ width: (100 - i * 12) + '%', height: '100%', background: 'linear-gradient(90deg,#6366f1,#a5b4fc)' }} />
+              <div className="h-1 bg-[rgba(255,255,255,.1)] rounded-[999px] overflow-hidden">
+                <div className="h-full bg-gradient-to-r from-[#6366f1] to-[#a5b4fc]" style={{ width: (100 - i * 12) + '%' }} />
               </div>
             </div>
           ))}
 
-          <div style={{ marginTop: 24, padding: 14, background: 'rgba(255,255,255,.05)', borderRadius: 8 }}>
+          <div className="mt-6 p-[14px] bg-[rgba(255,255,255,.05)] rounded-lg">
             <div className="label">What happens on close?</div>
-            <ul style={{ margin: '8px 0 0', paddingLeft: 18, fontSize: 12, color: '#6b7280', lineHeight: 1.6 }}>
+            <ul className="mt-2 mb-0 pl-[18px] text-[12px] text-gray-500 leading-[1.6]">
               <li>Movie moves to Archived state (read-only)</li>
               <li>Full audit trail + reports locked</li>
               <li>Vendor links deactivated</li>
@@ -105,7 +105,7 @@ export default function ClosurePage() {
             </ul>
           </div>
 
-          <button className="btn btn-primary btn-full" style={{ marginTop: 16 }} onClick={() => router.push('/dashboard')}>
+          <button className="btn btn-primary btn-full mt-4" onClick={() => router.push('/dashboard')}>
             <Icon name="archive" size={14} /> Close & Archive Project
           </button>
         </div>

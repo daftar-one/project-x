@@ -17,21 +17,13 @@ export function DatePicker({ value, onChange, placeholder = 'Pick a date' }: Dat
   return (
     <Popover>
       <PopoverTrigger
-        style={{
-          display: 'flex', alignItems: 'center', gap: 8,
-          width: '100%', padding: '7px 0',
-          background: 'transparent', border: 'none',
-          borderBottom: '1px solid rgba(255,255,255,.12)',
-          cursor: 'pointer', textAlign: 'left',
-          fontSize: 13,
-          color: selected ? '#f0f2f5' : 'rgba(255,255,255,.3)',
-          fontFamily: 'inherit',
-        }}
+        className="flex items-center gap-2 w-full py-[7px] bg-transparent border-0 border-b border-[rgba(255,255,255,.12)] cursor-pointer text-left text-[13px] font-[inherit]"
+        style={{ color: selected ? '#f0f2f5' : 'rgba(255,255,255,.3)' }}
       >
-        <CalendarIcon size={15} style={{ color: '#6b7280', flexShrink: 0 }} />
+        <CalendarIcon size={15} className="text-gray-500 shrink-0" />
         {selected ? format(selected, 'd MMM, yyyy') : placeholder}
       </PopoverTrigger>
-      <PopoverContent align="start" style={{ padding: 0, width: 'auto' }}>
+      <PopoverContent align="start" className="p-0 w-auto">
         <Calendar
           mode="single"
           selected={selected}

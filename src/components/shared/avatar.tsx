@@ -9,12 +9,9 @@ interface AvatarProps {
 export function Avatar({ name, color = '#6366f1', size = 32 }: AvatarProps) {
   const initials = (name || '').split(' ').map(p => p[0]).slice(0, 2).join('').toUpperCase();
   return (
-    <div style={{
-      width: size, height: size, borderRadius: '50%',
-      background: color, color: '#fff',
-      display: 'flex', alignItems: 'center', justifyContent: 'center',
-      fontSize: Math.round(size * 0.38), fontWeight: 600, letterSpacing: '.02em',
-      flexShrink: 0,
-    }}>{initials}</div>
+    <div
+      className="rounded-full text-white flex items-center justify-center font-semibold tracking-[0.02em] shrink-0"
+      style={{ width: size, height: size, background: color, fontSize: Math.round(size * 0.38) }}
+    >{initials}</div>
   );
 }

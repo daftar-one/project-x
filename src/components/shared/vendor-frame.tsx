@@ -25,16 +25,11 @@ export function VendorFrame({ children }: VendorFrameProps) {
   return (
     <div className="app">
       <aside className="app-sidebar">
-        <div style={{ display: "flex", alignItems: "center", gap: 10, padding: "4px 20px 16px" }}>
-          <div style={{
-            width: 30, height: 30, borderRadius: 8, flexShrink: 0,
-            background: "linear-gradient(135deg,#6366f1,#e83e8c)",
-            display: "flex", alignItems: "center", justifyContent: "center",
-            color: "#fff",
-          }}>
+        <div className="flex items-center gap-2.5 px-5 pt-1 pb-4">
+          <div className="w-[30px] h-[30px] rounded-lg shrink-0 bg-gradient-to-br from-[#6366f1] to-[#e83e8c] flex items-center justify-center text-white">
             <Icon name="film" size={16} stroke={1.5} />
           </div>
-          <span style={{ fontSize: 14, fontWeight: 700, color: "#f0f2f5", letterSpacing: "-.02em" }}>Project X</span>
+          <span className="text-[14px] font-bold text-[#f0f2f5] tracking-[-0.02em]">Project X</span>
         </div>
 
         <div className="sidebar-scroll">
@@ -49,30 +44,20 @@ export function VendorFrame({ children }: VendorFrameProps) {
 
         <button
           onClick={handleLogout}
-          style={{
-            display: "flex", alignItems: "center", gap: 10,
-            padding: "8px 12px", margin: "0 8px 2px",
-            borderRadius: 8, border: "none", cursor: "pointer", background: "transparent",
-            color: "#6b7280", fontSize: 13, fontWeight: 500, width: "calc(100% - 16px)",
-            transition: "background .12s ease, color .12s ease",
-          }}
-          onMouseEnter={e => { e.currentTarget.style.background = "rgba(239,68,68,.08)"; e.currentTarget.style.color = "#fca5a5"; }}
-          onMouseLeave={e => { e.currentTarget.style.background = "transparent"; e.currentTarget.style.color = "#6b7280"; }}
+          className="flex items-center gap-2.5 px-3 py-2 mx-2 mb-0.5 rounded-lg border-0 cursor-pointer bg-transparent text-gray-500 text-[13px] font-medium w-[calc(100%-16px)] transition-[background,color] duration-[120ms] hover:bg-[rgba(239,68,68,.08)] hover:text-[#fca5a5]"
         >
           <Icon name="logout" size={15} />
           <span>Log out</span>
         </button>
 
         <div
-          style={{ display: "flex", alignItems: "center", gap: 10, padding: "8px 20px 8px", cursor: "pointer", borderRadius: 8, margin: "0 8px 4px" }}
+          className="flex items-center gap-2.5 px-5 py-2 cursor-pointer rounded-lg mx-2 mb-1 hover:bg-[rgba(255,255,255,.04)]"
           onClick={() => router.push("/vendor/portal/profile")}
-          onMouseEnter={e => (e.currentTarget.style.background = "rgba(255,255,255,.04)")}
-          onMouseLeave={e => (e.currentTarget.style.background = "transparent")}
         >
           <Avatar name={vendorName} color="#6366f1" size={28} />
-          <div style={{ minWidth: 0, flex: 1 }}>
-            <div style={{ fontSize: 12, fontWeight: 600, color: "#e5e7eb", whiteSpace: "nowrap", overflow: "hidden", textOverflow: "ellipsis" }}>{vendorName}</div>
-            <div style={{ fontSize: 10, color: "#6b7280", textTransform: "uppercase", letterSpacing: ".05em" }}>Vendor</div>
+          <div className="min-w-0 flex-1">
+            <div className="text-[12px] font-semibold text-[#e5e7eb] whitespace-nowrap overflow-hidden text-ellipsis">{vendorName}</div>
+            <div className="text-[10px] text-gray-500 uppercase tracking-[0.05em]">Vendor</div>
           </div>
         </div>
       </aside>
@@ -81,12 +66,9 @@ export function VendorFrame({ children }: VendorFrameProps) {
         <div className="app-canvas">
           {children}
         </div>
-        <div style={{ padding: '8px 24px', borderTop: '1px solid rgba(255,255,255,.04)', fontSize: 11, color: '#374151', textAlign: 'center', flexShrink: 0 }}>
+        <div className="px-6 py-2 border-t border-[rgba(255,255,255,.04)] text-[11px] text-[#374151] text-center shrink-0">
           Powered by{' '}
-          <a href="https://daftar.one" target="_blank" rel="noopener noreferrer" style={{ color: '#4b5563', textDecoration: 'none' }}
-            onMouseEnter={e => (e.currentTarget.style.color = '#9ca3af')}
-            onMouseLeave={e => (e.currentTarget.style.color = '#4b5563')}
-          >Daftar.One</a>
+          <a href="https://daftar.one" target="_blank" rel="noopener noreferrer" className="text-[#4b5563] no-underline hover:text-gray-400">Daftar.One</a>
         </div>
       </div>
     </div>

@@ -43,13 +43,8 @@ export default function VendorOnboardingPage() {
         .auth-card .input-underline input::placeholder { color: #3d4657; }
       `}</style>
 
-      <div style={{
-        minHeight: '100vh', background: '#080e1e',
-        display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center',
-        padding: 24, position: 'relative', overflow: 'hidden',
-        fontFamily: 'var(--font-inter, ui-sans-serif, system-ui, sans-serif)',
-      }}>
-        <div style={{ position: 'fixed', inset: 0, pointerEvents: 'none', zIndex: 0 }}>
+      <div className="min-h-screen bg-[#080e1e] flex flex-col items-center justify-center p-6 relative overflow-hidden font-[var(--font-inter,ui-sans-serif,system-ui,sans-serif)]">
+        <div className="fixed inset-0 pointer-events-none z-0">
           <div style={{
             position: 'absolute', inset: 0,
             backgroundImage: 'linear-gradient(rgba(255,255,255,.025) 1px, transparent 1px), linear-gradient(90deg, rgba(255,255,255,.025) 1px, transparent 1px)',
@@ -71,47 +66,28 @@ export default function VendorOnboardingPage() {
           }} />
         </div>
 
-        <div style={{ position: 'relative', zIndex: 1, width: '100%', maxWidth: 420, display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 28 }}>
+        <div className="relative z-[1] w-full max-w-[420px] flex flex-col items-center gap-7">
 
-          <Link href="/" style={{ display: 'flex', alignItems: 'center', gap: 10, textDecoration: 'none' }}>
-            <div style={{
-              width: 34, height: 34, borderRadius: 9,
-              background: 'linear-gradient(135deg,#6366f1,#e83e8c)',
-              display: 'flex', alignItems: 'center', justifyContent: 'center',
-              color: '#fff', fontSize: 12, fontWeight: 800, letterSpacing: '-.02em',
-            }}>PX</div>
-            <span style={{ fontWeight: 700, fontSize: 16, letterSpacing: '-.02em', color: '#f0f2f5' }}>Project X</span>
+          <Link href="/" className="flex items-center gap-2.5 no-underline">
+            <div className="w-[34px] h-[34px] rounded-[9px] bg-gradient-to-br from-[#6366f1] to-[#e83e8c] flex items-center justify-center text-white text-[12px] font-extrabold tracking-[-0.02em]">PX</div>
+            <span className="font-bold text-[16px] tracking-[-0.02em] text-[#f0f2f5]">Project X</span>
           </Link>
 
-          <div className="auth-card" style={{
-            width: '100%',
-            background: 'rgba(20,26,48,.9)',
-            backdropFilter: 'blur(20px)',
-            border: '1px solid rgba(255,255,255,.09)',
-            borderRadius: 16,
-            padding: '36px 32px 28px',
-            boxShadow: '0 32px 64px -16px rgba(0,0,0,.6), 0 0 0 1px rgba(99,102,241,.08)',
-          }}>
-            <div style={{ display: 'flex', justifyContent: 'center', marginBottom: 20 }}>
-              <div style={{
-                width: 52, height: 52, borderRadius: 14,
-                background: 'rgba(99,102,241,.12)',
-                border: '1px solid rgba(99,102,241,.2)',
-                display: 'flex', alignItems: 'center', justifyContent: 'center',
-                color: '#818cf8',
-              }}>
+          <div className="auth-card w-full bg-[rgba(20,26,48,.9)] backdrop-blur-[20px] border border-[rgba(255,255,255,.09)] rounded-2xl pt-9 px-8 pb-7 shadow-[0_32px_64px_-16px_rgba(0,0,0,.6),0_0_0_1px_rgba(99,102,241,.08)]">
+            <div className="flex justify-center mb-5">
+              <div className="w-[52px] h-[52px] rounded-[14px] bg-[rgba(99,102,241,.12)] border border-[rgba(99,102,241,.2)] flex items-center justify-center text-[#818cf8]">
                 <Icon name="user" size={22} />
               </div>
             </div>
 
-            <h1 style={{ fontSize: 20, fontWeight: 600, textAlign: 'center', margin: '0 0 6px', letterSpacing: '-.02em', color: '#f9fafb' }}>
+            <h1 className="text-[20px] font-semibold text-center m-0 mb-1.5 tracking-[-0.02em] text-[#f9fafb]">
               Vendor Registration
             </h1>
-            <p style={{ fontSize: 13, color: '#6b7280', textAlign: 'center', margin: '0 0 28px' }}>
+            <p className="text-[13px] text-gray-500 text-center m-0 mb-7">
               Create your vendor account to get started.
             </p>
 
-            <form onSubmit={handleSubmit} style={{ display: 'flex', flexDirection: 'column', gap: 20 }}>
+            <form onSubmit={handleSubmit} className="flex flex-col gap-5">
               <div className="field">
                 <label className="label">Full Name</label>
                 <div className="input-underline">
@@ -171,23 +147,22 @@ export default function VendorOnboardingPage() {
 
               <button
                 type="submit"
-                className="btn btn-primary btn-full"
+                className="btn btn-primary btn-full mt-1"
                 disabled={!canContinue}
-                style={{ marginTop: 4 }}
               >
                 Continue <Icon name="arrowRight" size={14} />
               </button>
             </form>
 
-            <div style={{ textAlign: 'center', marginTop: 20 }}>
-              <span style={{ fontSize: 12, color: '#4b5563' }}>Already registered? </span>
-              <Link href="/vendor/login" style={{ fontSize: 12, color: '#818cf8', textDecoration: 'none', fontWeight: 500 }}>
+            <div className="text-center mt-5">
+              <span className="text-[12px] text-gray-600">Already registered? </span>
+              <Link href="/vendor/login" className="text-[12px] text-[#818cf8] no-underline font-medium">
                 Sign in
               </Link>
             </div>
           </div>
 
-          <div style={{ fontSize: 11, color: '#374151', display: 'flex', gap: 8 }}>
+          <div className="text-[11px] text-[#374151] flex gap-2">
             <span>Project X</span>
             <span>·</span>
             <span>v0.9 · staging</span>
