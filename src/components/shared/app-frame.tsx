@@ -7,6 +7,7 @@ import { Avatar } from './avatar';
 import { Modal } from './modal';
 import { useAuthStore } from '@/store/auth';
 import { useProjects } from '@/hooks/useProjects';
+import { useProductionHouse } from '@/hooks/useProductionHouse';
 
 const GENRES = [
   'Action', 'Comedy', 'Drama', 'Horror', 'Thriller', 'Romance',
@@ -132,6 +133,7 @@ export function AppFrame({ children, secondarySidebar, projectSubnav, innerBg }:
   const userRole  = user?.role ? (ROLE_LABELS[user.role] ?? user.role) : 'Line Producer';
   const userColor = user?.role ? (ROLE_COLORS[user.role] ?? '#6366f1') : '#6366f1';
   const { data: projects } = useProjects();
+  const { data: house } = useProductionHouse();
 
   const projectMatch = pathname.match(/^\/projects\/([^/]+)/);
   const activeProjectId = projectMatch ? projectMatch[1] : null;
@@ -146,13 +148,21 @@ export function AppFrame({ children, secondarySidebar, projectSubnav, innerBg }:
   return (
     <div className="app">
       <aside className="app-sidebar">
-        {/* Logo */}
-        <div className="flex items-center gap-2.5 px-5 pt-1 pb-4">
-          <div className="w-[30px] h-[30px] rounded-lg shrink-0 bg-gradient-to-br from-[#6366f1] to-[#e83e8c] flex items-center justify-center text-white">
-            <Icon name="film" size={16} stroke={1.5} />
+        {/* Logo + product name */}
+        <div className="flex items-center gap-2.5 px-4 pt-4 pb-3">
+          <div className="w-[30px] h-[30px] rounded-[8px] shrink-0 bg-gradient-to-br from-[#6366f1] to-[#e83e8c] flex items-center justify-center text-white">
+            <Icon name="film" size={15} stroke={1.5} />
           </div>
           <span className="text-[14px] font-bold text-[#f0f2f5] tracking-[-0.02em]">Project X</span>
         </div>
+
+        {/* Production house card */}
+        {house?.name && (
+          <div className="mx-3 mb-3 rounded-[9px] px-3 py-2.5" style={{ background: 'rgba(99,102,241,.1)', border: '1px solid rgba(99,102,241,.18)' }}>
+            <div className="text-[9px] font-bold text-[#6366f1] uppercase tracking-[0.1em] mb-0.5">Production House</div>
+            <div className="text-[13px] font-bold text-[#e0e7ff] truncate leading-tight">{house.brand_name ?? house.name}</div>
+          </div>
+        )}
 
         {/* Main nav */}
         {isLP && (

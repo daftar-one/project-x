@@ -1,6 +1,6 @@
 export type UserRole = "line_producer" | "executive_producer" | "accounts_manager" | "silent_stakeholder";
-export type ProjectStatus = "Draft" | "Scheduled" | "In Progress" | "Live" | "Delayed" | "Wrapped" | "Closed";
-export type SceneStatus = "Draft" | "Active" | "Scheduled" | "In Progress" | "Delayed" | "PendingApproval" | "OverBudget" | "Wrapped";
+export type ProjectStatus = "Draft" | "Planning" | "Scheduled" | "In Progress" | "Live" | "Delayed" | "Budget Locked" | "Wrapped" | "Closed";
+export type SceneStatus = "Draft" | "Active" | "Scheduled" | "In Progress" | "Live" | "Delayed" | "PendingApproval" | "OverBudget" | "Wrapped";
 export type SceneType = "Exterior · Day" | "Exterior · Night" | "Interior · Day" | "Interior · Night" | "Exterior · Dawn" | "Interior · Dawn";
 export type BillStatus = "Pending" | "Approved" | "Rejected" | "Paid";
 export type BillType = "Advance" | "Partial" | "Final";
@@ -25,6 +25,7 @@ export interface User {
 export interface ProductionHouse {
   id: string;
   name: string;
+  brand_name: string | null;
   logo_url: string | null;
   created_by: string;
   created_at: string;

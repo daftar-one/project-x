@@ -16,7 +16,7 @@ export default function LoginPage() {
     e.preventDefault();
     if (!email.trim()) return;
     setLoading(true);
-    setAuth({ id: "u-1", email, full_name: "Demo User", role: "line_producer", is_onboarded: true });
+    setAuth({ id: "u-1", email, full_name: "Arjun Mehta", role: "line_producer", is_onboarded: true });
     router.push("/dashboard");
   }
 

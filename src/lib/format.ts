@@ -22,3 +22,11 @@ export function fmtDate(isoDate: string | null | undefined): string {
   const d = new Date(isoDate + "T00:00:00");
   return d.toLocaleDateString("en-IN", { day: "numeric", month: "short", year: "numeric" });
 }
+
+export function fmtDateTime(iso: string | null | undefined): string {
+  if (!iso) return "—";
+  const d = new Date(iso);
+  return d.toLocaleDateString("en-IN", { day: "numeric", month: "short", year: "numeric" })
+    + ', '
+    + d.toLocaleTimeString("en-IN", { hour: "2-digit", minute: "2-digit" });
+}

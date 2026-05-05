@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import { useRouter, useParams } from 'next/navigation';
 import { AppFrame } from '@/components/shared/app-frame';
 import { Icon } from '@/components/shared/icon';
@@ -21,6 +21,7 @@ import { useProjectWallet } from '@/hooks/useWallet';
 
 import { useAuthStore } from '@/store/auth';
 import { fmtShort } from '@/lib/format';
+import { getMockBills } from '@/lib/mock-data';
 import { toast } from 'sonner';
 import type { Collaborator, Vendor } from '@/lib/types';
 
@@ -103,17 +104,20 @@ function TeamContent({ projectId, isLP }: { projectId: string; isLP: boolean }) 
         teamLoading ? <LoadingCard message="Loading team…" /> : (
           <div className="card">
             <table className="tbl">
-              <thead><tr><th>Member</th><th>Email</th><th>Status</th>{isLP && <th></th>}</tr></thead>
+              <thead><tr><th>Member</th><th>Email</th><th>Designation</th><th>Status</th>{isLP && <th></th>}</tr></thead>
               <tbody>
                 {team.length === 0 ? (
-                  <tr><td colSpan={4} className="text-center text-gray-400 p-8">No team members yet</td></tr>
+                  <tr><td colSpan={5} className="text-center text-gray-400 p-8">No team members yet</td></tr>
                 ) : team.map(m => {
                   const displayName = m.user_full_name || m.user_email;
+                  const roleLabel = ROLE_LABELS[m.role] ?? m.role;
+                  const roleStyle = ROLE_COLORS[m.role] ?? { bg: 'rgba(255,255,255,.08)', color: '#9ca3af' };
                   return (
                     <tr key={m.id}>
                       <td><div className="flex items-center gap-[10px]"><Avatar name={displayName} size={30} /><div className="font-semibold">{displayName}</div></div></td>
                       <td className="text-gray-500">{m.user_email}</td>
-                      <td><span className="inline-flex py-[3px] px-[9px] rounded-[999px] text-[11px] font-semibold" style={{ background: m.status === 'accepted' ? 'rgba(16,185,129,.2)' : 'rgba(245,158,11,.2)', color: m.status === 'accepted' ? '#34d399' : '#fbbf24' }}>{m.status === 'accepted' ? 'Accepted' : 'Invited'}</span></td>
+                      <td><span className="inline-flex py-[3px] px-[9px] rounded-[999px] text-[11px] font-semibold" style={{ background: roleStyle.bg, color: roleStyle.color }}>{roleLabel}</span></td>
+                      <td><span className="inline-flex py-[3px] px-[9px] rounded-[999px] text-[11px] font-semibold" style={{ background: m.status === 'accepted' ? 'rgba(16,185,129,.2)' : 'rgba(255,255,255,.1)', color: m.status === 'accepted' ? '#34d399' : '#9ca3af' }}>{m.status === 'accepted' ? 'Accepted' : 'Invited'}</span></td>
                       {isLP && <td className="text-right"><button className="btn btn-danger-ghost btn-sm" onClick={() => handleRemoveMember(m.id, displayName)} title="Remove"><Icon name="trash" size={13} /></button></td>}
                     </tr>
                   );
@@ -240,10 +244,16 @@ export default function ProjectPage() {
   const isDraftView = typeof view === 'object' ? (view.isDraft ?? false) : false;
 
   const [projectWrapped, setProjectWrapped] = useState(false);
+  const [wrapConfirmOpen, setWrapConfirmOpen] = useState(false);
+  const [movieLocked, setMovieLocked] = useState(false);
+  const [lockMovieOpen, setLockMovieOpen] = useState(false);
   const [wrappedSceneIds, setWrappedSceneIds] = useState<Set<string>>(new Set());
 
   const { data: project, loading: projLoading, error: projError } = useProject(id);
   const { data: scenes, loading: scenesLoading, refetch: refetchScenes } = useScenes(id);
+  const [orderedScenes, setOrderedScenes] = useState(scenes);
+  const [dragOverIdx, setDragOverIdx] = useState<number | null>(null);
+  const dragSrcIdx = useRef<number | null>(null);
   const { data: vendors } = useVendors();
   const { data: projectWallet } = useProjectWallet(id);
   const [walletBalance, setWalletBalance] = useState<number>(0);
@@ -271,13 +281,30 @@ export default function ProjectPage() {
     }
   }, [scenes]); // eslint-disable-line react-hooks/exhaustive-deps
 
+  // Keep ordered list in sync when project changes (scenes array gets replaced)
+  useEffect(() => {
+    setOrderedScenes(scenes);
+  }, [scenes]); // eslint-disable-line react-hooks/exhaustive-deps
+
   if (projLoading) return <AppFrame><LoadingCard message="Loading project…" /></AppFrame>;
   if (projError || !project) return <AppFrame><ErrorCard message={projError ?? 'Project not found'} /></AppFrame>;
 
   const p = project;
-  const variance = p.total_budget - p.spent;
+
+  // KPIs derived from live scene data
+  const kpiPlanned    = scenes.reduce((a, s) => a + s.budget, 0);
+  const kpiActual     = scenes.reduce((a, s) => a + s.actual, 0);
+  const kpiVariance   = kpiPlanned - kpiActual;
+  const kpiPending    = getMockBills('Pending').filter(b => b.project_id === id).reduce((a, b) => a + b.amount, 0);
+  const kpiWrapped    = scenes.filter(s => s.status === 'Wrapped' || wrappedSceneIds.has(s.id)).length;
+  const kpiSceneTotal = scenes.length;
+
+  const isMovieLocked = movieLocked || p.status === 'Budget Locked' || p.status === 'Wrapped' || p.status === 'Closed';
 
   const handleAddScene = () => {
+    if (isMovieLocked) {
+      toast.warning('Movie is locked — new scenes will be tracked as over budget.');
+    }
     if (draftSceneId) {
       setView({ sceneId: draftSceneId, isDraft: true });
       return;
@@ -323,16 +350,39 @@ export default function ProjectPage() {
 
       {scenesLoading ? (
         <div className="pt-[6px] pr-2 pb-[6px] pl-[10px] text-[11px] text-[#6b7280]">Loading…</div>
-      ) : scenes.length === 0 && !draftSceneId ? (
+      ) : orderedScenes.length === 0 && !draftSceneId ? (
         <div className="pt-1 pr-2 pb-[6px] pl-[10px] text-[11px] text-[#4b5563]">No scenes yet</div>
-      ) : scenes.map((s, idx) => {
+      ) : orderedScenes.map((s, idx) => {
         const isSelected = activeSceneId === s.id && !isDraftView;
+        const isDragTarget = dragOverIdx === idx;
         return (
           <div
             key={s.id}
-            className={`side-subnav-scene${isSelected ? ' active' : ''}`}
+            draggable
+            onDragStart={e => {
+              dragSrcIdx.current = idx;
+              e.dataTransfer.effectAllowed = 'move';
+            }}
+            onDragOver={e => {
+              e.preventDefault();
+              if (dragSrcIdx.current !== null && dragOverIdx !== idx) setDragOverIdx(idx);
+            }}
+            onDrop={e => {
+              e.preventDefault();
+              const from = dragSrcIdx.current;
+              if (from === null || from === idx) { setDragOverIdx(null); return; }
+              const next = [...orderedScenes];
+              const [moved] = next.splice(from, 1);
+              next.splice(idx, 0, moved);
+              setOrderedScenes(next);
+              dragSrcIdx.current = null;
+              setDragOverIdx(null);
+            }}
+            onDragEnd={() => { dragSrcIdx.current = null; setDragOverIdx(null); }}
+            className={`side-subnav-scene${isSelected ? ' active' : ''}${isDragTarget ? ' drag-over' : ''}`}
             onClick={() => setView({ sceneId: s.id })}
           >
+            <Icon name="grip" size={11} stroke={2.5} className="drag-handle" />
             <span className="text-[10px] font-bold shrink-0" style={{ color: isSelected ? '#a5b4fc' : '#4b5563' }}>{String(idx + 1).padStart(2, '0')}</span>
             <span className="overflow-hidden text-ellipsis flex-1">{s.name}</span>
           </div>
@@ -349,28 +399,41 @@ export default function ProjectPage() {
       <div className="mb-5">
         <div className="flex items-center gap-3 mb-0.5">
           <div className="text-[20px] font-bold tracking-[-0.02em] text-[#f0f2f5] flex-1">{p.name}</div>
+          {/* Status badge */}
           {(projectWrapped || p.status === 'Wrapped' || p.status === 'Closed') ? (
             <span className="badge badge-wrapped">Wrapped</span>
+          ) : (movieLocked || p.status === 'Budget Locked') ? (
+            <>
+              <span className="inline-flex items-center gap-1 px-[9px] py-[3px] rounded-full text-[11px] font-semibold" style={{ background: 'rgba(251,191,36,.15)', color: '#fbbf24' }}>
+                <Icon name="lock" size={11} /> Budget Locked
+              </span>
+              {isLP && (
+                <button className="btn btn-secondary btn-sm" onClick={() => setWrapConfirmOpen(true)}>
+                  Wrap Movie
+                </button>
+              )}
+            </>
           ) : (
-            <button
-              className="btn btn-secondary btn-sm"
-              onClick={() => {
-                setProjectWrapped(true);
-                toast.success(`"${p.name}" marked as wrapped`);
-              }}
-            >
-              Wrap Movie
-            </button>
+            <>
+              <span className="inline-flex px-[9px] py-[3px] rounded-full text-[11px] font-semibold" style={{ background: 'rgba(99,102,241,.15)', color: '#a5b4fc' }}>
+                Planning
+              </span>
+              {isLP && (
+                <button className="btn btn-primary btn-sm" onClick={() => setLockMovieOpen(true)}>
+                  <Icon name="lock" size={13} /> Lock Movie
+                </button>
+              )}
+            </>
           )}
         </div>
         {p.genre && <div className="text-[13px] text-gray-500 mb-[14px]">{p.genre}</div>}
         <div className="grid grid-cols-3 gap-3">
-          <KPI label="Planned Budget" value={fmtShort(p.total_budget)} icon="wallet" />
-          <KPI label="Actual Spent" value={fmtShort(p.spent)} icon="trend" />
-          <KPI label="Difference Planned vs Actual" value={fmtShort(variance)} icon="trend" />
-          <KPI label="Funds in Wallet" value={fmtShort(walletBalance)} icon="wallet" />
-          <KPI label="Pending Bills" value={fmtShort(p.pending)} icon="rupee" />
-          <KPI label="Scenes Done" value={`${p.wrapped_scenes}/${p.scene_count}`} icon="film" />
+          <KPI label="Planned Budget"             value={kpiPlanned  > 0 ? fmtShort(kpiPlanned)  : '—'} icon="wallet" />
+          <KPI label="Actual Spent"               value={kpiActual   > 0 ? fmtShort(kpiActual)   : '—'} icon="trend" />
+          <KPI label="Difference Planned vs Actual" value={fmtShort(kpiVariance)}                        icon="trend" />
+          <KPI label="Funds in Wallet"            value={fmtShort(walletBalance)}                         icon="wallet" />
+          <KPI label="Pending Bills"              value={kpiPending  > 0 ? fmtShort(kpiPending)  : '—'} icon="rupee" />
+          <KPI label="Scenes Done"                value={`${kpiWrapped}/${kpiSceneTotal}`}                icon="film" />
         </div>
       </div>
 
@@ -426,6 +489,47 @@ export default function ProjectPage() {
           />
         </div>
       )}
+
+      {/* ── Lock Movie Confirmation ── */}
+      <Modal open={lockMovieOpen} onClose={() => setLockMovieOpen(false)}>
+        <div className="p-8">
+          <div className="w-[52px] h-[52px] rounded-[14px] mb-5 bg-[rgba(99,102,241,.12)] border border-[rgba(99,102,241,.22)] flex items-center justify-center">
+            <Icon name="lock" size={22} style={{ color: '#a5b4fc' }} />
+          </div>
+          <div className="text-[17px] font-bold text-[#f9fafb] mb-2 tracking-[-0.01em]">Lock Movie Budget?</div>
+          <p className="text-[13px] text-gray-400 m-0 mb-4 leading-[1.7]">
+            Once locked, all scenes are finalised. Any additional scenes added will be tracked as over budget.
+            The &ldquo;Wrap Movie&rdquo; button will become available after locking.
+          </p>
+          <div className="h-px bg-[rgba(255,255,255,.06)] mb-5" />
+          <div className="flex gap-2">
+            <button className="btn btn-secondary btn-sm flex-1 justify-center" onClick={() => setLockMovieOpen(false)}>Cancel</button>
+            <button className="btn btn-primary btn-sm flex-1 justify-center" onClick={() => { setMovieLocked(true); setLockMovieOpen(false); toast.success(`"${p.name}" budget locked`); }}>
+              <Icon name="lock" size={13} /> Lock Movie
+            </button>
+          </div>
+        </div>
+      </Modal>
+
+      {/* ── Wrap Movie Confirmation ── */}
+      <Modal open={wrapConfirmOpen} onClose={() => setWrapConfirmOpen(false)}>
+        <div className="p-8">
+          <div className="w-[52px] h-[52px] rounded-[14px] mb-5 bg-[rgba(16,185,129,.1)] border border-[rgba(16,185,129,.2)] flex items-center justify-center">
+            <Icon name="film" size={22} style={{ color: '#34d399' }} />
+          </div>
+          <div className="text-[17px] font-bold text-[#f9fafb] mb-2 tracking-[-0.01em]">Wrap Movie?</div>
+          <p className="text-[13px] text-gray-400 m-0 mb-4 leading-[1.7]">
+            Are you sure you want to wrap &ldquo;{p.name}&rdquo;? This will mark the movie as complete. This action cannot be undone.
+          </p>
+          <div className="h-px bg-[rgba(255,255,255,.06)] mb-5" />
+          <div className="flex gap-2">
+            <button className="btn btn-secondary btn-sm flex-1 justify-center" onClick={() => setWrapConfirmOpen(false)}>Cancel</button>
+            <button className="btn btn-primary btn-sm flex-1 justify-center" style={{ background: '#059669' }} onClick={() => { setProjectWrapped(true); setWrapConfirmOpen(false); toast.success(`"${p.name}" marked as wrapped`); }}>
+              Wrap Movie
+            </button>
+          </div>
+        </div>
+      </Modal>
 
     </AppFrame>
   );

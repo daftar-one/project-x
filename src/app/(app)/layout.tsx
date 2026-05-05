@@ -23,7 +23,7 @@ export default function AppLayout({ children }: { children: ReactNode }) {
       useAuthStore.getState().setAuth({
         id: "u-1",
         email: "demo@projectx.in",
-        full_name: "Demo User",
+        full_name: "Arjun Mehta",
         role: "line_producer",
         is_onboarded: true,
       });

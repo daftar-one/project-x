@@ -56,9 +56,6 @@ export default function ProfilePage() {
             <span className="text-[12px] font-medium px-[10px] py-0.5 rounded-[999px] bg-[rgba(99,102,241,.2)] text-[#a5b4fc]">
               {roleLabel}
             </span>
-            {isLP && house && (
-              <span className="text-[13px] text-gray-500">{house.name}</span>
-            )}
           </div>
         </div>
         {!editing && (
@@ -72,7 +69,7 @@ export default function ProfilePage() {
       <div className="grid grid-cols-2 gap-4">
 
         {/* Personal info */}
-        <div className="card card-pad">
+        <div className="card card-pad mr-4">
           <div className="label mb-4">Personal Information</div>
 
           <Field label="Email" icon="mail" value={user.email} />
@@ -104,6 +101,7 @@ export default function ProfilePage() {
           <div className="label mb-4">Account</div>
           <Field label="Role" icon="shield" value={roleLabel} />
           {isLP && <Field label="Production House" icon="building" value={house?.name ?? '—'} />}
+          {/* {isLP && <Field label="Brand Name" icon="sparkles" value={house?.brand_name ?? '—'} />} */}
         </div>
 
       </div>

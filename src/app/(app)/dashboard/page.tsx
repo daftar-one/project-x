@@ -38,16 +38,17 @@ export default function DashboardPage() {
   if (loading) return <AppFrame><LoadingCard message="Loading dashboard…" /></AppFrame>;
   if (error) return <AppFrame><ErrorCard message={error} /></AppFrame>;
 
-  const totalBudget = projects.reduce((a, p) => a + p.total_budget, 0);
   const totalSpent = projects.reduce((a, p) => a + p.spent, 0);
-  void totalBudget; void totalSpent;
+  const avgVariance = projects.length > 0
+    ? projects.reduce((a, p) => a + (p.total_budget > 0 ? p.spent / p.total_budget : 0), 0) / projects.length
+    : 0;
 
   return (
     <AppFrame>
       <div className="flex flex-row justify-between">
         <PageTitle
           title="Dashboard"
-          sub={`${house?.name ?? 'Loading…'} · Line Producer Overview`}
+          // sub={`${house?.name ?? 'Loading…'} · Line Producer Overview`}
         />
         <div className="flex flex-row items-center gap-2">
           {isLP && (
@@ -72,13 +73,13 @@ export default function DashboardPage() {
         <div className="flex flex-col gap-4">
           {/* KPI Strip */}
           <div className="grid grid-cols-3 gap-3">
-            <KPI label="Portfolio" value="600 Cr" sub="Total actual spent" icon="wallet" />
+            <KPI label="Portfolio" value={fmtShort(totalSpent)} sub="Total actual spent" icon="wallet" />
             <KPI label="Movies" value={projects.length} sub="Across portfolio" icon="film" />
-            <KPI label="Budget Variance" value="1.7x" sub="Average over budget" icon="trend" />
+            <KPI label="Budget Variance" value={`${avgVariance.toFixed(1)}x`} sub="Average spent vs planned" icon="trend" />
           </div>
 
           {/* Projects Overview table */}
-          <div className="card">
+          <div className="card mt-4">
             <table className="tbl">
               <thead>
                 <tr>

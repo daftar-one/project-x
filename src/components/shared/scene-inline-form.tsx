@@ -3,8 +3,8 @@
 import { useState } from 'react';
 import { Icon } from './icon';
 import { Modal } from './modal';
-import { fmtShort } from '@/lib/format';
-import { MOCK_SCENES, getMockBudgetLines, getMockSceneBills, getMockSceneWallet } from '@/lib/mock-data';
+import { fmtShort, fmtDateTime } from '@/lib/format';
+import { MOCK_SCENES, getMockBudgetLines, getMockSceneBills, getMockSceneWallet, getMockSceneWalletCredits } from '@/lib/mock-data';
 import { TransactionHistory, type WalletCredit } from './transaction-history';
 import { useAuthStore } from '@/store/auth';
 import type { Vendor } from '@/lib/types';
@@ -19,6 +19,58 @@ interface BillEntry {
   paidBy: string;
   billFileName: string;
   actualAmount: number;
+  uploadedAt: string | null;
+}
+
+const DEMO_PDF_URL = 'https://www.w3.org/WAI/WCAG21/Techniques/pdf/img/table-word.pdf';
+
+const STATUS_STYLE: Record<BillEntry['status'], { bg: string; color: string }> = {
+  Paid:     { bg: 'rgba(16,185,129,.15)',  color: '#34d399' },
+  Rejected: { bg: 'rgba(239,68,68,.15)',   color: '#f87171' },
+  NA:       { bg: 'rgba(245,158,11,.15)',  color: '#fbbf24' },
+};
+
+function BillViewerDialog({ bill, vendorName, reason, onClose }: { bill: BillEntry; vendorName: string; reason: string; onClose: () => void }) {
+  const sc = STATUS_STYLE[bill.status];
+  return (
+    <div
+      className="fixed inset-0 z-50 flex items-center justify-center"
+      style={{ background: 'rgba(0,0,0,.72)' }}
+      onClick={onClose}
+    >
+      <div
+        className="relative flex flex-col rounded-[14px] overflow-hidden"
+        style={{ background: '#1a1d23', border: '1px solid rgba(255,255,255,.1)', width: 'min(760px, 94vw)', height: 'min(640px, 90vh)' }}
+        onClick={e => e.stopPropagation()}
+      >
+        {/* Header */}
+        <div className="flex items-center gap-3 px-5 py-4 border-b border-[rgba(255,255,255,.07)]">
+          <div className="w-8 h-8 rounded-lg bg-[rgba(99,102,241,.18)] flex items-center justify-center text-[#a5b4fc]">
+            <Icon name="file-text" size={15} />
+          </div>
+          <div className="flex-1 min-w-0">
+            <div className="text-[14px] font-semibold text-[#f0f2f5]">{vendorName || 'Self'} — {reason}</div>
+            <div className="flex items-center gap-3 mt-1">
+              <span className="text-[13px] font-bold text-[#34d399]">{bill.actualAmount > 0 ? fmtShort(bill.actualAmount) : '—'}</span>
+              {bill.uploadedAt && (
+                <span className="text-[13px] text-gray-400">Raised on {fmtDateTime(bill.uploadedAt)}</span>
+              )}
+            </div>
+          </div>
+          <span className="text-[11px] font-semibold px-2 py-[3px] rounded-full" style={{ background: sc.bg, color: sc.color }}>
+            {bill.status === 'NA' ? 'Pending' : bill.status}
+          </span>
+          <button onClick={onClose} className="ml-1 text-gray-500 hover:text-[#f0f2f5] transition-colors">
+            <Icon name="x" size={16} />
+          </button>
+        </div>
+        {/* PDF */}
+        <div className="flex-1 overflow-hidden bg-[#111317]">
+          <iframe src={DEMO_PDF_URL} className="w-full h-full border-0" title="Bill document" />
+        </div>
+      </div>
+    </div>
+  );
 }
 
 interface BreakdownRow {
@@ -55,10 +107,11 @@ function initRows(projectId: string, sceneId: string, isDraft: boolean): Breakdo
         id: b.id,
         status: toPayStatus(b.status),
         paidBy: (b.status === 'Rejected' || b.status === 'Paid') ? 'Arjun Mehta' : '',
-        billFileName: b.file_url ? 'bill.pdf' : '',
+        billFileName: b.file_url ? 'bill.pdf' : 'bill.pdf',
         actualAmount: b.amount,
+        uploadedAt: b.created_at,
       }))
-      : [{ id: `draft-${bl.id}`, status: 'NA' as const, paidBy: '', billFileName: '', actualAmount: 0 }];
+      : [{ id: `draft-${bl.id}`, status: 'NA' as const, paidBy: '', billFileName: 'bill.pdf', actualAmount: 0, uploadedAt: null }];
 
     return {
       id: bl.id,
@@ -112,6 +165,7 @@ export function SceneInlineForm({ projectId, sceneId, isDraft, isLP, vendors, on
   const [locked, setLocked] = useState(false);
   const [lockConfirmOpen, setLockConfirmOpen] = useState(false);
   const [lockedRowCount, setLockedRowCount] = useState<number | null>(null);
+  const [lockedBudget, setLockedBudget] = useState<number | null>(null);
 
   /* ── local vendor list (props + any newly created) ── */
   const [localVendors, setLocalVendors] = useState<Vendor[]>(vendors);
@@ -127,7 +181,12 @@ export function SceneInlineForm({ projectId, sceneId, isDraft, isLP, vendors, on
   const [walletBalance, setWalletBalance] = useState(() =>
     isDraft ? 0 : (getMockSceneWallet(sceneId)?.balance ?? 0)
   );
-  const [walletCredits, setWalletCredits] = useState<WalletCredit[]>([]);
+  const [walletCredits, setWalletCredits] = useState<WalletCredit[]>(() =>
+    isDraft ? [] : getMockSceneWalletCredits(sceneId)
+  );
+
+  /* ── bill viewer ── */
+  const [viewingBill, setViewingBill] = useState<{ bill: BillEntry; vendorName: string; reason: string } | null>(null);
 
   /* ── breakdown state ── */
   const [rows, setRows] = useState<BreakdownRow[]>(() => initRows(projectId, sceneId, isDraft));
@@ -142,7 +201,12 @@ export function SceneInlineForm({ projectId, sceneId, isDraft, isLP, vendors, on
   const totalActual = rows.reduce((a, r) => a + rowActual(r), 0);
   const totalPending = rows.reduce((a, r) => a + r.bills.filter(b => b.status === 'NA').reduce((s, b) => s + b.actualAmount, 0), 0);
   const totalRejected = rows.reduce((a, r) => a + r.bills.filter(b => b.status === 'Rejected').reduce((s, b) => s + b.actualAmount, 0), 0);
-  const overBudget = Math.max(0, totalActual - budget);
+  // Post-lock rows contribute directly to over budget
+  const postLockTotal = (locked && lockedRowCount !== null)
+    ? rows.slice(lockedRowCount).reduce((a, r) => a + r.amount, 0)
+    : 0;
+  const effectiveBudget = lockedBudget ?? budget;
+  const overBudget = Math.max(0, totalActual - effectiveBudget) + postLockTotal;
   const totalVarFactor = totalPlanned > 0 && totalActual > 0 ? totalActual / totalPlanned : null;
   const newAmountVal = (parseFloat(newAmount) || 0) * UNIT_MULT[newAmountUnit];
 
@@ -209,9 +273,10 @@ export function SceneInlineForm({ projectId, sceneId, isDraft, isLP, vendors, on
       amount: amt,
       vendorId: newVendorId === '__new__' ? '' : newVendorId,
       vendorName: vName,
-      bills: [{ id: `bill-${Date.now()}`, status: 'NA', paidBy: '', billFileName: '', actualAmount: 0 }],
+      bills: [{ id: `bill-${Date.now()}`, status: 'NA', paidBy: '', billFileName: 'bill.pdf', actualAmount: 0, uploadedAt: null }],
     }]);
-    setBudget(prev => prev + amt);
+    // When locked, new row amount goes to over budget — don't increment the locked budget
+    if (!locked) setBudget(prev => prev + amt);
     setNewReason(''); setNewAmount(''); setNewAmountUnit('L'); setNewVendorId('');
     setAddingRow(false);
   };
@@ -226,6 +291,15 @@ export function SceneInlineForm({ projectId, sceneId, isDraft, isLP, vendors, on
 
   return (
     <div className="flex flex-col gap-[14px]">
+      {viewingBill && (
+        <BillViewerDialog
+          bill={viewingBill.bill}
+          vendorName={viewingBill.vendorName}
+          reason={viewingBill.reason}
+          onClose={() => setViewingBill(null)}
+        />
+      )}
+
       {/* ── Row 1: Basic Details (left) + Wallet (right) ── */}
       <div className="grid grid-cols-[1fr_260px] gap-[14px] items-stretch">
 
@@ -424,8 +498,8 @@ export function SceneInlineForm({ projectId, sceneId, isDraft, isLP, vendors, on
                                 style={{ cursor: isLP ? 'pointer' : 'default' }}
                               >
                                 <option value="" disabled>Action…</option>
-                                <option value="Paid">Paid</option>
-                                <option value="Rejected">Rejected</option>
+                                <option value="Paid">Pay</option>
+                                <option value="Rejected">Reject</option>
                               </select>
                             ) : (
                               <span className="text-[11px] font-bold" style={{ color: statusColor(bill.status) }}>{bill.status}</span>
@@ -443,7 +517,15 @@ export function SceneInlineForm({ projectId, sceneId, isDraft, isLP, vendors, on
 
                         <td className={subTdCCls}>
                           {bill?.billFileName
-                            ? <span className="text-[#a5b4fc]"><Icon name="file" size={14} /></span>
+                            ? (
+                              <button
+                                className="bg-transparent border-0 cursor-pointer text-[#a5b4fc] hover:text-[#c4b5fd] transition-colors p-0"
+                                onClick={() => setViewingBill({ bill, vendorName: row.vendorName, reason: row.reason })}
+                                title="View bill"
+                              >
+                                <Icon name="file" size={14} />
+                              </button>
+                            )
                             : <span className="text-[#374151]">—</span>
                           }
                         </td>
@@ -633,7 +715,7 @@ export function SceneInlineForm({ projectId, sceneId, isDraft, isLP, vendors, on
             </button>
             <button
               className="btn btn-primary btn-sm flex-1 justify-center"
-              onClick={() => { setLocked(true); setLockedRowCount(rows.length); setLockConfirmOpen(false); }}
+              onClick={() => { setLocked(true); setLockedRowCount(rows.length); setLockedBudget(budget); setLockConfirmOpen(false); }}
             >
               <Icon name="lock" size={13} /> Lock Budget
             </button>

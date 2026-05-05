@@ -3,12 +3,78 @@
 import { useState } from 'react';
 import { Icon } from './icon';
 import { StatusBadge } from './status-badge';
-import { fmtShort, fmtDate } from '@/lib/format';
+import { fmtShort, fmtDate, fmtDateTime } from '@/lib/format';
 import { useScene } from '@/hooks/useScene';
 import { useSceneBills } from '@/hooks/useSceneBills';
 import { useSceneBudgetLines } from '@/hooks/useSceneBudgetLines';
 import { useVendors } from '@/hooks/useVendors';
-import type { Vendor } from '@/lib/types';
+import type { Bill, Vendor } from '@/lib/types';
+
+// Demo PDF — a publicly available sample invoice PDF
+const DEMO_PDF_URL = 'https://www.w3.org/WAI/WCAG21/Techniques/pdf/img/table-word.pdf';
+
+function BillViewerDialog({ bill, onClose }: { bill: Bill; onClose: () => void }) {
+  const sc = billStatusColor(bill.status);
+  return (
+    <div
+      className="fixed inset-0 z-50 flex items-center justify-center"
+      style={{ background: 'rgba(0,0,0,.72)' }}
+      onClick={onClose}
+    >
+      <div
+        className="relative flex flex-col rounded-[14px] overflow-hidden"
+        style={{
+          background: '#1a1d23',
+          border: '1px solid rgba(255,255,255,.1)',
+          width: 'min(760px, 94vw)',
+          height: 'min(640px, 90vh)',
+        }}
+        onClick={e => e.stopPropagation()}
+      >
+        {/* Header */}
+        <div className="flex items-center gap-3 px-5 py-4 border-b border-[rgba(255,255,255,.07)]">
+          <div className="w-8 h-8 rounded-lg bg-[rgba(99,102,241,.18)] flex items-center justify-center text-[#a5b4fc]">
+            <Icon name="file-text" size={15} />
+          </div>
+          <div className="flex-1 min-w-0">
+            <div className="text-[14px] font-semibold text-[#f0f2f5]">
+              {bill.vendor_name} — {bill.bill_type}
+            </div>
+            <div className="flex items-center gap-3 mt-1">
+              <span className="text-[13px] font-bold text-[#34d399]">{fmtShort(bill.amount)}</span>
+              <span className="text-[11px] text-gray-400">
+                {bill.bill_date ? `Bill date: ${fmtDate(bill.bill_date)}` : ''}
+                {bill.created_at ? ` · ${fmtDateTime(bill.created_at)}` : ''}
+              </span>
+            </div>
+          </div>
+          <span
+            className="text-[11px] font-semibold px-2 py-[3px] rounded-full"
+            style={{ background: sc.bg, color: sc.color }}
+          >
+            {bill.status}
+          </span>
+          <button
+            onClick={onClose}
+            className="ml-1 text-gray-500 hover:text-[#f0f2f5] transition-colors"
+          >
+            <Icon name="x" size={16} />
+          </button>
+        </div>
+
+        {/* PDF viewer */}
+        <div className="flex-1 overflow-hidden bg-[#111317]">
+          <iframe
+            src={DEMO_PDF_URL}
+            className="w-full h-full border-0"
+            title="Bill document"
+          />
+        </div>
+
+      </div>
+    </div>
+  );
+}
 
 interface SceneDetailPanelProps {
   projectId: string;
@@ -34,6 +100,7 @@ export function SceneDetailPanel({ projectId, sceneId, isLP, onSceneUpdated }: S
   const { data: vendors } = useVendors();
   void onSceneUpdated;
 
+  const [viewingBill, setViewingBill] = useState<Bill | null>(null);
   const [addingLine, setAddingLine] = useState(false);
   const [lineReason, setLineReason] = useState('');
   const [lineAmount, setLineAmount] = useState('');
@@ -68,6 +135,7 @@ export function SceneDetailPanel({ projectId, sceneId, isLP, onSceneUpdated }: S
 
   return (
     <div className="p-5 flex flex-col gap-5 overflow-y-auto h-full">
+      {viewingBill && <BillViewerDialog bill={viewingBill} onClose={() => setViewingBill(null)} />}
       {/* Scene header */}
       <div>
         <div className="flex items-start gap-3 mb-3">
@@ -226,8 +294,12 @@ export function SceneDetailPanel({ projectId, sceneId, isLP, onSceneUpdated }: S
                   {lineBills.length > 0 && lineBills.map(bill => {
                     const sc = billStatusColor(bill.status);
                     return (
-                      <div key={bill.id} className="flex items-center gap-2 px-[10px] py-[6px] pl-[22px] bg-[rgba(0,0,0,.15)] border-t border-[rgba(255,255,255,.04)]">
-                        <Icon name="file" size={10} className="text-gray-600 shrink-0" />
+                      <div
+                        key={bill.id}
+                        className="flex items-center gap-2 px-[10px] py-[6px] pl-[22px] bg-[rgba(0,0,0,.15)] border-t border-[rgba(255,255,255,.04)] cursor-pointer hover:bg-[rgba(99,102,241,.08)] transition-colors"
+                        onClick={() => setViewingBill(bill)}
+                      >
+                        <Icon name="file" size={10} className="text-[#a5b4fc] shrink-0" />
                         <div className="flex-1 min-w-0">
                           <div className="text-[11px] text-gray-400">
                             {bill.bill_type}{bill.bill_date ? ` · ${fmtDate(bill.bill_date)}` : ''}
@@ -268,7 +340,7 @@ export function SceneDetailPanel({ projectId, sceneId, isLP, onSceneUpdated }: S
               {orphanBills.map(bill => {
                 const sc = billStatusColor(bill.status);
                 return (
-                  <div key={bill.id} className="flex items-center gap-2 px-[10px] py-2 bg-[rgba(255,255,255,.03)] rounded-[6px]">
+                  <div key={bill.id} className="flex items-center gap-2 px-[10px] py-2 bg-[rgba(255,255,255,.03)] rounded-[6px] cursor-pointer hover:bg-[rgba(99,102,241,.08)] transition-colors" onClick={() => setViewingBill(bill)}>
                     <div className="flex-1 min-w-0">
                       <div className="text-[12px] text-[#e5e7eb] font-medium overflow-hidden text-ellipsis whitespace-nowrap">
                         {bill.vendor_name}
