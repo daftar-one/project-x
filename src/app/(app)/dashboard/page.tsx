@@ -39,9 +39,8 @@ export default function DashboardPage() {
   if (error) return <AppFrame><ErrorCard message={error} /></AppFrame>;
 
   const totalSpent = projects.reduce((a, p) => a + p.spent, 0);
-  const avgVariance = projects.length > 0
-    ? projects.reduce((a, p) => a + (p.total_budget > 0 ? p.spent / p.total_budget : 0), 0) / projects.length
-    : 0;
+  const totalBudget = projects.reduce((a, p) => a + p.total_budget, 0);
+  const netBudget = totalBudget - totalSpent;
 
   return (
     <AppFrame>
@@ -73,9 +72,14 @@ export default function DashboardPage() {
         <div className="flex flex-col gap-4">
           {/* KPI Strip */}
           <div className="grid grid-cols-3 gap-3">
-            <KPI label="Portfolio" value={fmtShort(totalSpent)} sub="Total actual spent" icon="wallet" />
+            <KPI label="Portfolio" value={fmtShort(totalBudget)} sub="Total portfolio budget" icon="wallet" />
             <KPI label="Movies" value={projects.length} sub="Across portfolio" icon="film" />
-            <KPI label="Budget Variance" value={`${avgVariance.toFixed(1)}x`} sub="Average spent vs planned" icon="trend" />
+            <KPI
+              label="Over / Under Budget"
+              value={netBudget >= 0 ? `+${fmtShort(netBudget)}` : fmtShort(netBudget)}
+              sub={netBudget >= 0 ? 'Under budget' : 'Over budget'}
+              icon="trend"
+            />
           </div>
 
           {/* Projects Overview table */}
@@ -88,55 +92,46 @@ export default function DashboardPage() {
                   <th className="text-right whitespace-nowrap">Spent</th>
                   <th className="text-right whitespace-nowrap">Wallet</th>
                   <th className="text-right whitespace-nowrap">Pending</th>
-                  <th className="text-right whitespace-nowrap">Over Budget</th>
                   <th className="text-right whitespace-nowrap">Actual Spent</th>
-                  <th className="text-right whitespace-nowrap">Variance</th>
+                  <th className="text-right whitespace-nowrap">Over Budget</th>
                   <th className="text-right whitespace-nowrap">Scenes</th>
                   <th className="text-right whitespace-nowrap">Status</th>
                 </tr>
               </thead>
               <tbody>
                 {projects.length === 0 ? (
-                  <tr><td colSpan={10} className="text-center text-gray-500 px-5 py-6">No movies yet</td></tr>
-                ) : projects.map(p => {
-                  const variance = p.total_budget > 0 ? p.spent / p.total_budget : 0;
-                  const varianceLabel = `${variance.toFixed(1)}x`;
-                  const varianceColor = variance > 1 ? '#f87171' : '#34d399';
-                  return (
-                    <tr key={p.id} onClick={() => router.push(`/projects/${p.id}`)} className="cursor-pointer">
-                      <td className="w-full">
-                        <div className="font-semibold text-[#f0f2f5]">{p.name}</div>
-                      </td>
-                      <td className="text-right whitespace-nowrap">
-                        <span className="num text-[13px] text-[#f0f2f5]">{fmtShort(p.total_budget)}</span>
-                      </td>
-                      <td className="text-right whitespace-nowrap">
-                        <span className="num text-[13px] text-[#f0f2f5]">{fmtShort(p.spent)}</span>
-                      </td>
-                      <td className="text-right whitespace-nowrap">
-                        <span className="num text-[13px] text-[#f0f2f5]">{p.id === '1' ? 0 : fmtShort(p.wallet_balance)}</span>
-                      </td>
-                      <td className="text-right whitespace-nowrap">
-                        <span className="num text-[13px] text-[#f0f2f5]">{fmtShort(p.pending)}</span>
-                      </td>
-                      <td className="text-right whitespace-nowrap">
-                        <span className="num text-[13px] text-[#f0f2f5]">{p.id === 'D1' ? 0 : fmtShort(p.over_budget)}</span>
-                      </td>
-                      <td className="text-right whitespace-nowrap">
-                        <span className="num text-[13px] text-[#f0f2f5]">{p.id === 'D1' ? 0 : fmtShort(p.total_budget + p.over_budget)}</span>
-                      </td>
-                      <td className="text-right whitespace-nowrap">
-                        <span className="num text-[13px] font-semibold" style={{ color: varianceColor }}>{varianceLabel}</span>
-                      </td>
-                      <td className="text-right whitespace-nowrap">
-                        <span className="num text-[13px] text-gray-400">{p.wrapped_scenes}/{p.scene_count}</span>
-                      </td>
-                      <td className="text-right whitespace-nowrap">
-                        <span className="num text-[13px] text-gray-400">{p.status}</span>
-                      </td>
-                    </tr>
-                  );
-                })}
+                  <tr><td colSpan={9} className="text-center text-gray-500 px-5 py-6">No movies yet</td></tr>
+                ) : projects.map(p => (
+                  <tr key={p.id} onClick={() => router.push(`/projects/${p.id}`)} className="cursor-pointer">
+                    <td className="w-full">
+                      <div className="font-semibold text-[#f0f2f5]">{p.name}</div>
+                    </td>
+                    <td className="text-right whitespace-nowrap">
+                      <span className="num text-[13px] text-[#f0f2f5]">{fmtShort(p.total_budget)}</span>
+                    </td>
+                    <td className="text-right whitespace-nowrap">
+                      <span className="num text-[13px] text-[#f0f2f5]">{fmtShort(p.spent)}</span>
+                    </td>
+                    <td className="text-right whitespace-nowrap">
+                      <span className="num text-[13px] text-[#f0f2f5]">{p.id === '1' ? 0 : fmtShort(p.wallet_balance)}</span>
+                    </td>
+                    <td className="text-right whitespace-nowrap">
+                      <span className="num text-[13px] text-[#f0f2f5]">{fmtShort(p.pending)}</span>
+                    </td>
+                    <td className="text-right whitespace-nowrap">
+                      <span className="num text-[13px] text-[#f0f2f5]">{fmtShort(p.spent)}</span>
+                    </td>
+                    <td className="text-right whitespace-nowrap">
+                      <span className="num text-[13px] text-[#f0f2f5]">{fmtShort(p.over_budget)}</span>
+                    </td>
+                    <td className="text-right whitespace-nowrap">
+                      <span className="num text-[13px] text-gray-400">{p.wrapped_scenes}/{p.scene_count}</span>
+                    </td>
+                    <td className="text-right whitespace-nowrap">
+                      <span className="num text-[13px] text-gray-400">{p.status}</span>
+                    </td>
+                  </tr>
+                ))}
               </tbody>
             </table>
           </div>

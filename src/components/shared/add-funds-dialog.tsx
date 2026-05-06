@@ -22,6 +22,7 @@ export function AddFundsDialog({ open, onClose, scope = 'ph', projectId, sceneId
   const [selectedSceneId, setSelectedSceneId] = useState(sceneId ?? '');
   const [amount, setAmount] = useState('');
   const [saving, setSaving] = useState(false);
+  const [confirming, setConfirming] = useState(false);
 
   if (!open) return null;
 
@@ -38,7 +39,7 @@ export function AddFundsDialog({ open, onClose, scope = 'ph', projectId, sceneId
     setSelectedSceneId('');
   }
 
-  async function handleSubmit() {
+  function handleRequestSubmit() {
     const amt = parseInt(amount.replace(/,/g, ''), 10);
     const effectiveMovieId = scope === 'ph' ? selectedMovieId : (projectId ?? '');
     const effectiveSceneId = scope === 'scene' ? (sceneId ?? '') : selectedSceneId;
@@ -46,6 +47,14 @@ export function AddFundsDialog({ open, onClose, scope = 'ph', projectId, sceneId
     if (!effectiveMovieId) { toast.error('Select a movie'); return; }
     if (!effectiveSceneId) { toast.error('Select a scene'); return; }
     if (!amt || amt <= 0) { toast.error('Enter a valid amount'); return; }
+
+    setConfirming(true);
+  }
+
+  async function handleConfirm() {
+    const amt = parseInt(amount.replace(/,/g, ''), 10);
+    const effectiveMovieId = scope === 'ph' ? selectedMovieId : (projectId ?? '');
+    const effectiveSceneId = scope === 'scene' ? (sceneId ?? '') : selectedSceneId;
 
     setSaving(true);
     await new Promise(r => setTimeout(r, 400));
@@ -55,6 +64,7 @@ export function AddFundsDialog({ open, onClose, scope = 'ph', projectId, sceneId
     toast.success(`Added ${fmtShort(amt)} to ${scene?.name} (${movie?.name})`);
 
     setSaving(false);
+    setConfirming(false);
     setSelectedMovieId(projectId ?? '');
     setSelectedSceneId(sceneId ?? '');
     setAmount('');
@@ -65,6 +75,12 @@ export function AddFundsDialog({ open, onClose, scope = 'ph', projectId, sceneId
     if (e.target === e.currentTarget) onClose();
   }
 
+  const amt = parseInt(amount.replace(/,/g, ''), 10);
+  const effectiveMovieId = scope === 'ph' ? selectedMovieId : (projectId ?? '');
+  const effectiveSceneId = scope === 'scene' ? (sceneId ?? '') : selectedSceneId;
+  const confirmMovie = MOCK_PROJECTS.find(p => p.id === effectiveMovieId);
+  const confirmScene = (MOCK_SCENES[effectiveMovieId] ?? []).find(s => s.id === effectiveSceneId);
+
   return (
     <div
       onClick={handleBackdrop}
@@ -73,7 +89,7 @@ export function AddFundsDialog({ open, onClose, scope = 'ph', projectId, sceneId
       <div className="bg-[#1a1d23] border border-[rgba(255,255,255,.1)] rounded-xl p-8 w-[380px] max-w-[90vw] shadow-[0_20px_60px_rgba(0,0,0,.6)]">
         {/* Header */}
         <div className="flex items-center justify-between mb-7">
-          <div className="text-[16px] font-bold text-[#f9fafb]">Add Funds</div>
+          <div className="text-[16px] font-bold text-[#f9fafb]">{confirming ? 'Confirm Add Funds' : 'Add Funds'}</div>
           <button
             onClick={onClose}
             className="w-7 h-7 rounded-[6px] bg-[rgba(255,255,255,.06)] border-0 text-gray-400 cursor-pointer flex items-center justify-center shrink-0"
@@ -82,85 +98,108 @@ export function AddFundsDialog({ open, onClose, scope = 'ph', projectId, sceneId
           </button>
         </div>
 
-        <div className="flex flex-col gap-6">
-          {/* Movie */}
-          <div>
-            <label className="text-[11px] font-semibold text-gray-500 uppercase tracking-[0.07em] mb-1 block">Movie</label>
-            <div className="relative w-full">
-              <span className="absolute left-0 top-1/2 -translate-y-1/2 text-gray-500 flex items-center"><Icon name="film" size={15} /></span>
-              {scope === 'ph' ? (
-                <select
-                  value={selectedMovieId}
-                  onChange={e => handleMovieChange(e.target.value)}
-                  className={inputCls}
-                >
-                  <option value="" disabled>Select a movie…</option>
-                  {MOCK_PROJECTS.map(p => (
-                    <option key={p.id} value={p.id}>{p.name}</option>
-                  ))}
-                </select>
-              ) : (
-                <div className={readonlyCls}>{prefilledMovie?.name ?? '—'}</div>
-              )}
+        {confirming ? (
+          <>
+            <p className="text-[13px] text-gray-400 leading-[1.7] mb-6">
+              Are you sure you want to add{' '}
+              <span className="text-[#34d399] font-semibold">{fmtShort(amt)}</span>{' '}
+              to <span className="text-[#f0f2f5] font-semibold">{confirmScene?.name}</span>
+              {confirmMovie && <> ({confirmMovie.name})</>}?
+            </p>
+            <div className="flex gap-2 justify-end">
+              <button className="btn btn-ghost btn-sm" onClick={() => setConfirming(false)}>Back</button>
+              <button
+                className="btn btn-primary btn-sm"
+                onClick={handleConfirm}
+                disabled={saving}
+              >
+                {saving ? 'Adding…' : 'Confirm'}
+              </button>
             </div>
-          </div>
-
-          {/* Scene */}
-          <div>
-            <label className="text-[11px] font-semibold text-gray-500 uppercase tracking-[0.07em] mb-1 block">Scene</label>
-            <div className="relative w-full">
-              <span className="absolute left-0 top-1/2 -translate-y-1/2 text-gray-500 flex items-center"><Icon name="camera" size={15} /></span>
-              {scope === 'scene' ? (
-                <div className={readonlyCls}>
-                  {prefilledScene ? `${prefilledScene.num} · ${prefilledScene.name}` : '—'}
+          </>
+        ) : (
+          <>
+            <div className="flex flex-col gap-6">
+              {/* Movie */}
+              <div>
+                <label className="text-[11px] font-semibold text-gray-500 uppercase tracking-[0.07em] mb-1 block">Movie</label>
+                <div className="relative w-full">
+                  <span className="absolute left-0 top-1/2 -translate-y-1/2 text-gray-500 flex items-center"><Icon name="film" size={15} /></span>
+                  {scope === 'ph' ? (
+                    <select
+                      value={selectedMovieId}
+                      onChange={e => handleMovieChange(e.target.value)}
+                      className={inputCls}
+                    >
+                      <option value="" disabled>Select a movie…</option>
+                      {MOCK_PROJECTS.map(p => (
+                        <option key={p.id} value={p.id}>{p.name}</option>
+                      ))}
+                    </select>
+                  ) : (
+                    <div className={readonlyCls}>{prefilledMovie?.name ?? '—'}</div>
+                  )}
                 </div>
-              ) : (
-                <select
-                  value={selectedSceneId}
-                  onChange={e => setSelectedSceneId(e.target.value)}
-                  disabled={!movieIdForScenes}
-                  className={inputCls}
-                  style={{ opacity: movieIdForScenes ? 1 : 0.45 }}
-                >
-                  <option value="" disabled>
-                    {movieIdForScenes ? 'Select a scene…' : 'Select a movie first'}
-                  </option>
-                  {scenes.map(s => (
-                    <option key={s.id} value={s.id}>{s.num} · {s.name}</option>
-                  ))}
-                </select>
-              )}
-            </div>
-          </div>
+              </div>
 
-          {/* Amount */}
-          <div>
-            <label className="text-[11px] font-semibold text-gray-500 uppercase tracking-[0.07em] mb-1 block">Amount (₹)</label>
-            <div className="relative w-full">
-              <span className="absolute left-0 top-1/2 -translate-y-1/2 text-gray-500 flex items-center"><Icon name="rupee" size={15} /></span>
-              <input
-                type="number"
-                placeholder="0"
-                value={amount}
-                onChange={e => setAmount(e.target.value)}
-                onKeyDown={e => e.key === 'Enter' && handleSubmit()}
-                autoFocus
-                className={inputCls}
-              />
-            </div>
-          </div>
-        </div>
+              {/* Scene */}
+              <div>
+                <label className="text-[11px] font-semibold text-gray-500 uppercase tracking-[0.07em] mb-1 block">Scene</label>
+                <div className="relative w-full">
+                  <span className="absolute left-0 top-1/2 -translate-y-1/2 text-gray-500 flex items-center"><Icon name="camera" size={15} /></span>
+                  {scope === 'scene' ? (
+                    <div className={readonlyCls}>
+                      {prefilledScene ? `${prefilledScene.num} · ${prefilledScene.name}` : '—'}
+                    </div>
+                  ) : (
+                    <select
+                      value={selectedSceneId}
+                      onChange={e => setSelectedSceneId(e.target.value)}
+                      disabled={!movieIdForScenes}
+                      className={inputCls}
+                      style={{ opacity: movieIdForScenes ? 1 : 0.45 }}
+                    >
+                      <option value="" disabled>
+                        {movieIdForScenes ? 'Select a scene…' : 'Select a movie first'}
+                      </option>
+                      {scenes.map(s => (
+                        <option key={s.id} value={s.id}>{s.num} · {s.name}</option>
+                      ))}
+                    </select>
+                  )}
+                </div>
+              </div>
 
-        <div className="flex gap-2 justify-end mt-8">
-          <button className="btn btn-ghost btn-sm" onClick={onClose}>Cancel</button>
-          <button
-            className="btn btn-primary btn-sm"
-            onClick={handleSubmit}
-            disabled={saving}
-          >
-            {saving ? 'Adding…' : 'Add Funds'}
-          </button>
-        </div>
+              {/* Amount */}
+              <div>
+                <label className="text-[11px] font-semibold text-gray-500 uppercase tracking-[0.07em] mb-1 block">Amount (₹)</label>
+                <div className="relative w-full">
+                  <span className="absolute left-0 top-1/2 -translate-y-1/2 text-gray-500 flex items-center"><Icon name="rupee" size={15} /></span>
+                  <input
+                    type="number"
+                    placeholder="0"
+                    value={amount}
+                    onChange={e => setAmount(e.target.value)}
+                    onKeyDown={e => e.key === 'Enter' && handleRequestSubmit()}
+                    autoFocus
+                    className={inputCls}
+                  />
+                </div>
+              </div>
+            </div>
+
+            <div className="flex gap-2 justify-end mt-8">
+              <button className="btn btn-ghost btn-sm" onClick={onClose}>Cancel</button>
+              <button
+                className="btn btn-primary btn-sm"
+                onClick={handleRequestSubmit}
+                disabled={saving}
+              >
+                Add Funds
+              </button>
+            </div>
+          </>
+        )}
       </div>
     </div>
   );

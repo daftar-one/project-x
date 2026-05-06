@@ -5,6 +5,9 @@ import type { WalletCredit } from '@/components/shared/transaction-history';
 
 export const PROJECT_IDS = { D1: 'dhurandhar-1', D2: 'dhurandhar-2' };
 
+// Scene IDs whose budgets are pre-locked (but not yet wrapped)
+export const MOCK_LOCKED_SCENE_IDS: ReadonlySet<string> = new Set(['d2-sc-01']);
+
 const D1 = PROJECT_IDS.D1;
 const D2 = PROJECT_IDS.D2;
 
@@ -64,20 +67,20 @@ export const MOCK_PROJECTS: ProjectWithStats[] = [
     name: 'Dhurandhar 1',
     director: 'Rohit Shetty',
     genre: 'Action',
-    status: 'Wrapped',
-    pending: 15_000_000,       // b-d1-01-3 Pending
-    total_budget: 260_000_000, // SC-01 (40M) + SC-02 (220M)
-    working_budget: 260_000_000,
+    status: 'Planning',
+    pending: 15_000_000,       // b-d1-01-3 Pending only (SC-02 all Paid)
+    total_budget: 248_000_000, // SC-01 (40M) + SC-02 (208M)
+    working_budget: 248_000_000,
     cover: null,
     created_at: now,
-    spent: 135_000_000,        // SC-01 (12M) + SC-02 (123M)
-    committed: 76_000_000,     // SC-02 Approved bill
-    allocated: 135_000_000,
+    spent: 187_000_000,        // SC-01 (12M) + SC-02 (175M all paid)
+    committed: 0,
+    allocated: 187_000_000,
     scene_count: 2,
-    wrapped_scenes: 2,
+    wrapped_scenes: 1,         // Only SC-02 is Wrapped
     over_scenes: 0,
     over_budget: 0,
-    wallet_balance: 125_000_000,
+    wallet_balance: 61_000_000,
   },
   {
     id: D2,
@@ -85,10 +88,10 @@ export const MOCK_PROJECTS: ProjectWithStats[] = [
     name: 'Bhoot Bangla',
     director: 'Rohit Shetty',
     genre: 'Action',
-    status: 'In Progress',
-    pending: 45_000_000,        // SC-02 Pending bills (20M + 12M + remaining)
-    total_budget: 300_000_000,  // SC-01 (180M) + SC-02 (120M)
-    working_budget: 300_000_000,
+    status: 'Live',
+    pending: 77_000_000,        // SC-01 (25M+20M) + SC-02 (20M+12M) Pending bills
+    total_budget: 270_000_000,  // SC-01 (160M) + SC-02 (110M) scene budgets
+    working_budget: 230_000_000,
     cover: null,
     created_at: now,
     spent: 92_000_000,          // Only SC-01 fully spent (Wrapped); SC-02 is Live
@@ -98,20 +101,20 @@ export const MOCK_PROJECTS: ProjectWithStats[] = [
     wrapped_scenes: 1,          // Only SC-01 is Wrapped
     over_scenes: 0,
     over_budget: 0,
-    wallet_balance: 156_500_000,
+    wallet_balance: 126_500_000,
   },
 ];
 
 // ─── Scenes ──────────────────────────────────────────────────────────────────
 
 const D1_SCENES: SceneWithActual[] = [
-  { id: S.d1_01, project_id: D1, num: 'SC-01', name: 'Gateway of India Chase', location: 'Mumbai', scene_type: 'Exterior · Day',  budget: 40_000_000,  status: 'Wrapped', created_at: now, actual: 12_000_000  },
-  { id: S.d1_02, project_id: D1, num: 'SC-02', name: 'Mumbai Port Explosion',  location: 'Mumbai', scene_type: 'Exterior · Night', budget: 220_000_000, status: 'Wrapped', created_at: now, actual: 123_000_000 },
+  { id: S.d1_01, project_id: D1, num: 'SC-01', name: 'Gateway of India Chase', location: 'Mumbai', scene_type: 'Exterior · Day',  budget: 40_000_000,  status: 'Live',    created_at: now, actual: 12_000_000  },
+  { id: S.d1_02, project_id: D1, num: 'SC-02', name: 'Mumbai Port Explosion',  location: 'Mumbai', scene_type: 'Exterior · Night', budget: 208_000_000, status: 'Wrapped', created_at: now, actual: 123_000_000 },
 ];
 
 const D2_SCENES: SceneWithActual[] = [
-  { id: S.d2_01, project_id: D2, num: 'SC-01', name: 'Goa Beach Heist',        location: 'Goa',    scene_type: 'Exterior · Day',  budget: 180_000_000, status: 'Wrapped', created_at: now, actual: 92_000_000  },
-  { id: S.d2_02, project_id: D2, num: 'SC-02', name: 'Police HQ Infiltration', location: 'Mumbai', scene_type: 'Interior · Night', budget: 120_000_000, status: 'Live',    created_at: now, actual: 51_500_000  },
+  { id: S.d2_01, project_id: D2, num: 'SC-01', name: 'Goa Beach Heist',        location: 'Goa',    scene_type: 'Exterior · Day',  budget: 160_000_000, status: 'Live',    created_at: now, actual: 92_000_000  },
+  { id: S.d2_02, project_id: D2, num: 'SC-02', name: 'Police HQ Infiltration', location: 'Mumbai', scene_type: 'Interior · Night', budget: 110_000_000, status: 'Wrapped', created_at: now, actual: 51_500_000  },
 ];
 
 export const MOCK_SCENES: Record<string, SceneWithActual[]> = {
@@ -131,12 +134,9 @@ const BUDGET_LINES: Record<string, SceneBudgetLine[]> = {
     line('bl-d1-01-2', S.d1_01, 'Stunt team & coordinators', 40_000_000, V.actionCrew, 0, '2024-10-20'),
   ],
   [S.d1_02]: [
-    line('bl-d1-02-1', S.d1_02, 'VFX & digital effects',               80_000_000, V.vfxPrime,  20_000_000, '2024-11-01'),
-    line('bl-d1-02-2', S.d1_02, 'Practical explosives & pyrotechnics', 50_000_000, V.blastFx,   15_000_000, '2024-11-05'),
-    line('bl-d1-02-3', S.d1_02, 'Crane & heavy equipment',             30_000_000, V.cineGear,  0,          '2024-11-03'),
-    line('bl-d1-02-4', S.d1_02, 'Port location & marine crew',         25_000_000, V.mumbaiLoc, 0,          '2024-11-02'),
-    line('bl-d1-02-5', S.d1_02, 'Night shoot crew overtime',           15_000_000, null,         0,          '2024-11-07'),
-    line('bl-d1-02-6', S.d1_02, 'Safety & medical team',                8_000_000, V.medFilm,   0,          '2024-11-03'),
+    line('bl-d1-02-1', S.d1_02, 'VFX & digital effects',               80_000_000, V.vfxPrime, 20_000_000, '2024-11-01'),
+    line('bl-d1-02-2', S.d1_02, 'Practical explosives & pyrotechnics', 50_000_000, V.blastFx,  15_000_000, '2024-11-05'),
+    line('bl-d1-02-5', S.d1_02, 'Night shoot crew overtime',           15_000_000, null,        0,          '2024-11-07'),
   ],
   [S.d2_01]: [
     line('bl-d2-01-1', S.d2_01, 'Goa beach location & permits',  30_000_000, V.coastalLoc, 0,          '2024-09-10'),
@@ -149,7 +149,7 @@ const BUDGET_LINES: Record<string, SceneBudgetLine[]> = {
     line('bl-d2-02-1', S.d2_02, 'Police station set construction', 40_000_000, V.dreamProps, 12_000_000, '2024-10-05'),
     line('bl-d2-02-2', S.d2_02, 'Camera & lighting equipment',     25_000_000, V.cineGear,   0,          '2024-10-07'),
     line('bl-d2-02-3', S.d2_02, 'Stunt & action sequences',        30_000_000, V.actionCrew, 10_000_000, '2024-10-06'),
-    line('bl-d2-02-4', S.d2_02, 'VFX cleanup & compositing',       15_000_000, V.vfxPrime,   0,          '2024-10-08'),
+    line('bl-d2-02-4', S.d2_02, 'VFX cleanup & compositing',       15_000_000, null,         0,          '2024-10-08'),
   ],
 };
 
@@ -168,12 +168,11 @@ const BILLS: Bill[] = [
   bill('b-d1-01-1', D1, S.d1_01, V.actionCrew, 'Partial', 12_000_000, 'Paid',     '2024-11-01'),
   bill('b-d1-01-2', D1, S.d1_01, V.actionCrew, 'Partial',  8_000_000, 'Rejected', '2024-11-05'),
   bill('b-d1-01-3', D1, S.d1_01, V.actionCrew, 'Final',   15_000_000, 'Pending',  '2024-11-10'),
-  // D1 SC-02 Wrapped
-  bill('b-d1-02-1', D1, S.d1_02, V.vfxPrime,  'Final',   76_000_000, 'Approved', '2024-12-05'),
-  bill('b-d1-02-2', D1, S.d1_02, V.blastFx,   'Final',   47_000_000, 'Paid',     '2024-12-06'),
-  bill('b-d1-02-3', D1, S.d1_02, V.cineGear,  'Partial', 25_000_000, 'Pending',  '2024-12-08'),
-  bill('b-d1-02-4', D1, S.d1_02, V.mumbaiLoc, 'Partial', 20_000_000, 'Pending',  '2024-12-07'),
-  bill('b-d1-02-6', D1, S.d1_02, V.medFilm,   'Partial',  7_000_000, 'Pending',  '2024-12-09'),
+  // D1 SC-02 Wrapped — VFX has 2 rejected submissions before final; blastFx paid
+  bill('b-d1-02-1r1', D1, S.d1_02, V.vfxPrime, 'Partial', 30_000_000, 'Rejected', '2024-11-10'),
+  bill('b-d1-02-1r2', D1, S.d1_02, V.vfxPrime, 'Partial', 25_000_000, 'Rejected', '2024-11-20'),
+  bill('b-d1-02-1',   D1, S.d1_02, V.vfxPrime, 'Final',   76_000_000, 'Paid',     '2024-12-05'),
+  bill('b-d1-02-2',   D1, S.d1_02, V.blastFx,  'Final',   47_000_000, 'Paid',     '2024-12-06'),
   // D2 SC-01 Wrapped
   bill('b-d2-01-1', D2, S.d2_01, V.coastalLoc, 'Partial', 25_000_000, 'Pending',  '2024-10-18'),
   bill('b-d2-01-2', D2, S.d2_01, V.oceanProps,  'Final',   37_000_000, 'Paid',     '2024-10-20'),
@@ -182,7 +181,7 @@ const BILLS: Bill[] = [
   bill('b-d2-01-5', D2, S.d2_01, V.skyShot,     'Partial', 20_000_000, 'Pending',  '2024-10-23'),
   // D2 SC-02 Wrapped
   bill('b-d2-02-1', D2, S.d2_02, V.dreamProps,  'Final',   37_500_000, 'Approved', '2024-11-20'),
-  bill('b-d2-02-2', D2, S.d2_02, V.cineGear,    'Partial', 20_000_000, 'Pending',  '2024-11-22'),
+  bill('b-d2-02-2', D2, S.d2_02, V.cineGear,    'Partial', 20_000_000, 'Paid',     '2024-11-22'),
   bill('b-d2-02-3', D2, S.d2_02, V.actionCrew,  'Final',   14_000_000, 'Paid',     '2024-11-21'),
   bill('b-d2-02-4', D2, S.d2_02, V.vfxPrime,    'Partial', 12_000_000, 'Pending',  '2024-11-23'),
 ];
@@ -226,12 +225,12 @@ export const PH_WALLET = wallet('w-ph', 500_000_000, { ph: 'ph-1' }, [
 ]);
 
 export const PROJECT_WALLETS: Record<string, Wallet> = {
-  [D1]: wallet('w-d1', 125_000_000, { project: D1 }, [
+  [D1]: wallet('w-d1', 113_000_000, { project: D1 }, [
     { id: 'wt-d1-1', type: 'credit', amount: 260_000_000, description: 'Initial budget',               date: '2024-09-01T00:00:00Z' },
     { id: 'wt-d1-2', type: 'debit',  amount:  40_000_000, description: 'SC-01 Gateway of India Chase', date: '2024-10-20T00:00:00Z' },
     { id: 'wt-d1-3', type: 'debit',  amount:  95_000_000, description: 'SC-02 Mumbai Port Explosion',  date: '2024-11-10T00:00:00Z' },
   ]),
-  [D2]: wallet('w-d2', 156_500_000, { project: D2 }, [
+  [D2]: wallet('w-d2', 126_500_000, { project: D2 }, [
     { id: 'wt-d2-1', type: 'credit', amount: 300_000_000, description: 'Initial budget',               date: '2024-10-20T00:00:00Z' },
     { id: 'wt-d2-2', type: 'debit',  amount:  92_000_000, description: 'SC-01 Goa Beach Heist',        date: '2024-09-20T00:00:00Z' },
     { id: 'wt-d2-3', type: 'debit',  amount:  51_500_000, description: 'SC-02 Police HQ Infiltration', date: '2024-10-25T00:00:00Z' },
@@ -240,17 +239,17 @@ export const PROJECT_WALLETS: Record<string, Wallet> = {
 
 const SCENE_WALLET_BALANCES: Record<string, number> = {
   [S.d1_01]: 28_000_000,  // 40M budget − 12M actual
-  [S.d1_02]:  3_000_000,  // Wrapped
-  [S.d2_01]:  2_000_000,  // Wrapped
-  [S.d2_02]:  4_000_000,  // Wrapped
+  [S.d1_02]: 85_000_000,  // Wrapped
+  [S.d2_01]: 68_000_000,  // Wrapped
+  [S.d2_02]: 58_500_000,  // Wrapped
 };
 
 // ─── Vendors ─────────────────────────────────────────────────────────────────
 
 export const MOCK_VENDORS: Vendor[] = [
-  { id: V.actionCrew,   production_house_id: 'ph-1', name: 'Action Crew India',   category: 'Cast & Talent',         email: 'hello@actioncrew.in',  rep_name: 'Rajesh Kumar',  phone: '+91 98765 43210', status: 'Invited',   created_at: now },
-  { id: V.vfxPrime,     production_house_id: 'ph-1', name: 'Prime VFX Studios',   category: 'VFX & Post Production', email: 'contact@primevfx.com', rep_name: 'Ananya Singh',  phone: '+91 87654 32109', status: 'Active',    created_at: now },
-  { id: V.cineGear,     production_house_id: 'ph-1', name: 'Cine Gear Mumbai',    category: 'Equipment & Machinery', email: 'info@cinegear.in',     rep_name: 'Vikram Patel',  phone: '+91 76543 21098', status: 'Rejected',  created_at: now },
+  { id: V.actionCrew,   production_house_id: 'ph-1', name: 'Action Crew India',   category: 'Cast & Talent',         email: 'hello@actioncrew.in',  rep_name: 'Rajesh Kumar',  phone: '+91 98765 43210', status: 'Invited',  created_at: now },
+  { id: V.vfxPrime,     production_house_id: 'ph-1', name: 'Prime VFX Studios',   category: 'VFX & Post Production', email: 'contact@primevfx.com', rep_name: 'Ananya Singh',  phone: '+91 87654 32109', status: 'Active',   location: 'Andheri West, Mumbai', created_at: now },
+  { id: V.cineGear,     production_house_id: 'ph-1', name: 'Cine Gear Mumbai',    category: 'Equipment & Machinery', email: 'info@cinegear.in',     rep_name: 'Vikram Patel',  phone: '+91 76543 21098', status: 'Active',   location: 'Bandra, Mumbai', created_at: now },
 ];
 
 export function getMockVendors(): Vendor[] {

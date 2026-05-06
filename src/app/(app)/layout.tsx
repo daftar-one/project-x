@@ -19,7 +19,7 @@ export default function AppLayout({ children }: { children: ReactNode }) {
 
   useEffect(() => {
     if (!hydrated) return;
-    if (!user || !user.is_onboarded) {
+    if (!user || !user.is_onboarded || user.full_name === "Demo User") {
       useAuthStore.getState().setAuth({
         id: "u-1",
         email: "demo@projectx.in",

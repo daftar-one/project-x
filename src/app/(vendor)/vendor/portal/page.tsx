@@ -1,12 +1,13 @@
 "use client";
 
-import { useState } from "react";
+import { useState, Fragment } from "react";
 import { Icon } from "@/components/shared/icon";
 import { Modal } from "@/components/shared/modal";
 import { VendorFrame } from "@/components/shared/vendor-frame";
 import { PageTitle } from "@/components/shared/page-title";
+import { KPI } from "@/components/shared/kpi";
 import { useVendorStore } from "@/store/vendor-auth";
-import { fmtShort } from "@/lib/format";
+import { fmtShort, fmtDateTime } from "@/lib/format";
 import { toast } from "sonner";
 
 /* ─── types ──────────────────────────────────────────────────────────── */
@@ -33,19 +34,36 @@ interface Payment {
   billFileName: string | null;
 }
 
-/* ─── mock catalogue ─────────────────────────────────────────────────── */
+/* ─── mock catalogue — aligned with production house mock data ─────── */
 
 const VENDOR_BREAKDOWNS: Record<string, Record<string, Breakdown[]>> = {
-  "Dhurandhar": {
-    "Scene 01 – Action":  [{ id: "bd-a1", reason: "Equipment Rental" }, { id: "bd-a2", reason: "Stunt Coordinator" }],
-    "Scene 02 – Drama":   [{ id: "bd-b1", reason: "Location Fee" }],
-    "Scene 03 – VFX":     [{ id: "bd-c1", reason: "VFX Software License" }, { id: "bd-c2", reason: "3D Artist" }],
-    "Scene 04 – Climax":  [{ id: "bd-d1", reason: "Pyrotechnics" }, { id: "bd-d2", reason: "Safety Equipment" }],
+  "Dhurandhar 1": {
+    "SC-01 – Gateway of India Chase": [
+      { id: "bd-d1-01-1", reason: "Stunt team & coordinators" },
+    ],
+    "SC-02 – Mumbai Port Explosion": [
+      { id: "bd-d1-02-1", reason: "VFX & digital effects" },
+      { id: "bd-d1-02-2", reason: "Practical explosives & pyrotechnics" },
+      { id: "bd-d1-02-3", reason: "Crane & heavy equipment" },
+      { id: "bd-d1-02-4", reason: "Port location & marine crew" },
+      { id: "bd-d1-02-5", reason: "Night shoot crew overtime" },
+      { id: "bd-d1-02-6", reason: "Safety & medical team" },
+    ],
   },
-  "Dhurandhar 2": {
-    "Scene 01 – Intro":   [{ id: "bd-e1", reason: "Costume Design" }],
-    "Scene 02 – Chase":   [{ id: "bd-f1", reason: "Vehicle Hire" }, { id: "bd-f2", reason: "Fuel & Transport" }],
-    "Scene 03 – Finale":  [{ id: "bd-g1", reason: "Orchestra" }],
+  "Bhoot Bangla": {
+    "SC-01 – Goa Beach Heist": [
+      { id: "bd-d2-01-1", reason: "Goa beach location & permits" },
+      { id: "bd-d2-01-2", reason: "Boat & marine equipment" },
+      { id: "bd-d2-01-3", reason: "Water stunt team" },
+      { id: "bd-d2-01-4", reason: "Underwater camera crew" },
+      { id: "bd-d2-01-5", reason: "Helicopter aerial shots" },
+    ],
+    "SC-02 – Police HQ Infiltration": [
+      { id: "bd-d2-02-1", reason: "Police station set construction" },
+      { id: "bd-d2-02-2", reason: "Camera & lighting equipment" },
+      { id: "bd-d2-02-3", reason: "Stunt & action sequences" },
+      { id: "bd-d2-02-4", reason: "VFX cleanup & compositing" },
+    ],
   },
 };
 
@@ -60,81 +78,146 @@ function breakdownsForScene(project: string, scene: string): Breakdown[] {
 }
 
 const INITIAL_PAYMENTS: Payment[] = [
-  { id: "p1",  project: "Dhurandhar",   scene: "Scene 01 – Action",  location: "Mumbai",   breakdownId: "bd-a1", breakdown: "Equipment Rental",      amount: 2_50_000, status: "Paid",     submittedAt: "2025-01-10", statusChangedAt: "2025-01-14", billFileName: "equipment_jan.pdf"   },
-  { id: "p2",  project: "Dhurandhar",   scene: "Scene 01 – Action",  location: "Mumbai",   breakdownId: "bd-a2", breakdown: "Stunt Coordinator",     amount: 75_000,   status: "Paid",     submittedAt: "2025-01-18", statusChangedAt: "2025-01-20", billFileName: "stunt_invoice.pdf"  },
-  { id: "p3",  project: "Dhurandhar",   scene: "Scene 02 – Drama",   location: "Mumbai",   breakdownId: "bd-b1", breakdown: "Location Fee",          amount: 1_20_000, status: "Paid",     submittedAt: "2025-02-03", statusChangedAt: "2025-02-06", billFileName: "location_feb.pdf"   },
-  { id: "p4",  project: "Dhurandhar",   scene: "Scene 02 – Drama",   location: "Pune",     breakdownId: "bd-b1", breakdown: "Location Fee",          amount: 45_000,   status: "Rejected", submittedAt: "2025-02-05", statusChangedAt: "2025-02-07", billFileName: "location_extra.pdf" },
-  { id: "p5",  project: "Dhurandhar",   scene: "Scene 03 – VFX",     location: "Mumbai",   breakdownId: "bd-c1", breakdown: "VFX Software License",  amount: 4_80_000, status: "Paid",     submittedAt: "2025-02-20", statusChangedAt: "2025-02-25", billFileName: "vfx_license.pdf"    },
-  { id: "p6",  project: "Dhurandhar",   scene: "Scene 03 – VFX",     location: "Hyderabad",breakdownId: "bd-c2", breakdown: "3D Artist",             amount: 1_10_000, status: "Paid",     submittedAt: "2025-02-28", statusChangedAt: "2025-03-02", billFileName: "artist_invoice.pdf" },
-  { id: "p7",  project: "Dhurandhar",   scene: "Scene 04 – Climax",  location: "Mumbai",   breakdownId: "bd-d1", breakdown: "Pyrotechnics",          amount: 3_20_000, status: "Paid",     submittedAt: "2025-03-07", statusChangedAt: "2025-03-10", billFileName: "pyro_bill.pdf"      },
-  { id: "p8",  project: "Dhurandhar",   scene: "Scene 04 – Climax",  location: "Mumbai",   breakdownId: "bd-d2", breakdown: "Safety Equipment",      amount: 85_000,   status: "Rejected", submittedAt: "2025-03-12", statusChangedAt: "2025-03-13", billFileName: "safety_equip.pdf"   },
-  { id: "p9",  project: "Dhurandhar 2", scene: "Scene 01 – Intro",   location: "Goa",      breakdownId: "bd-e1", breakdown: "Costume Design",        amount: 95_000,   status: "Paid",     submittedAt: "2025-03-22", statusChangedAt: "2025-03-26", billFileName: "costume_mar.pdf"    },
-  { id: "p10", project: "Dhurandhar 2", scene: "Scene 01 – Intro",   location: "Goa",      breakdownId: "bd-e1", breakdown: "Costume Design",        amount: 60_000,   status: "Paid",     submittedAt: "2025-03-25", statusChangedAt: "2025-03-28", billFileName: "costume_extra.pdf"  },
-  { id: "p11", project: "Dhurandhar 2", scene: "Scene 02 – Chase",   location: "Rajasthan",breakdownId: "bd-f1", breakdown: "Vehicle Hire",          amount: 2_10_000, status: "Pending",  submittedAt: "2025-04-01", statusChangedAt: null,         billFileName: "vehicle_apr.pdf"    },
-  { id: "p12", project: "Dhurandhar 2", scene: "Scene 02 – Chase",   location: "Rajasthan",breakdownId: "bd-f2", breakdown: "Fuel & Transport",      amount: 55_000,   status: "Pending",  submittedAt: "2025-04-03", statusChangedAt: null,         billFileName: "fuel_apr.pdf"       },
-  { id: "p13", project: "Dhurandhar 2", scene: "Scene 03 – Finale",  location: "Mumbai",   breakdownId: "bd-g1", breakdown: "Orchestra",             amount: 1_80_000, status: "Pending",  submittedAt: "2025-04-10", statusChangedAt: null,         billFileName: "orchestra_bill.pdf" },
+  { id: "p1",  project: "Dhurandhar 1", scene: "SC-01 – Gateway of India Chase",  location: "Mumbai",    breakdownId: "bd-d1-01-1", breakdown: "Stunt team & coordinators",      amount: 12_000_000, status: "Paid",    submittedAt: "2025-01-10", statusChangedAt: "2025-01-14", billFileName: "stunt_invoice.pdf"    },
+  { id: "p2",  project: "Dhurandhar 1", scene: "SC-01 – Gateway of India Chase",  location: "Mumbai",    breakdownId: "bd-d1-01-1", breakdown: "Stunt team & coordinators",      amount:  8_000_000, status: "Rejected", submittedAt: "2025-01-18", statusChangedAt: "2025-01-20", billFileName: "stunt_invoice_2.pdf"  },
+  { id: "p3",  project: "Dhurandhar 1", scene: "SC-02 – Mumbai Port Explosion",   location: "Mumbai",    breakdownId: "bd-d1-02-1", breakdown: "VFX & digital effects",           amount: 76_000_000, status: "Paid",    submittedAt: "2025-02-03", statusChangedAt: "2025-02-06", billFileName: "vfx_invoice.pdf"      },
+  { id: "p4",  project: "Dhurandhar 1", scene: "SC-02 – Mumbai Port Explosion",   location: "Mumbai",    breakdownId: "bd-d1-02-2", breakdown: "Practical explosives & pyrotechnics", amount: 47_000_000, status: "Paid", submittedAt: "2025-02-05", statusChangedAt: "2025-02-07", billFileName: "pyro_bill.pdf"        },
+  { id: "p5",  project: "Bhoot Bangla", scene: "SC-01 – Goa Beach Heist",         location: "Goa",       breakdownId: "bd-d2-01-2", breakdown: "Boat & marine equipment",         amount: 37_000_000, status: "Paid",    submittedAt: "2025-03-22", statusChangedAt: "2025-03-26", billFileName: "boat_invoice.pdf"     },
+  { id: "p6",  project: "Bhoot Bangla", scene: "SC-01 – Goa Beach Heist",         location: "Goa",       breakdownId: "bd-d2-01-3", breakdown: "Water stunt team",               amount: 32_000_000, status: "Paid",    submittedAt: "2025-03-25", statusChangedAt: "2025-03-28", billFileName: "stunt_goa.pdf"        },
+  { id: "p7",  project: "Bhoot Bangla", scene: "SC-02 – Police HQ Infiltration",  location: "Mumbai",    breakdownId: "bd-d2-02-1", breakdown: "Police station set construction", amount: 37_500_000, status: "Paid",    submittedAt: "2025-04-01", statusChangedAt: null,         billFileName: "set_invoice.pdf"      },
+  { id: "p8",  project: "Bhoot Bangla", scene: "SC-02 – Police HQ Infiltration",  location: "Mumbai",    breakdownId: "bd-d2-02-2", breakdown: "Camera & lighting equipment",     amount: 20_000_000, status: "Pending", submittedAt: "2025-04-03", statusChangedAt: null,         billFileName: "camera_invoice.pdf"   },
 ];
+
+/* ─── bill viewer ─────────────────────────────────────────────────────── */
+
+const STATUS_STYLE: Record<"Paid" | "Rejected" | "Pending", { bg: string; color: string }> = {
+  Paid:     { bg: "rgba(16,185,129,.15)",  color: "#34d399" },
+  Rejected: { bg: "rgba(239,68,68,.15)",   color: "#f87171" },
+  Pending:  { bg: "rgba(245,158,11,.15)",  color: "#fbbf24" },
+};
+
+function BillViewerDialog({ payment, onClose }: { payment: Payment; onClose: () => void }) {
+  const sc = STATUS_STYLE[payment.status];
+  return (
+    <div
+      className="fixed inset-0 z-50 flex items-center justify-center"
+      style={{ background: "rgba(0,0,0,.72)" }}
+      onClick={onClose}
+    >
+      <div
+        className="relative flex flex-col rounded-[14px] overflow-hidden"
+        style={{ background: "#1a1d23", border: "1px solid rgba(255,255,255,.1)", width: "min(760px, 94vw)", height: "min(640px, 90vh)" }}
+        onClick={e => e.stopPropagation()}
+      >
+        {/* Header */}
+        <div className="flex items-center gap-3 px-5 py-4 border-b border-[rgba(255,255,255,.07)]">
+          <div className="w-8 h-8 rounded-lg bg-[rgba(99,102,241,.18)] flex items-center justify-center text-[#a5b4fc]">
+            <Icon name="file-text" size={15} />
+          </div>
+          <div className="flex-1 min-w-0">
+            <div className="text-[14px] font-semibold text-[#f0f2f5]">{payment.breakdown}</div>
+            <div className="flex items-center gap-3 mt-1">
+              <span className="text-[13px] font-bold text-[#34d399]">{fmtShort(payment.amount)}</span>
+              <span className="text-[13px] text-gray-400">{payment.scene}</span>
+            </div>
+          </div>
+          <span className="text-[11px] font-semibold px-2 py-[3px] rounded-full" style={{ background: sc.bg, color: sc.color }}>
+            {payment.status}
+          </span>
+          <button onClick={onClose} className="ml-1 text-gray-500 hover:text-[#f0f2f5] transition-colors">
+            <Icon name="x" size={16} />
+          </button>
+        </div>
+        {/* PDF */}
+        <div className="flex-1 overflow-hidden bg-[#111317]">
+          <iframe src="/sample_invoice.pdf" className="w-full h-full border-0" title="Bill document" />
+        </div>
+      </div>
+    </div>
+  );
+}
 
 /* ─── grouping ───────────────────────────────────────────────────────── */
 
-function groupPayments(payments: Payment[]) {
-  const projectOrder: string[] = [];
-  const byProject = new Map<string, Map<string, Map<string, Payment[]>>>();
+function getGroupedPayments(payments: Payment[]) {
+  // Sort payments: Project -> Scene -> Breakdown -> SubmittedAt (desc)
+  const sorted = [...payments].sort((a, b) => {
+    if (a.project !== b.project) return a.project.localeCompare(b.project);
+    if (a.scene !== b.scene) return a.scene.localeCompare(b.scene);
+    if (a.breakdown !== b.breakdown) return a.breakdown.localeCompare(b.breakdown);
+    return new Date(b.submittedAt).getTime() - new Date(a.submittedAt).getTime();
+  });
 
-  for (const p of payments) {
-    if (!byProject.has(p.project)) {
-      byProject.set(p.project, new Map());
-      projectOrder.push(p.project);
+  const grouped: {
+    payment: Payment;
+    projectSpan: number;
+    sceneSpan: number;
+    breakdownSpan: number;
+  }[] = [];
+
+  for (let i = 0; i < sorted.length; i++) {
+    const p = sorted[i];
+    let projectSpan = 0;
+    let sceneSpan = 0;
+    let breakdownSpan = 0;
+
+    // Is this the start of a project group?
+    if (i === 0 || sorted[i - 1].project !== p.project) {
+      for (let j = i; j < sorted.length && sorted[j].project === p.project; j++) projectSpan++;
     }
-    const byScene = byProject.get(p.project)!;
-    if (!byScene.has(p.scene)) byScene.set(p.scene, new Map());
-    const byBreakdown = byScene.get(p.scene)!;
-    const key = p.breakdown;
-    if (!byBreakdown.has(key)) byBreakdown.set(key, []);
-    byBreakdown.get(key)!.push(p);
+
+    // Is this the start of a scene group?
+    if (i === 0 || sorted[i - 1].project !== p.project || sorted[i - 1].scene !== p.scene) {
+      for (let j = i; j < sorted.length && sorted[j].project === p.project && sorted[j].scene === p.scene; j++) sceneSpan++;
+    }
+
+    // Is this the start of a breakdown group?
+    if (i === 0 || sorted[i - 1].project !== p.project || sorted[i - 1].scene !== p.scene || sorted[i - 1].breakdown !== p.breakdown) {
+      for (let j = i; j < sorted.length && sorted[j].project === p.project && sorted[j].scene === p.scene && sorted[j].breakdown === p.breakdown; j++) breakdownSpan++;
+    }
+
+    grouped.push({ payment: p, projectSpan, sceneSpan, breakdownSpan });
   }
 
-  return projectOrder.map(project => ({
-    project,
-    total: [...byProject.get(project)!.values()].flatMap(m => [...m.values()].flat()).reduce((s, r) => s + r.amount, 0),
-    scenes: [...byProject.get(project)!.entries()].map(([scene, byBreakdown]) => ({
-      scene,
-      total: [...byBreakdown.values()].flat().reduce((s, r) => s + r.amount, 0),
-      breakdowns: [...byBreakdown.entries()].map(([breakdown, rows]) => ({ breakdown, rows })),
-    })),
-  }));
+  return grouped;
 }
 
 /* ─── constants ──────────────────────────────────────────────────────── */
 
-const STATUS_CONFIG = {
-  Paid:     { color: "#34d399" },
-  Pending:  { color: "#f59e0b" },
-  Rejected: { color: "#f87171" },
-};
+const thCls = "text-[10px] font-bold text-gray-500 uppercase tracking-[0.07em] px-[12px] py-2.5 whitespace-nowrap bg-[rgba(255,255,255,.03)] border-b border-[rgba(255,255,255,.07)] text-left";
+const thRCls = `${thCls} text-right`;
+const thCCls = `${thCls} text-center`;
 
-const BADGE_CLASS = {
-  Paid:     "badge badge-paid",
-  Pending:  "badge badge-pending",
-  Rejected: "badge badge-over",
+const tdCls = "text-[12px] text-[#e5e7eb] px-[12px] py-[12px] border-b border-[rgba(255,255,255,.05)] align-top";
+const tdRCls = `${tdCls} text-right font-mono`;
+const tdCCls = `${tdCls} text-center`;
+
+const STATUS_COLORS: Record<string, string> = {
+  Paid: "#34d399",
+  Rejected: "#f87171",
+  Pending: "#f59e0b",
 };
 
 function fmt(d: string) {
   return new Date(d).toLocaleDateString("en-IN", { day: "numeric", month: "short", year: "numeric" });
 }
 
-function dateLabel(p: Payment): string {
-  if (p.status === "Pending") return `Submitted on ${fmt(p.submittedAt)}`;
-  return `${p.status} on ${fmt(p.statusChangedAt ?? p.submittedAt)}`;
-}
-
 /* ─── component ──────────────────────────────────────────────────────── */
 
 export default function VendorPortalPage() {
   const { name, email } = useVendorStore();
-  void name; void email;
+  const [logoUrl, setLogoUrl] = useState<string | null>(null);
   const [payments, setPayments] = useState<Payment[]>(INITIAL_PAYMENTS);
+
+  const handleLogoChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+    const reader = new FileReader();
+    reader.onload = () => setLogoUrl(reader.result as string);
+    reader.readAsDataURL(file);
+  };
   const [modalOpen, setModalOpen] = useState(false);
+  const [viewingBill, setViewingBill] = useState<Payment | null>(null);
 
   const [mpProject,  setMpProject]  = useState(PROJECTS[0].name);
   const [mpScene,    setMpScene]    = useState("");
@@ -185,6 +268,16 @@ export default function VendorPortalPage() {
     setMpFiles(prev => prev.filter((_, i) => i !== idx));
   }
 
+  const totalSettled       = payments.filter(p => p.status === "Paid").reduce((s, p) => s + p.amount, 0);
+  const totalPending       = payments.filter(p => p.status === "Pending").reduce((s, p) => s + p.amount, 0);
+  const totalRejectedAmt   = payments.filter(p => p.status === "Rejected").reduce((s, p) => s + p.amount, 0);
+  const paidCount          = payments.filter(p => p.status === "Paid").length;
+  const rejectedCount      = payments.filter(p => p.status === "Rejected").length;
+  const pendingCount       = payments.filter(p => p.status === "Pending").length;
+  const movieCount         = new Set(payments.map(p => p.project)).size;
+
+  const groupedPayments = getGroupedPayments(payments);
+
   return (
     <VendorFrame>
       <div className="flex flex-col h-full">
@@ -199,6 +292,35 @@ export default function VendorPortalPage() {
               </button>
             }
           />
+
+          {/* Vendor profile with logo upload */}
+          <div className="flex items-center gap-3 mb-4">
+            <label className="w-[44px] h-[44px] rounded-[12px] shrink-0 cursor-pointer relative group overflow-hidden shadow-lg" title="Upload logo">
+              {logoUrl ? (
+                <img src={logoUrl} alt="Logo" className="w-full h-full object-cover" />
+              ) : (
+                <div className="w-full h-full bg-gradient-to-br from-[#6366f1] to-[#e83e8c] flex items-center justify-center text-white font-bold text-[16px]">
+                  {(name || email || 'V').charAt(0).toUpperCase()}
+                </div>
+              )}
+              <div className="absolute inset-0 bg-black/50 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity rounded-[12px]">
+                <Icon name="upload" size={13} style={{ color: 'white' }} />
+              </div>
+              <input type="file" accept="image/*" className="hidden" onChange={handleLogoChange} />
+            </label>
+            <div>
+              <div className="text-[14px] font-semibold text-[#f0f2f5]">{name || 'Vendor'}</div>
+              <div className="text-[11px] text-gray-500">{email || '—'}</div>
+            </div>
+          </div>
+
+          {/* KPI strip */}
+          <div className="grid grid-cols-4 gap-3 mb-5">
+            <KPI label="Total Settled"  value={fmtShort(totalSettled)}    sub={`${paidCount} bills`}     icon="wallet"    />
+            <KPI label="Total Pending"  value={fmtShort(totalPending)}    sub={`${pendingCount} bills`}  icon="rupee"     />
+            <KPI label="Total Rejected" value={fmtShort(totalRejectedAmt)} sub={`${rejectedCount} bills`} icon="trendDown" />
+            <KPI label="Movies"         value={movieCount}                 sub="Across portfolio"         icon="film"      />
+          </div>
         </div>
 
         {/* Scrollable list */}
@@ -208,92 +330,87 @@ export default function VendorPortalPage() {
               No payment requests yet.
             </div>
           ) : (
-            <div className="flex flex-col gap-6">
-              {groupPayments(payments).map(({ project, total, scenes }) => (
-                <div key={project}>
-                  {/* Movie header */}
-                  <div className="flex items-center justify-between gap-2.5 mb-3">
-                    <div className="flex items-center gap-2.5">
-                      <div className="w-[26px] h-[26px] rounded-[7px] shrink-0 bg-gradient-to-br from-[#6366f1] to-[#e83e8c] flex items-center justify-center">
-                        <Icon name="film" size={13} stroke={1.5} className="text-white" />
-                      </div>
-                      <span className="text-[14px] font-bold text-[#f0f2f5] tracking-[-0.01em]">{project}</span>
-                    </div>
-                    <span className="num text-[15px] font-bold text-[#f0f2f5]">{fmtShort(total)}</span>
-                  </div>
+            <div className="card overflow-hidden">
+              <div className="overflow-x-auto">
+                <table className="w-full border-collapse min-w-[900px]">
+                  <thead>
+                    <tr>
+                      <th className={thCls}>Movie Name</th>
+                      <th className={thCls}>Scene Name</th>
+                      <th className={thCls}>Reason</th>
+                      <th className={thRCls}>Requested Amount</th>
+                      <th className={thCCls}>Bill</th>
+                      <th className={thCls}>Status</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    {groupedPayments.map(({ payment: p, projectSpan, sceneSpan, breakdownSpan }, idx) => {
+                      const isLastOfProject = idx === groupedPayments.length - 1 || groupedPayments[idx + 1].payment.project !== p.project;
+                      const projectTotal = isLastOfProject ? payments.filter(pay => pay.project === p.project).reduce((s, r) => s + r.amount, 0) : 0;
 
-                  {/* Scenes */}
-                  <div className="flex flex-col gap-3">
-                    {scenes.map(({ scene, total: sceneTotal, breakdowns }) => (
-                      <div key={scene} className="card overflow-hidden">
-
-                        {/* Scene header */}
-                        <div className="flex items-center justify-between px-4 py-[10px] border-b border-[rgba(255,255,255,.06)] bg-[rgba(255,255,255,.02)]">
-                          <div className="flex items-center gap-2">
-                            <Icon name="camera" size={13} stroke={1.5} className="text-gray-500" />
-                            <span className="text-[12px] font-semibold text-gray-400">{scene}</span>
-                          </div>
-                          <span className="num text-[13px] font-bold text-[#e5e7eb]">
-                            {fmtShort(sceneTotal)}
-                          </span>
-                        </div>
-
-                        {/* Breakdowns */}
-                        {breakdowns.map(({ breakdown, rows }, bIdx) => (
-                          <div
-                            key={breakdown}
-                            className={bIdx > 0 ? "border-t border-[rgba(255,255,255,.06)]" : ""}
-                          >
-                            {/* Breakdown label */}
-                            <div className="flex items-center justify-between px-4 py-2 pb-1.5 bg-[rgba(255,255,255,.015)]">
-                              <span className="text-[11px] font-semibold text-gray-500 uppercase tracking-[0.06em]">
-                                {breakdown}
-                              </span>
-                              <span className="num text-[12px] text-gray-400">
-                                {fmtShort(rows.reduce((s, r) => s + r.amount, 0))}
-                              </span>
-                            </div>
-
-                            {/* Payment rows */}
-                            {rows.map(p => (
-                              <div key={p.id} className="flex items-start gap-[14px] px-4 py-[10px] pl-5 border-t border-[rgba(255,255,255,.04)]">
-                                <div
-                                  className="w-1.5 h-1.5 rounded-full shrink-0 mt-[5px]"
-                                  style={{ background: STATUS_CONFIG[p.status].color }}
-                                />
-                                <div className="flex-1 min-w-0">
-                                  <div className="flex items-center gap-2 flex-wrap">
-                                    <span className={BADGE_CLASS[p.status]}>{p.status}</span>
-                                    <span className="text-[11px] text-gray-500">{dateLabel(p)}</span>
-                                  </div>
-                                  {p.billFileName && (
-                                    <button
-                                      onClick={() => toast.info(`Opening ${p.billFileName}…`)}
-                                      className="flex items-center gap-[5px] mt-[4px] bg-transparent border-0 p-0 cursor-pointer text-left"
-                                    >
-                                      <Icon name="file" size={11} className="text-[#6366f1] shrink-0" />
-                                      <span className="text-[11px] text-[#a5b4fc] overflow-hidden text-ellipsis whitespace-nowrap hover:underline">
-                                        {p.billFileName}
-                                      </span>
-                                    </button>
-                                  )}
-                                </div>
-                                <div className="num text-[15px] font-bold text-[#f0f2f5] shrink-0">
-                                  {fmtShort(p.amount)}
-                                </div>
+                      return (
+                        <Fragment key={p.id}>
+                          <tr>
+                            {projectSpan > 0 && (
+                              <td rowSpan={projectSpan} className={`${tdCls} font-bold text-[#f0f2f5] max-w-[180px]`}>
+                                <span className="truncate" title={p.project}>{p.project}</span>
+                              </td>
+                            )}
+                            {sceneSpan > 0 && (
+                              <td rowSpan={sceneSpan} className={`${tdCls} text-gray-400 font-semibold max-w-[180px]`}>
+                                <span className="truncate" title={p.scene}>{p.scene}</span>
+                              </td>
+                            )}
+                            {breakdownSpan > 0 && (
+                              <td rowSpan={breakdownSpan} className={`${tdCls} text-gray-400 max-w-[200px]`}>
+                                <span className="line-clamp-2" title={p.breakdown}>{p.breakdown}</span>
+                              </td>
+                            )}
+                            <td className={`${tdRCls} font-bold text-[#f0f2f5]`}>
+                              {fmtShort(p.amount)}
+                            </td>
+                            <td className={tdCCls}>
+                              {p.billFileName ? (
+                                <button
+                                  onClick={() => setViewingBill(p)}
+                                  className="bg-transparent border-0 cursor-pointer text-[#a5b4fc] hover:text-[#c4b5fd] transition-colors p-0"
+                                  title={p.billFileName}
+                                >
+                                  <Icon name="file" size={14} />
+                                </button>
+                              ) : (
+                                <span className="text-gray-600">—</span>
+                              )}
+                            </td>
+                            <td className={tdCls}>
+                              <div className="flex flex-col items-start gap-1">
+                                <span className="text-[11px] font-bold" style={{ color: STATUS_COLORS[p.status] }}>{p.status}</span>
+                                <span className="text-[10px] text-gray-400 whitespace-nowrap">
+                                  {fmtDateTime(p.statusChangedAt ?? p.submittedAt)}
+                                </span>
                               </div>
-                            ))}
-                          </div>
-                        ))}
-                      </div>
-                    ))}
-                  </div>
-                </div>
-              ))}
+                            </td>
+                          </tr>
+                          {isLastOfProject && (
+                            <tr className="bg-[rgba(255,255,255,.04)]">
+                              <td colSpan={3} className={`${tdCls} font-bold text-gray-500 text-[10px] text-right tracking-[0.05em]`}>Movie Total</td>
+                              <td className={`${tdRCls} font-bold text-[#f0f2f5]`}>{fmtShort(projectTotal)}</td>
+                              <td colSpan={2} className={tdCls} />
+                            </tr>
+                          )}
+                        </Fragment>
+                      );
+                    })}
+                  </tbody>
+                </table>
+              </div>
             </div>
           )}
         </div>
       </div>
+
+      {/* Bill viewer */}
+      {viewingBill && <BillViewerDialog payment={viewingBill} onClose={() => setViewingBill(null)} />}
 
       {/* Submit Bill modal */}
       <Modal open={modalOpen} onClose={() => { setModalOpen(false); resetForm(); }}>
@@ -377,11 +494,10 @@ export default function VendorPortalPage() {
             )}
           </div>
 
-          {/* Bill / Invoice upload — multiple files */}
+          {/* Bill / Invoice upload */}
           <div className="field mb-0">
             <label className="label">Invoice / Bill</label>
 
-            {/* Existing files */}
             {mpFiles.length > 0 && (
               <div className="flex flex-col gap-1.5 mb-2">
                 {mpFiles.map((file, idx) => (
@@ -396,7 +512,6 @@ export default function VendorPortalPage() {
               </div>
             )}
 
-            {/* Add file button */}
             <label className="flex items-center gap-2.5 px-3 py-[10px] cursor-pointer border border-dashed border-[rgba(255,255,255,.15)] rounded-[6px] transition-[border-color,background] hover:border-[rgba(99,102,241,.4)] hover:bg-[rgba(99,102,241,.04)]">
               <Icon name="upload" size={15} className="text-gray-500 shrink-0" />
               <span className="text-[13px] text-gray-500">

@@ -9,7 +9,7 @@ const inter = Inter({
 });
 
 export const metadata: Metadata = {
-  title: "Project X",
+  title: "Studio OS",
   description: "Scene-based production budget management",
 };
 

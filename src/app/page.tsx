@@ -66,7 +66,7 @@ function HeroCard() {
         {/* Card header */}
         <div className="flex items-center justify-between mb-4">
           <div className="flex items-center gap-2">
-            <div className="w-[26px] h-[26px] rounded-[7px] bg-gradient-to-br from-[#6366f1] to-[#e83e8c] flex items-center justify-center text-[10px] font-bold text-white">PX</div>
+            <div className="w-[26px] h-[26px] rounded-[7px] bg-gradient-to-br from-[#6366f1] to-[#e83e8c] flex items-center justify-center text-[10px] font-bold text-white">SO</div>
             <span className="font-semibold text-[13px] text-[#f0f2f5]">Sholay</span>
           </div>
           <div className="flex items-center gap-[5px] text-[11px] text-[#34d399]">
@@ -325,8 +325,8 @@ export default function LandingPage() {
           <nav className="border-b border-[rgba(255,255,255,.05)] backdrop-blur-[12px] sticky top-0 z-50">
             <div className="land-wrap flex items-center justify-between h-[60px]">
               <div className="flex items-center gap-[10px]">
-                <div className="w-[30px] h-[30px] rounded-lg bg-gradient-to-br from-[#6366f1] to-[#e83e8c] flex items-center justify-center text-white text-[11px] font-extrabold tracking-[-0.02em]">PX</div>
-                <span className="font-bold text-[15px] tracking-[-0.02em]">Project X</span>
+                <div className="w-[30px] h-[30px] rounded-lg bg-gradient-to-br from-[#6366f1] to-[#e83e8c] flex items-center justify-center text-white text-[11px] font-extrabold tracking-[-0.02em]">SO</div>
+                <span className="font-bold text-[15px] tracking-[-0.02em]">Studio OS</span>
               </div>
               <button className="btn-nav cursor-pointer" onClick={openWaitlist}>Join Waitlist</button>
             </div>
@@ -403,7 +403,7 @@ export default function LandingPage() {
                   Every buck accounted for.
                 </h2>
                 <p className="text-[15px] text-gray-400 m-0 mb-8">
-                  Join production teams already using Project X to manage their shoots.
+                  Join production teams already using Studio OS to manage their shoots.
                 </p>
                 <button className="btn-primary-lg cursor-pointer border-0" style={{ fontSize: 15, padding: '13px 28px' }} onClick={openWaitlist}>
                   Join the Waitlist
@@ -415,7 +415,7 @@ export default function LandingPage() {
 
           {/* ── Footer ─────────────────────────────────────────────────── */}
           <footer className="border-t border-[rgba(255,255,255,.05)] py-7 px-6 text-center text-[12px] text-[#374151]">
-            <div className="mb-[6px]">© {new Date().getFullYear()} Project X · Built for Indian film &amp; TV production</div>
+            <div className="mb-[6px]">© {new Date().getFullYear()} Studio OS · Built for Indian film &amp; TV production</div>
             <div>
               Powered by{' '}
               <a href="https://daftar.one" target="_blank" rel="noopener noreferrer" className="text-gray-500 no-underline font-medium hover:text-gray-400">Daftar.One</a>
@@ -441,7 +441,7 @@ export default function LandingPage() {
                   </button>
                 </div>
                 <p className="text-[13.5px] text-gray-400 leading-[1.65] m-0 mb-6">
-                  Be the first to know when Project X opens to new productions. We'll reach out as soon as a spot opens up.
+                  Be the first to know when Studio OS opens to new productions. We'll reach out as soon as a spot opens up.
                 </p>
                 <div className="mb-4">
                   <label className="text-[11px] font-semibold text-gray-500 uppercase tracking-[.07em] block mb-2">Email address</label>

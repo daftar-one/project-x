@@ -6,7 +6,6 @@ import { AppFrame } from '@/components/shared/app-frame';
 import { Icon } from '@/components/shared/icon';
 import { KPI } from '@/components/shared/kpi';
 import { Modal } from '@/components/shared/modal';
-import { DatePicker } from '@/components/shared/date-picker';
 import { Avatar } from '@/components/shared/avatar';
 import { Tabs } from '@/components/shared/tabs';
 import { LoadingCard, ErrorCard } from '@/components/shared/loading-card';
@@ -18,10 +17,11 @@ import { useVendors } from '@/hooks/useVendors';
 import { useTeam } from '@/hooks/useTeam';
 import { useCollaborators } from '@/hooks/useCollaborators';
 import { useProjectWallet } from '@/hooks/useWallet';
+import { useProductionHouse } from '@/hooks/useProductionHouse';
 
 import { useAuthStore } from '@/store/auth';
 import { fmtShort } from '@/lib/format';
-import { getMockBills } from '@/lib/mock-data';
+import { getMockBills, MOCK_LOCKED_SCENE_IDS } from '@/lib/mock-data';
 import { toast } from 'sonner';
 import type { Collaborator, Vendor } from '@/lib/types';
 
@@ -31,11 +31,6 @@ const ROLE_LABELS: Record<string, string> = {
   line_producer: 'Line Producer',
   executive_producer: 'Executive Producer',
   accounts_manager: 'Accounts Manager',
-};
-const ROLE_COLORS: Record<string, { bg: string; color: string }> = {
-  line_producer: { bg: 'rgba(99,102,241,.15)', color: '#a5b4fc' },
-  executive_producer: { bg: 'rgba(232,62,140,.15)', color: '#f472b6' },
-  accounts_manager: { bg: 'rgba(16,185,129,.15)', color: '#34d399' },
 };
 
 /* ─── types ──────────────────────────────────────────────────────── */
@@ -55,7 +50,7 @@ function TeamContent({ projectId, isLP }: { projectId: string; isLP: boolean }) 
   const [inviteOpen, setInviteOpen] = useState(false);
   const [inviteEmail, setInviteEmail] = useState('');
   const [inviteRole, setInviteRole] = useState('executive_producer');
-  const [inviting, setInviting] = useState(false);
+  const [inviting] = useState(false);
   const [inviteError, setInviteError] = useState('');
   const [colSearch, setColSearch] = useState('');
   const [colOpen, setColOpen] = useState(false);
@@ -64,12 +59,21 @@ function TeamContent({ projectId, isLP }: { projectId: string; isLP: boolean }) 
   const [vendorName, setVendorName] = useState('');
   const [vendorEmail, setVendorEmail] = useState('');
   const [vendorLocation, setVendorLocation] = useState('');
-  const [savingVendor, setSavingVendor] = useState(false);
+  const [savingVendor] = useState(false);
   const [vendorError, setVendorError] = useState('');
 
-  const { data: teamFromApi, loading: teamLoading, error: teamError, refetch: refetchTeam } = useTeam(projectId);
+  const [vendorLogos, setVendorLogos] = useState<Record<string, string>>({});
+  const handleVendorLogoChange = (vendorId: string, e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+    const reader = new FileReader();
+    reader.onload = () => setVendorLogos(prev => ({ ...prev, [vendorId]: reader.result as string }));
+    reader.readAsDataURL(file);
+  };
+
+  const { data: teamFromApi, loading: teamLoading } = useTeam(projectId);
   const team = [...STATIC_TEAM, ...teamFromApi];
-  const { data: vendors, loading: vendorLoading, error: vendorError2, refetch: refetchVendors } = useVendors();
+  const { data: vendors, loading: vendorLoading, error: vendorError2 } = useVendors();
   const { data: collaborators } = useCollaborators(projectId);
 
   const resetInviteModal = () => { setInviteEmail(''); setInviteRole('executive_producer'); setInviteError(''); setColSearch(''); setColOpen(false); setSelectedCol(null); };
@@ -111,13 +115,20 @@ function TeamContent({ projectId, isLP }: { projectId: string; isLP: boolean }) 
                 ) : team.map(m => {
                   const displayName = m.user_full_name || m.user_email;
                   const roleLabel = ROLE_LABELS[m.role] ?? m.role;
-                  const roleStyle = ROLE_COLORS[m.role] ?? { bg: 'rgba(255,255,255,.08)', color: '#9ca3af' };
+                  const isAccepted = m.status === 'accepted';
                   return (
-                    <tr key={m.id}>
-                      <td><div className="flex items-center gap-[10px]"><Avatar name={displayName} size={30} /><div className="font-semibold">{displayName}</div></div></td>
+                    <tr key={m.id} style={{ opacity: isAccepted ? 1 : 0.45 }}>
+                      <td>
+                        <div className="flex items-center gap-[10px]">
+                          <div className="w-[28px] h-[28px] rounded-[8px] shrink-0 bg-gradient-to-br from-[#6366f1] to-[#8b5cf6] flex items-center justify-center text-white text-[11px] font-bold">
+                            {displayName.charAt(0)}
+                          </div>
+                          <div className="font-semibold">{displayName}</div>
+                        </div>
+                      </td>
                       <td className="text-gray-500">{m.user_email}</td>
-                      <td><span className="inline-flex py-[3px] px-[9px] rounded-[999px] text-[11px] font-semibold" style={{ background: roleStyle.bg, color: roleStyle.color }}>{roleLabel}</span></td>
-                      <td><span className="inline-flex py-[3px] px-[9px] rounded-[999px] text-[11px] font-semibold" style={{ background: m.status === 'accepted' ? 'rgba(16,185,129,.2)' : 'rgba(255,255,255,.1)', color: m.status === 'accepted' ? '#34d399' : '#9ca3af' }}>{m.status === 'accepted' ? 'Accepted' : 'Invited'}</span></td>
+                      <td className="text-gray-400">{roleLabel}</td>
+                      <td className="text-gray-400">{isAccepted ? 'Accepted' : 'Invited'}</td>
                       {isLP && <td className="text-right"><button className="btn btn-danger-ghost btn-sm" onClick={() => handleRemoveMember(m.id, displayName)} title="Remove"><Icon name="trash" size={13} /></button></td>}
                     </tr>
                   );
@@ -136,15 +147,39 @@ function TeamContent({ projectId, isLP }: { projectId: string; isLP: boolean }) 
               <tbody>
                 {vendors.length === 0 ? (
                   <tr><td colSpan={5} className="text-center text-gray-400 p-8">No vendors yet</td></tr>
-                ) : vendors.map(v => (
-                  <tr key={v.id}>
-                    <td className="font-semibold">{v.name}</td>
-                    <td className="text-gray-500">{v.location ?? '—'}</td>
-                    <td className="text-gray-500">{v.email ?? '—'}</td>
-                    <td><span className="inline-flex py-[3px] px-[9px] rounded-[999px] text-[11px] font-semibold" style={{ background: v.status === 'Active' ? 'rgba(16,185,129,.2)' : 'rgba(255,255,255,.1)', color: v.status === 'Active' ? '#34d399' : '#9ca3af' }}>{v.status}</span></td>
-                    {isLP && <td className="text-right"><button className="btn btn-ghost btn-sm text-[#ef4444]" onClick={() => handleDeleteVendor(v)}><Icon name="trash" size={13} /></button></td>}
-                  </tr>
-                ))}
+                ) : vendors.map(v => {
+                  const isAccepted = v.status === 'Active';
+                  return (
+                    <tr key={v.id} style={{ opacity: isAccepted ? 1 : 0.45 }}>
+                      <td>
+                        <div className="flex items-center gap-[10px]">
+                          <label className="w-[28px] h-[28px] rounded-[8px] shrink-0 cursor-pointer relative group overflow-hidden" title={isLP ? 'Upload logo' : undefined}>
+                            {vendorLogos[v.id] ? (
+                              <img src={vendorLogos[v.id]} alt="" className="w-full h-full object-cover" />
+                            ) : (
+                              <div className="w-full h-full bg-gradient-to-br from-[#6366f1] to-[#8b5cf6] flex items-center justify-center text-white text-[11px] font-bold">
+                                {v.name.charAt(0)}
+                              </div>
+                            )}
+                            {isLP && (
+                              <>
+                                <div className="absolute inset-0 bg-black/50 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity rounded-[8px]">
+                                  <Icon name="upload" size={10} style={{ color: 'white' }} />
+                                </div>
+                                <input type="file" accept="image/*" className="hidden" onChange={e => handleVendorLogoChange(v.id, e)} />
+                              </>
+                            )}
+                          </label>
+                          <div className="font-semibold">{v.name}</div>
+                        </div>
+                      </td>
+                      <td className="text-gray-500">{v.location ?? '—'}</td>
+                      <td className="text-gray-500">{v.email ?? '—'}</td>
+                      <td className="text-gray-400">{isAccepted ? 'Accepted' : v.status}</td>
+                      {isLP && <td className="text-right"><button className="btn btn-danger-ghost btn-sm" onClick={() => handleDeleteVendor(v)} title="Remove"><Icon name="trash" size={13} /></button></td>}
+                    </tr>
+                  );
+                })}
               </tbody>
             </table>
           </div>
@@ -211,6 +246,124 @@ function TeamContent({ projectId, isLP }: { projectId: string; isLP: boolean }) 
   );
 }
 
+/* ─── Production House Profile Card ─────────────────────────────── */
+
+function PHProfileCard({ isLP }: { isLP: boolean }) {
+  const { data: house } = useProductionHouse();
+  const [editing, setEditing] = useState(false);
+  const [name, setName] = useState(house?.brand_name ?? house?.name ?? 'Studio One Films');
+  const [location, setLocation] = useState('Mumbai, Maharashtra');
+  const [email, setEmail] = useState('contact@sofentertainment.in');
+  const [phone, setPhone] = useState('+91 22 4567 8900');
+  const [logoUrl, setLogoUrl] = useState<string | null>(null);
+
+  const handleSave = () => {
+    setEditing(false);
+    toast.success('Production house details updated');
+  };
+
+  const handleLogoChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+    const reader = new FileReader();
+    reader.onload = () => setLogoUrl(reader.result as string);
+    reader.readAsDataURL(file);
+  };
+
+  const lblCls = "text-[9px] font-bold text-gray-500 uppercase tracking-[.07em] mb-1 block";
+  const valCls = "text-[13px] font-semibold text-[#f0f2f5]";
+
+  return (
+    <div className="card p-5 mt-2">
+      <div className="flex items-start gap-5">
+        {/* Logo — always clickable to change */}
+        <label className="w-[60px] h-[60px] rounded-[14px] shrink-0 cursor-pointer relative group overflow-hidden shadow-lg" title="Change logo">
+          {logoUrl ? (
+            <img src={logoUrl} alt="Logo" className="w-full h-full object-cover" />
+          ) : (
+            <div className="w-full h-full bg-gradient-to-br from-[#6366f1] to-[#e83e8c] flex items-center justify-center text-white">
+              <Icon name="film" size={26} stroke={1.5} />
+            </div>
+          )}
+          <div className="absolute inset-0 bg-black/50 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity rounded-[14px]">
+            <Icon name="upload" size={15} style={{ color: 'white' }} />
+          </div>
+          <input type="file" accept="image/*" className="hidden" onChange={handleLogoChange} />
+        </label>
+
+        {/* Details */}
+        <div className="flex-1 min-w-0">
+          {editing ? (
+            <div className="grid grid-cols-2 gap-x-6 gap-y-3">
+              <div>
+                <label className={lblCls}>Production House Name</label>
+                <div className="input-underline py-1">
+                  <Icon name="building" size={14} />
+                  <input value={name} onChange={e => setName(e.target.value)} className="text-[13px]" />
+                </div>
+              </div>
+              <div>
+                <label className={lblCls}>Location</label>
+                <div className="input-underline py-1">
+                  <Icon name="map" size={14} />
+                  <input value={location} onChange={e => setLocation(e.target.value)} className="text-[13px]" />
+                </div>
+              </div>
+              <div>
+                <label className={lblCls}>Email</label>
+                <div className="input-underline py-1">
+                  <Icon name="mail" size={14} />
+                  <input type="email" value={email} onChange={e => setEmail(e.target.value)} className="text-[13px]" />
+                </div>
+              </div>
+              <div>
+                <label className={lblCls}>Phone Number</label>
+                <div className="input-underline py-1">
+                  <Icon name="phone" size={14} />
+                  <input value={phone} onChange={e => setPhone(e.target.value)} className="text-[13px]" />
+                </div>
+              </div>
+            </div>
+          ) : (
+            <div className="grid grid-cols-4 gap-4">
+              <div>
+                <div className={lblCls}>Production House</div>
+                <div className={valCls}>{name}</div>
+              </div>
+              <div>
+                <div className={lblCls}>Location</div>
+                <div className={valCls}>{location}</div>
+              </div>
+              <div>
+                <div className={lblCls}>Email</div>
+                <div className={`${valCls} truncate`}>{email}</div>
+              </div>
+              <div>
+                <div className={lblCls}>Phone</div>
+                <div className={valCls}>{phone}</div>
+              </div>
+            </div>
+          )}
+        </div>
+
+        {/* Edit / Save button */}
+        {isLP && (
+          editing ? (
+            <div className="flex gap-2 shrink-0">
+              <button className="btn btn-ghost btn-sm" onClick={() => setEditing(false)}>Cancel</button>
+              <button className="btn btn-primary btn-sm" onClick={handleSave}>Save</button>
+            </div>
+          ) : (
+            <button className="btn btn-ghost btn-sm shrink-0" onClick={() => setEditing(true)} title="Edit">
+              <Icon name="edit" size={13} />
+            </button>
+          )
+        )}
+      </div>
+    </div>
+  );
+}
+
 /* ─── Main project page ──────────────────────────────────────────── */
 
 export default function ProjectPage() {
@@ -248,9 +401,13 @@ export default function ProjectPage() {
   const [movieLocked, setMovieLocked] = useState(false);
   const [lockMovieOpen, setLockMovieOpen] = useState(false);
   const [wrappedSceneIds, setWrappedSceneIds] = useState<Set<string>>(new Set());
+  const [deletedSceneIds, setDeletedSceneIds] = useState<Set<string>>(new Set());
+  const [lockedSceneIds, setLockedSceneIds] = useState<Set<string>>(new Set());
+  const [deleteSceneConfirmOpen, setDeleteSceneConfirmOpen] = useState(false);
+  const [pendingDeleteSceneId, setPendingDeleteSceneId] = useState<string | null>(null);
 
   const { data: project, loading: projLoading, error: projError } = useProject(id);
-  const { data: scenes, loading: scenesLoading, refetch: refetchScenes } = useScenes(id);
+  const { data: scenes, loading: scenesLoading } = useScenes(id);
   const [orderedScenes, setOrderedScenes] = useState(scenes);
   const [dragOverIdx, setDragOverIdx] = useState<number | null>(null);
   const dragSrcIdx = useRef<number | null>(null);
@@ -284,6 +441,11 @@ export default function ProjectPage() {
   // Keep ordered list in sync when project changes (scenes array gets replaced)
   useEffect(() => {
     setOrderedScenes(scenes);
+    // Pre-mark wrapped scenes as having locked budgets
+    setLockedSceneIds(new Set([
+      ...scenes.filter(s => s.status === 'Wrapped').map(s => s.id),
+      ...[...MOCK_LOCKED_SCENE_IDS].filter(id => scenes.some(s => s.id === id)),
+    ]));
   }, [scenes]); // eslint-disable-line react-hooks/exhaustive-deps
 
   if (projLoading) return <AppFrame><LoadingCard message="Loading project…" /></AppFrame>;
@@ -294,12 +456,13 @@ export default function ProjectPage() {
   // KPIs derived from live scene data
   const kpiPlanned    = scenes.reduce((a, s) => a + s.budget, 0);
   const kpiActual     = scenes.reduce((a, s) => a + s.actual, 0);
-  const kpiVariance   = kpiPlanned - kpiActual;
   const kpiPending    = getMockBills('Pending').filter(b => b.project_id === id).reduce((a, b) => a + b.amount, 0);
   const kpiWrapped    = scenes.filter(s => s.status === 'Wrapped' || wrappedSceneIds.has(s.id)).length;
   const kpiSceneTotal = scenes.length;
 
   const isMovieLocked = movieLocked || p.status === 'Budget Locked' || p.status === 'Wrapped' || p.status === 'Closed';
+
+  const visibleScenes = orderedScenes.filter(s => !deletedSceneIds.has(s.id));
 
   const handleAddScene = () => {
     if (isMovieLocked) {
@@ -315,16 +478,27 @@ export default function ProjectPage() {
     setView({ sceneId: newId, isDraft: true });
   };
 
-  /* ── project subnav (renders inline in primary sidebar below this project) ── */
-  const projectSubnav = (
-    <div className="border-l-2 border-[rgba(99,102,241,.25)] ml-[18px] pb-1">
-      {/* Add Scene */}
-      {isLP && (
-        <div className="side-subnav-item" onClick={handleAddScene}>
-          <Icon name="plus" size={13} /> Add Scene
-        </div>
-      )}
+  const handleTakeItLive = () => {
+    const allLocked = visibleScenes.every(s => lockedSceneIds.has(s.id));
+    if (!allLocked) {
+      toast.error('Some scenes are still not locked. Lock all scene budgets before taking the movie live.');
+      return;
+    }
+    setLockMovieOpen(true);
+  };
 
+  const handleWrapMovie = () => {
+    const allWrapped = visibleScenes.every(s => s.status === 'Wrapped' || wrappedSceneIds.has(s.id));
+    if (!allWrapped) {
+      toast.error('Some scenes are not wrapped. Please wrap all scenes before wrapping the movie.');
+      return;
+    }
+    setWrapConfirmOpen(true);
+  };
+
+  /* ── project subnav (renders in primary sidebar below movie list) ── */
+  const projectSubnav = (
+    <div className="pb-1">
       {/* Nav items */}
       <div className={`side-subnav-item${view === 'team' ? ' active' : ''}`} onClick={() => setView('team')}>
         <Icon name="users" size={13} /> Team & Vendors
@@ -336,6 +510,13 @@ export default function ProjectPage() {
       <div className="pt-[2px] pr-2 pb-[3px] pl-[10px] text-[9.5px] font-semibold text-[#4b5563] uppercase tracking-[.07em]">
         Scenes
       </div>
+
+      {/* Add Scene */}
+      {isLP && (
+        <div className="side-subnav-item mt-[4px]" onClick={handleAddScene}>
+          <Icon name="plus" size={13} /> Add Scene
+        </div>
+      )}
 
       {/* Draft scene */}
       {draftSceneId && (
@@ -350,9 +531,9 @@ export default function ProjectPage() {
 
       {scenesLoading ? (
         <div className="pt-[6px] pr-2 pb-[6px] pl-[10px] text-[11px] text-[#6b7280]">Loading…</div>
-      ) : orderedScenes.length === 0 && !draftSceneId ? (
+      ) : visibleScenes.length === 0 && !draftSceneId ? (
         <div className="pt-1 pr-2 pb-[6px] pl-[10px] text-[11px] text-[#4b5563]">No scenes yet</div>
-      ) : orderedScenes.map((s, idx) => {
+      ) : visibleScenes.map((s, idx) => {
         const isSelected = activeSceneId === s.id && !isDraftView;
         const isDragTarget = dragOverIdx === idx;
         return (
@@ -371,7 +552,7 @@ export default function ProjectPage() {
               e.preventDefault();
               const from = dragSrcIdx.current;
               if (from === null || from === idx) { setDragOverIdx(null); return; }
-              const next = [...orderedScenes];
+              const next = [...visibleScenes];
               const [moved] = next.splice(from, 1);
               next.splice(idx, 0, moved);
               setOrderedScenes(next);
@@ -395,7 +576,7 @@ export default function ProjectPage() {
   return (
     <AppFrame projectSubnav={projectSubnav}>
 
-      {/* ── Project header + KPIs (always shown for this project) ── */}
+      {/* ── Project header ── */}
       <div className="mb-5">
         <div className="flex items-center gap-3 mb-0.5">
           <div className="text-[20px] font-bold tracking-[-0.02em] text-[#f0f2f5] flex-1">{p.name}</div>
@@ -408,7 +589,18 @@ export default function ProjectPage() {
                 <Icon name="lock" size={11} /> Budget Locked
               </span>
               {isLP && (
-                <button className="btn btn-secondary btn-sm" onClick={() => setWrapConfirmOpen(true)}>
+                <button className="btn btn-secondary btn-sm" onClick={handleWrapMovie}>
+                  Wrap Movie
+                </button>
+              )}
+            </>
+          ) : p.status === 'Live' ? (
+            <>
+              <span className="inline-flex items-center gap-1 px-[9px] py-[3px] rounded-full text-[11px] font-semibold" style={{ background: 'rgba(16,185,129,.15)', color: '#34d399' }}>
+                Live
+              </span>
+              {isLP && (
+                <button className="btn btn-secondary btn-sm" onClick={handleWrapMovie}>
                   Wrap Movie
                 </button>
               )}
@@ -419,22 +611,28 @@ export default function ProjectPage() {
                 Planning
               </span>
               {isLP && (
-                <button className="btn btn-primary btn-sm" onClick={() => setLockMovieOpen(true)}>
-                  <Icon name="lock" size={13} /> Lock Movie
+                <button className="btn btn-primary btn-sm" onClick={handleTakeItLive}>
+                  {/* <Icon name="lock" size={13} />  */}
+                  Take It Live
                 </button>
               )}
             </>
           )}
         </div>
         {p.genre && <div className="text-[13px] text-gray-500 mb-[14px]">{p.genre}</div>}
-        <div className="grid grid-cols-3 gap-3">
-          <KPI label="Planned Budget"             value={kpiPlanned  > 0 ? fmtShort(kpiPlanned)  : '—'} icon="wallet" />
-          <KPI label="Actual Spent"               value={kpiActual   > 0 ? fmtShort(kpiActual)   : '—'} icon="trend" />
-          <KPI label="Difference Planned vs Actual" value={fmtShort(kpiVariance)}                        icon="trend" />
-          <KPI label="Funds in Wallet"            value={fmtShort(walletBalance)}                         icon="wallet" />
-          <KPI label="Pending Bills"              value={kpiPending  > 0 ? fmtShort(kpiPending)  : '—'} icon="rupee" />
-          <KPI label="Scenes Done"                value={`${kpiWrapped}/${kpiSceneTotal}`}                icon="film" />
-        </div>
+
+        {/* KPIs — hidden on team view; replaced by PH profile card */}
+        {view !== 'team' ? (
+          <div className="grid grid-cols-5 gap-3">
+            <KPI label="Planned Budget"  value={kpiPlanned > 0 ? fmtShort(kpiPlanned) : '—'} icon="wallet" />
+            <KPI label="Actual Spent"    value={kpiActual  > 0 ? fmtShort(kpiActual)  : '—'} icon="trend"  />
+            <KPI label="Funds in Wallet" value={fmtShort(walletBalance)}                       icon="wallet" />
+            <KPI label="Pending Bills"   value={kpiPending > 0 ? fmtShort(kpiPending) : '—'} icon="rupee"  />
+            <KPI label="Scenes Done"     value={`${kpiWrapped}/${kpiSceneTotal}`}              icon="film"   />
+          </div>
+        ) : (
+          <PHProfileCard isLP={isLP} />
+        )}
       </div>
 
       {/* ── Content ── */}
@@ -453,26 +651,21 @@ export default function ProjectPage() {
           {/* Scene header row */}
           {(() => {
             const activeScene = !isDraftView ? scenes.find(s => s.id === activeSceneId) : null;
-            const isSceneWrapped = activeScene?.status === 'Wrapped' || wrappedSceneIds.has(activeSceneId ?? '');
             return (
               <div className="flex items-center gap-3 mb-4">
                 <div className="text-[16px] font-bold tracking-[-0.02em] text-[#f0f2f5] flex-1">
                   {isDraftView ? (draftSceneName || 'New Scene') : (activeScene?.name ?? 'Scene')}
                 </div>
-                {!isDraftView && (
-                  isSceneWrapped ? (
-                    <span className="badge badge-wrapped">Wrapped</span>
-                  ) : (
-                    <button
-                      className="btn btn-secondary btn-sm"
-                      onClick={() => {
-                        setWrappedSceneIds(prev => new Set([...prev, activeSceneId!]));
-                        toast.success('Scene marked as wrapped');
-                      }}
-                    >
-                      Wrap Scene
-                    </button>
-                  )
+                {!isDraftView && isLP && (
+                  <button
+                    className="btn btn-ghost btn-sm text-[#f87171]"
+                    onClick={() => {
+                      setPendingDeleteSceneId(activeSceneId!);
+                      setDeleteSceneConfirmOpen(true);
+                    }}
+                  >
+                    Delete
+                  </button>
                 )}
               </div>
             );
@@ -486,26 +679,70 @@ export default function ProjectPage() {
             vendors={vendors}
             onSceneNameChange={isDraftView ? setDraftSceneName : undefined}
             onFundsAdded={amount => setWalletBalance(prev => prev + amount)}
+            isSceneWrapped={
+              !isDraftView && (
+                scenes.find(s => s.id === activeSceneId)?.status === 'Wrapped' ||
+                wrappedSceneIds.has(activeSceneId)
+              )
+            }
+            initialLocked={!isDraftView && lockedSceneIds.has(activeSceneId)}
+            onWrapScene={() => {
+              setWrappedSceneIds(prev => new Set([...prev, activeSceneId!]));
+              toast.success('Scene marked as wrapped');
+            }}
+            onSceneLocked={() => {
+              setLockedSceneIds(prev => new Set([...prev, activeSceneId!]));
+            }}
           />
         </div>
       )}
 
-      {/* ── Lock Movie Confirmation ── */}
+      {/* ── Delete Scene Confirmation ── */}
+      <Modal open={deleteSceneConfirmOpen} onClose={() => setDeleteSceneConfirmOpen(false)}>
+        <div className="p-8">
+          <div className="w-[52px] h-[52px] rounded-[14px] mb-5 bg-[rgba(239,68,68,.1)] border border-[rgba(239,68,68,.2)] flex items-center justify-center">
+            <Icon name="trash" size={22} style={{ color: '#f87171' }} />
+          </div>
+          <div className="text-[17px] font-bold text-[#f9fafb] mb-2 tracking-[-0.01em]">Delete Scene?</div>
+          <p className="text-[13px] text-gray-400 m-0 mb-4 leading-[1.7]">
+            This action cannot be undone. The scene and all its data will be permanently removed.
+          </p>
+          <div className="h-px bg-[rgba(255,255,255,.06)] mb-5" />
+          <div className="flex gap-2">
+            <button className="btn btn-secondary btn-sm flex-1 justify-center" onClick={() => setDeleteSceneConfirmOpen(false)}>Cancel</button>
+            <button
+              className="btn btn-sm flex-1 justify-center"
+              style={{ background: '#dc2626', color: 'white' }}
+              onClick={() => {
+                setDeletedSceneIds(prev => new Set([...prev, pendingDeleteSceneId!]));
+                if (activeSceneId === pendingDeleteSceneId) setView('overview');
+                setDeleteSceneConfirmOpen(false);
+                setPendingDeleteSceneId(null);
+                toast.success('Scene deleted');
+              }}
+            >
+              <Icon name="trash" size={13} /> Delete Scene
+            </button>
+          </div>
+        </div>
+      </Modal>
+
+      {/* ── Take It Live Confirmation ── */}
       <Modal open={lockMovieOpen} onClose={() => setLockMovieOpen(false)}>
         <div className="p-8">
           <div className="w-[52px] h-[52px] rounded-[14px] mb-5 bg-[rgba(99,102,241,.12)] border border-[rgba(99,102,241,.22)] flex items-center justify-center">
             <Icon name="lock" size={22} style={{ color: '#a5b4fc' }} />
           </div>
-          <div className="text-[17px] font-bold text-[#f9fafb] mb-2 tracking-[-0.01em]">Lock Movie Budget?</div>
+          <div className="text-[17px] font-bold text-[#f9fafb] mb-2 tracking-[-0.01em]">Take It Live?</div>
           <p className="text-[13px] text-gray-400 m-0 mb-4 leading-[1.7]">
-            Once locked, all scenes are finalised. Any additional scenes added will be tracked as over budget.
-            The &ldquo;Wrap Movie&rdquo; button will become available after locking.
+            Once taken live, all scenes are finalised. Any additional scenes added will be tracked as over budget.
+            The &ldquo;Wrap Movie&rdquo; button will become available after this.
           </p>
           <div className="h-px bg-[rgba(255,255,255,.06)] mb-5" />
           <div className="flex gap-2">
             <button className="btn btn-secondary btn-sm flex-1 justify-center" onClick={() => setLockMovieOpen(false)}>Cancel</button>
-            <button className="btn btn-primary btn-sm flex-1 justify-center" onClick={() => { setMovieLocked(true); setLockMovieOpen(false); toast.success(`"${p.name}" budget locked`); }}>
-              <Icon name="lock" size={13} /> Lock Movie
+            <button className="btn btn-primary btn-sm flex-1 justify-center" onClick={() => { setMovieLocked(true); setLockMovieOpen(false); toast.success(`"${p.name}" is now live`); }}>
+              <Icon name="lock" size={13} /> Take It Live
             </button>
           </div>
         </div>

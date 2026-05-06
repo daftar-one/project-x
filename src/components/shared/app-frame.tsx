@@ -1,6 +1,6 @@
 "use client";
 
-import { ReactNode, useState, Fragment } from 'react';
+import { ReactNode, useState } from 'react';
 import { useRouter, usePathname } from 'next/navigation';
 import { Icon } from './icon';
 import { Avatar } from './avatar';
@@ -153,7 +153,7 @@ export function AppFrame({ children, secondarySidebar, projectSubnav, innerBg }:
           <div className="w-[30px] h-[30px] rounded-[8px] shrink-0 bg-gradient-to-br from-[#6366f1] to-[#e83e8c] flex items-center justify-center text-white">
             <Icon name="film" size={15} stroke={1.5} />
           </div>
-          <span className="text-[14px] font-bold text-[#f0f2f5] tracking-[-0.02em]">Project X</span>
+          <span className="text-[14px] font-bold text-[#f0f2f5] tracking-[-0.02em]">Studio OS</span>
         </div>
 
         {/* Production house card */}
@@ -175,44 +175,50 @@ export function AppFrame({ children, secondarySidebar, projectSubnav, innerBg }:
           </div>
         )}
 
+        {/* Notes */}
+        {isLP && (
+          <div
+            className={`side-item${pathname === '/notes' ? ' active' : ''}`}
+            onClick={() => router.push('/notes')}
+          >
+            <Icon name="file-text" size={16} stroke={1.5} />
+            <span>Notes</span>
+          </div>
+        )}
+
         {/* Productions section — scrollable */}
         <div className="sidebar-scroll">
           <div className="side-section-label">Movies</div>
 
           {projects.map(p => (
-            <Fragment key={p.id}>
+            <div
+              key={p.id}
+              className={`side-item-project${activeProjectId === p.id ? ' active' : ''}`}
+              onClick={() => router.push(`/projects/${p.id}`)}
+              title={p.name}
+            >
               <div
-                className={`side-item-project${activeProjectId === p.id ? ' active' : ''}`}
-                onClick={() => router.push(`/projects/${p.id}`)}
-                title={p.name}
-              >
-                <div
-                  className="w-1.5 h-1.5 rounded-[2px] shrink-0"
-                  style={{ background: activeProjectId === p.id ? '#a5b4fc' : '#374151' }}
-                />
-                <span className="overflow-hidden text-ellipsis flex-1">{p.name}</span>
-              </div>
-              {activeProjectId === p.id && projectSubnav}
-            </Fragment>
+                className="w-1.5 h-1.5 rounded-[2px] shrink-0"
+                style={{ background: activeProjectId === p.id ? '#a5b4fc' : '#374151' }}
+              />
+              <span className="overflow-hidden text-ellipsis flex-1">{p.name}</span>
+            </div>
           ))}
+          {projectSubnav && (
+            <>
+              <div className="h-px bg-[rgba(255,255,255,.07)] my-2 mx-3" />
+              {projectSubnav}
+            </>
+          )}
 
           {projects.length === 0 && (
             <div className="text-[12px] text-gray-600 py-1.5 pl-8 pr-5">No movies</div>
           )}
         </div>
 
-        {/* Logout button */}
-        <button
-          onClick={handleLogout}
-          className="flex items-center gap-2.5 px-3 py-2 mx-2 mb-0.5 rounded-lg border-0 cursor-pointer bg-transparent text-gray-500 text-[13px] font-medium w-[calc(100%-16px)] transition-[background,color] duration-[120ms] hover:bg-[rgba(239,68,68,.08)] hover:text-[#fca5a5]"
-        >
-          <Icon name="logout" size={15} />
-          <span>Log out</span>
-        </button>
-
         {/* Profile */}
         <div
-          className="flex items-center gap-2.5 px-5 py-2 cursor-pointer rounded-lg mx-2 mb-1 hover:bg-[rgba(255,255,255,.04)]"
+          className="flex items-center gap-2.5 px-5 py-2 cursor-pointer rounded-lg mx-2 mb-0.5 hover:bg-[rgba(255,255,255,.04)]"
           onClick={() => router.push('/profile')}
           title="View profile"
         >
@@ -222,6 +228,15 @@ export function AppFrame({ children, secondarySidebar, projectSubnav, innerBg }:
             <div className="text-[10px] text-gray-500 uppercase tracking-[0.05em]">{userRole}</div>
           </div>
         </div>
+
+        {/* Logout button */}
+        <button
+          onClick={handleLogout}
+          className="flex items-center gap-2.5 px-5 py-2 mx-2 mb-1 rounded-lg border-0 cursor-pointer bg-transparent text-gray-500 text-[13px] font-medium w-[calc(100%-16px)] transition-[background,color] duration-[120ms] hover:bg-[rgba(239,68,68,.08)] hover:text-[#fca5a5]"
+        >
+          <Icon name="logout" size={15} />
+          <span>Log out</span>
+        </button>
       </aside>
 
       {secondarySidebar && (

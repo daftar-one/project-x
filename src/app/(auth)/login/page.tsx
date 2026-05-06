@@ -70,14 +70,14 @@ export default function LoginPage() {
 
           {/* Wordmark */}
           <Link href="/" className="flex items-center gap-2.5 no-underline">
-            <div className="w-[34px] h-[34px] rounded-[9px] bg-gradient-to-br from-[#6366f1] to-[#e83e8c] flex items-center justify-center text-white text-[12px] font-extrabold tracking-[-0.02em]">PX</div>
-            <span className="font-bold text-[16px] tracking-[-0.02em] text-[#f0f2f5]">Project X</span>
+            <div className="w-[34px] h-[34px] rounded-[9px] bg-gradient-to-br from-[#6366f1] to-[#e83e8c] flex items-center justify-center text-white text-[12px] font-extrabold tracking-[-0.02em]">SO</div>
+            <span className="font-bold text-[16px] tracking-[-0.02em] text-[#f0f2f5]">Studio OS</span>
           </Link>
 
           {/* Card */}
           <div className="auth-card w-full bg-[rgba(20,26,48,.9)] backdrop-blur-[20px] border border-[rgba(255,255,255,.09)] rounded-2xl pt-9 px-8 pb-7 shadow-[0_32px_64px_-16px_rgba(0,0,0,.6),0_0_0_1px_rgba(99,102,241,.08)]">
             <h1 className="text-[20px] font-semibold text-center m-0 mb-1.5 tracking-[-0.02em] text-[#f9fafb]">
-              Sign in to Project X
+              Sign in to Studio OS
             </h1>
             <p className="text-[13px] text-gray-500 text-center m-0 mb-7">
               We&apos;ll send a one-time code to your email.
@@ -114,7 +114,7 @@ export default function LoginPage() {
           </div>
 
           <div className="text-[11px] text-[#374151] flex gap-2">
-            <span>Project X</span>
+            <span>Studio OS</span>
             <span>·</span>
             <span>v0.9 · staging</span>
           </div>

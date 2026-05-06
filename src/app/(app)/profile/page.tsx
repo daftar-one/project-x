@@ -16,24 +16,27 @@ const ROLE_LABELS: Record<string, string> = {
 };
 
 export default function ProfilePage() {
-  const { user, setAuth } = useAuthStore();
+  const { user, setAuth, setProductionHouseName } = useAuthStore();
   const isLP = user?.role === 'line_producer';
   const { data: house } = useProductionHouse();
 
   const [editing, setEditing] = useState(false);
   const [fullName, setFullName] = useState(user?.full_name ?? '');
+  const [houseName, setHouseName] = useState(house?.name ?? '');
   const [saving, setSaving] = useState(false);
 
   function handleSave() {
     if (!fullName.trim() || !user) return;
     setSaving(true);
     setAuth({ ...user, full_name: fullName.trim() });
+    if (isLP && houseName.trim()) setProductionHouseName(houseName.trim());
     setEditing(false);
     setSaving(false);
   }
 
   function handleCancel() {
     setFullName(user?.full_name ?? '');
+    setHouseName(house?.name ?? '');
     setEditing(false);
   }
 
@@ -100,7 +103,20 @@ export default function ProfilePage() {
         <div className="card card-pad">
           <div className="label mb-4">Account</div>
           <Field label="Role" icon="shield" value={roleLabel} />
-          {isLP && <Field label="Production House" icon="building" value={house?.name ?? '—'} />}
+          {isLP && (
+            editing ? (
+              <div className="py-[14px] border-b border-[rgba(255,255,255,.08)]">
+                <div className="text-[11px] text-gray-400 mb-1.5">Production House</div>
+                <input
+                  value={houseName}
+                  onChange={e => setHouseName(e.target.value)}
+                  className="w-full text-[14px] font-medium border-[1.5px] border-[#6366f1] rounded-[6px] px-[10px] py-[7px] outline-none bg-[rgba(255,255,255,.07)] text-[#f0f2f5]"
+                />
+              </div>
+            ) : (
+              <Field label="Production House" icon="building" value={house?.name ?? '—'} />
+            )
+          )}
           {/* {isLP && <Field label="Brand Name" icon="sparkles" value={house?.brand_name ?? '—'} />} */}
         </div>
 

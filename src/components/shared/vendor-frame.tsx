@@ -29,7 +29,7 @@ export function VendorFrame({ children }: VendorFrameProps) {
           <div className="w-[30px] h-[30px] rounded-lg shrink-0 bg-gradient-to-br from-[#6366f1] to-[#e83e8c] flex items-center justify-center text-white">
             <Icon name="film" size={16} stroke={1.5} />
           </div>
-          <span className="text-[14px] font-bold text-[#f0f2f5] tracking-[-0.02em]">Project X</span>
+          <span className="text-[14px] font-bold text-[#f0f2f5] tracking-[-0.02em]">Studio OS</span>
         </div>
 
         <div className="sidebar-scroll">
@@ -42,16 +42,8 @@ export function VendorFrame({ children }: VendorFrameProps) {
           </div>
         </div>
 
-        <button
-          onClick={handleLogout}
-          className="flex items-center gap-2.5 px-3 py-2 mx-2 mb-0.5 rounded-lg border-0 cursor-pointer bg-transparent text-gray-500 text-[13px] font-medium w-[calc(100%-16px)] transition-[background,color] duration-[120ms] hover:bg-[rgba(239,68,68,.08)] hover:text-[#fca5a5]"
-        >
-          <Icon name="logout" size={15} />
-          <span>Log out</span>
-        </button>
-
         <div
-          className="flex items-center gap-2.5 px-5 py-2 cursor-pointer rounded-lg mx-2 mb-1 hover:bg-[rgba(255,255,255,.04)]"
+          className="flex items-center gap-2.5 px-5 py-2 cursor-pointer rounded-lg mx-2 mb-0.5 hover:bg-[rgba(255,255,255,.04)]"
           onClick={() => router.push("/vendor/portal/profile")}
         >
           <Avatar name={vendorName} color="#6366f1" size={28} />
@@ -60,6 +52,14 @@ export function VendorFrame({ children }: VendorFrameProps) {
             <div className="text-[10px] text-gray-500 uppercase tracking-[0.05em]">Vendor</div>
           </div>
         </div>
+
+        <button
+          onClick={handleLogout}
+          className="flex items-center gap-2.5 px-3 py-2 mx-2 mb-1 rounded-lg border-0 cursor-pointer bg-transparent text-gray-500 text-[13px] font-medium w-[calc(100%-16px)] transition-[background,color] duration-[120ms] hover:bg-[rgba(239,68,68,.08)] hover:text-[#fca5a5]"
+        >
+          <Icon name="logout" size={15} />
+          <span>Log out</span>
+        </button>
       </aside>
 
       <div className="app-main">

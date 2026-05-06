@@ -25,6 +25,7 @@ interface Props {
 export function TransactionHistory({ walletBalance, walletCredits, onAddMoney, isDraft }: Props) {
   const [showAdd, setShowAdd] = useState(false);
   const [historyOpen, setHistoryOpen] = useState(false);
+  const [confirmOpen, setConfirmOpen] = useState(false);
   const [addAmount, setAddAmount] = useState('');
   const [addUnit, setAddUnit] = useState<AmountUnit>('L');
 
@@ -32,10 +33,15 @@ export function TransactionHistory({ walletBalance, walletCredits, onAddMoney, i
 
   function handleAdd() {
     if (addAmountVal <= 0) return;
+    setConfirmOpen(true);
+  }
+
+  function handleConfirm() {
     onAddMoney(addAmountVal);
     setAddAmount('');
     setAddUnit('L');
     setShowAdd(false);
+    setConfirmOpen(false);
   }
 
   return (
@@ -114,6 +120,22 @@ export function TransactionHistory({ walletBalance, walletCredits, onAddMoney, i
           </div>
         )}
       </div>
+
+      {/* Confirm Add Money Modal */}
+      <Modal open={confirmOpen} onClose={() => setConfirmOpen(false)}>
+        <div className="p-8">
+          <div className="text-[16px] font-bold text-[#f9fafb] mb-2">Confirm Add Money</div>
+          <p className="text-[13px] text-gray-400 m-0 mb-5 leading-[1.7]">
+            Are you sure you want to add <span className="text-[#34d399] font-semibold">{fmtShort(addAmountVal)}</span> to this wallet?
+          </p>
+          <div className="flex gap-2">
+            <button className="btn btn-secondary btn-sm flex-1 justify-center" onClick={() => setConfirmOpen(false)}>Cancel</button>
+            <button className="btn btn-primary btn-sm flex-1 justify-center" onClick={handleConfirm}>
+              <Icon name="check" size={13} /> Confirm
+            </button>
+          </div>
+        </div>
+      </Modal>
 
       {/* History Modal */}
       <Modal open={historyOpen} onClose={() => setHistoryOpen(false)}>

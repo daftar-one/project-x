@@ -22,7 +22,7 @@ interface BillEntry {
   uploadedAt: string | null;
 }
 
-const DEMO_PDF_URL = 'https://www.w3.org/WAI/WCAG21/Techniques/pdf/img/table-word.pdf';
+const DEMO_PDF_URL = '/sample_invoice.pdf';
 
 const STATUS_STYLE: Record<BillEntry['status'], { bg: string; color: string }> = {
   Paid:     { bg: 'rgba(16,185,129,.15)',  color: '#34d399' },
@@ -95,7 +95,7 @@ function toPayStatus(s: string): 'NA' | 'Paid' | 'Rejected' {
   return 'NA';
 }
 
-function initRows(projectId: string, sceneId: string, isDraft: boolean): BreakdownRow[] {
+function initRows(projectId: string, sceneId: string, isDraft: boolean, isWrapped: boolean): BreakdownRow[] {
   if (isDraft) return [];
   const lines = getMockBudgetLines(projectId, sceneId);
   const bills = getMockSceneBills(sceneId);
@@ -111,7 +111,7 @@ function initRows(projectId: string, sceneId: string, isDraft: boolean): Breakdo
         actualAmount: b.amount,
         uploadedAt: b.created_at,
       }))
-      : [{ id: `draft-${bl.id}`, status: 'NA' as const, paidBy: '', billFileName: 'bill.pdf', actualAmount: 0, uploadedAt: null }];
+      : [{ id: `draft-${bl.id}`, status: isWrapped ? 'Paid' as const : 'NA' as const, paidBy: isWrapped ? 'Arjun Mehta' : '', billFileName: 'bill.pdf', actualAmount: isWrapped ? bl.allocated_amount : 0, uploadedAt: null }];
 
     return {
       id: bl.id,
@@ -153,16 +153,20 @@ interface Props {
   vendors: Vendor[];
   onSceneNameChange?: (name: string) => void;
   onFundsAdded?: (amount: number) => void;
+  isSceneWrapped?: boolean;
+  initialLocked?: boolean;
+  onWrapScene?: () => void;
+  onSceneLocked?: () => void;
 }
 
-export function SceneInlineForm({ projectId, sceneId, isDraft, isLP, vendors, onSceneNameChange, onFundsAdded }: Props) {
+export function SceneInlineForm({ projectId, sceneId, isDraft, isLP, vendors, onSceneNameChange, onFundsAdded, isSceneWrapped = false, initialLocked = false, onWrapScene, onSceneLocked }: Props) {
   const user = useAuthStore(s => s.user);
   const scene = isDraft ? null : (MOCK_SCENES[projectId] ?? []).find(s => s.id === sceneId) ?? null;
 
   /* ── form state ── */
   const [sceneName, setSceneName] = useState(scene?.name ?? '');
   const [budget, setBudget] = useState(scene?.budget ?? 0);
-  const [locked, setLocked] = useState(false);
+  const [locked, setLocked] = useState(initialLocked);
   const [lockConfirmOpen, setLockConfirmOpen] = useState(false);
   const [lockedRowCount, setLockedRowCount] = useState<number | null>(null);
   const [lockedBudget, setLockedBudget] = useState<number | null>(null);
@@ -189,7 +193,7 @@ export function SceneInlineForm({ projectId, sceneId, isDraft, isLP, vendors, on
   const [viewingBill, setViewingBill] = useState<{ bill: BillEntry; vendorName: string; reason: string } | null>(null);
 
   /* ── breakdown state ── */
-  const [rows, setRows] = useState<BreakdownRow[]>(() => initRows(projectId, sceneId, isDraft));
+  const [rows, setRows] = useState<BreakdownRow[]>(() => initRows(projectId, sceneId, isDraft, isSceneWrapped));
   const [addingRow, setAddingRow] = useState(false);
   const [newReason, setNewReason] = useState('');
   const [newAmount, setNewAmount] = useState('');
@@ -207,7 +211,6 @@ export function SceneInlineForm({ projectId, sceneId, isDraft, isLP, vendors, on
     : 0;
   const effectiveBudget = lockedBudget ?? budget;
   const overBudget = Math.max(0, totalActual - effectiveBudget) + postLockTotal;
-  const totalVarFactor = totalPlanned > 0 && totalActual > 0 ? totalActual / totalPlanned : null;
   const newAmountVal = (parseFloat(newAmount) || 0) * UNIT_MULT[newAmountUnit];
 
   /* ── handlers ── */
@@ -286,8 +289,16 @@ export function SceneInlineForm({ projectId, sceneId, isDraft, isLP, vendors, on
   const statusColor = (s: BillEntry['status']) =>
     s === 'Paid' ? '#34d399' : s === 'Rejected' ? '#f87171' : '#6b7280';
 
-  const colCount = isLP && !locked ? 10 : 9;
-  const fmtFactor = (f: number) => `${f.toFixed(2)}x`;
+  const colCount = isLP && !locked ? 9 : 8;
+
+  const handleWrapScene = () => {
+    const hasOpenBills = rows.some(r => r.bills.some(b => b.status === 'NA'));
+    if (hasOpenBills) {
+      toast.error('Please close all payment requests before wrapping this scene.');
+      return;
+    }
+    onWrapScene?.();
+  };
 
   return (
     <div className="flex flex-col gap-[14px]">
@@ -323,7 +334,7 @@ export function SceneInlineForm({ projectId, sceneId, isDraft, isLP, vendors, on
                 )
               }
             </div>
-            <div className="grid grid-cols-6">
+            <div className="grid grid-cols-5">
               <div>
                 <label className={lblCls}>Budget (₹)</label>
                 <div className={`${roValCls} font-mono`}>{budget > 0 ? fmtShort(budget) : '—'}</div>
@@ -344,12 +355,6 @@ export function SceneInlineForm({ projectId, sceneId, isDraft, isLP, vendors, on
                 <label className={lblCls}>Over Budget</label>
                 <div className={`${roValCls} font-mono`} style={{ color: overBudget > 0 ? '#f87171' : '#ffffff' }}>
                   {overBudget > 0 ? fmtShort(overBudget) : '—'}
-                </div>
-              </div>
-              <div>
-                <label className={lblCls}>Variance</label>
-                <div className={`${roValCls} font-mono`} style={{ color: totalVarFactor != null && totalVarFactor > 1 ? '#f87171' : '#ffffff' }}>
-                  {totalVarFactor != null ? fmtFactor(totalVarFactor) : '—'}
                 </div>
               </div>
             </div>
@@ -373,24 +378,30 @@ export function SceneInlineForm({ projectId, sceneId, isDraft, isLP, vendors, on
       <div className="card">
         <div className="px-[14px] pt-3 pb-[10px] border-b border-[rgba(255,255,255,.06)] flex items-center justify-between">
           <div className="label">Budget Breakdown</div>
-          <div className="flex flex-row gap-2">
-            {isLP && !addingRow && (
+          <div className="flex items-center gap-2">
+            {isLP && !addingRow && !isSceneWrapped && (
               <button className="btn btn-ghost btn-sm" onClick={() => setAddingRow(true)}>
                 <Icon name="plus" size={13} /> Add
               </button>
             )}
-            {isLP && (
-              <div className="flex gap-2 justify-end">
-                {!locked ? (
-                  <button className="btn btn-primary btn-sm" onClick={() => setLockConfirmOpen(true)}>
-                    <Icon name="lock" size={13} /> Lock Budget
-                  </button>
-                ) : (
-                  <span className="inline-flex items-center gap-1.5 text-[#a5b4fc] text-[12px]">
-                    <Icon name="lock" size={13} /> Budget locked
-                  </span>
-                )}
-              </div>
+            {isLP && !locked && !isSceneWrapped && (
+              <button className="btn btn-primary btn-sm" onClick={() => setLockConfirmOpen(true)}>
+                <Icon name="lock" size={13} /> Lock Budget
+              </button>
+            )}
+            {isLP && locked && !isSceneWrapped && (
+              <span className="inline-flex items-center gap-1.5 text-[#a5b4fc] text-[12px]">
+                <Icon name="lock" size={13} /> Budget locked
+              </span>
+            )}
+            {!isDraft && (
+              isSceneWrapped ? (
+                <span className="badge badge-wrapped text-[11px] px-2 py-0.5">Wrapped</span>
+              ) : isLP && locked ? (
+                <button className="btn btn-secondary btn-sm" onClick={handleWrapScene}>
+                  Wrap Scene
+                </button>
+              ) : null
             )}
           </div>
         </div>
@@ -404,10 +415,9 @@ export function SceneInlineForm({ projectId, sceneId, isDraft, isLP, vendors, on
                 <th className={thRCls}>Amount</th>
                 <th className={thCls}>Vendor</th>
                 <th className={thRCls}>Pending Payment</th>
-                <th className={thCCls}>Status</th>
+                <th className={thCls}>Status</th>
                 <th className={thRCls}>Actual</th>
                 <th className={`${thCCls} w-12`}>Bill</th>
-                <th className={thRCls}>Variance</th>
                 {isLP && !locked && <th className={`${thCls} w-7`} />}
               </tr>
             </thead>
@@ -415,7 +425,7 @@ export function SceneInlineForm({ projectId, sceneId, isDraft, isLP, vendors, on
               {rows.length === 0 && !addingRow && (
                 <tr>
                   <td colSpan={colCount} className={`${tdCls} text-center text-gray-600 py-7`}>
-                    No breakdown rows yet. Click "Add" to start.
+                    No breakdown rows yet. Click &ldquo;Add&rdquo; to start.
                   </td>
                 </tr>
               )}
@@ -423,8 +433,6 @@ export function SceneInlineForm({ projectId, sceneId, isDraft, isLP, vendors, on
               {rows.flatMap((row, rowIdx) => {
                 const billsWithFiles = row.bills.filter(b => b.billFileName !== '');
                 const billRows: (BillEntry | null)[] = billsWithFiles.length > 0 ? billsWithFiles : [null];
-                const actual = rowActual(row);
-                const varFactor = row.amount > 0 && actual > 0 ? actual / row.amount : null;
                 const span = billRows.length;
                 const isFirstPostLock = locked && lockedRowCount !== null && rowIdx === lockedRowCount;
 
@@ -485,8 +493,8 @@ export function SceneInlineForm({ projectId, sceneId, isDraft, isLP, vendors, on
                         </td>
 
                         {/* Status */}
-                        <td className={subTdCCls}>
-                          <div className="flex flex-col items-center gap-1">
+                        <td className={subTdCls}>
+                          <div className="flex flex-col items-start gap-1">
                             {!bill ? (
                               <span className="text-[11px] font-bold text-gray-500">NA</span>
                             ) : bill.status === 'NA' ? (
@@ -530,22 +538,17 @@ export function SceneInlineForm({ projectId, sceneId, isDraft, isLP, vendors, on
                           }
                         </td>
 
-                        {/* Variance + Delete — rowspanned on first bill row */}
-                        {isFirst && <>
-                          <td rowSpan={span} className={`${tdRCls} align-top`} style={{ color: varFactor != null && varFactor > 1 ? '#f87171' : varFactor != null ? '#34d399' : '#374151' }}>
-                            {varFactor != null ? fmtFactor(varFactor) : '—'}
+                        {/* Delete — rowspanned on first bill row */}
+                        {isFirst && isLP && !locked && (
+                          <td rowSpan={span} className={`${tdCCls} align-top`}>
+                            <button
+                              onClick={() => deleteRow(row.id)}
+                              className="bg-transparent border-0 cursor-pointer text-[#f87171] p-0.5"
+                            >
+                              <Trash2Icon name="x" size={12} />
+                            </button>
                           </td>
-                          {isLP && !locked && (
-                            <td rowSpan={span} className={`${tdCCls} align-top`}>
-                              <button
-                                onClick={() => deleteRow(row.id)}
-                                className="bg-transparent border-0 cursor-pointer text-[#f87171] p-0.5"
-                              >
-                                <Trash2Icon name="x" size={12} />
-                              </button>
-                            </td>
-                          )}
-                        </>}
+                        )}
                       </tr>
                     );
                   }),
@@ -623,9 +626,6 @@ export function SceneInlineForm({ projectId, sceneId, isDraft, isLP, vendors, on
                   <td className={tdCls} /><td className={tdCls} /><td className={tdCls} />
                   <td className={`${tdRCls} font-bold text-[#f0f2f5]`}>{fmtShort(totalActual)}</td>
                   <td className={tdCls} />
-                  <td className={`${tdRCls} font-bold`} style={{ color: totalVarFactor == null ? '#374151' : totalVarFactor > 1 ? '#f87171' : '#34d399' }}>
-                    {totalVarFactor != null ? fmtFactor(totalVarFactor) : '—'}
-                  </td>
                   {isLP && !locked && <td className={tdCls} />}
                 </tr>
               )}
@@ -701,7 +701,7 @@ export function SceneInlineForm({ projectId, sceneId, isDraft, isLP, vendors, on
           </div>
 
           <p className="text-[13px] text-gray-400 m-0 mb-4 leading-[1.7]">
-            Once the budget is locked, you won't be able to make any changes to it. You'll need to delete the budget and start over.
+            Once the budget is locked, you won&apos;t be able to make any changes to it. You&apos;ll need to delete the budget and start over.
           </p>
 
           <div className="h-px bg-[rgba(255,255,255,.06)] mb-5" />
@@ -715,7 +715,7 @@ export function SceneInlineForm({ projectId, sceneId, isDraft, isLP, vendors, on
             </button>
             <button
               className="btn btn-primary btn-sm flex-1 justify-center"
-              onClick={() => { setLocked(true); setLockedRowCount(rows.length); setLockedBudget(budget); setLockConfirmOpen(false); }}
+              onClick={() => { setLocked(true); setLockedRowCount(rows.length); setLockedBudget(budget); setLockConfirmOpen(false); onSceneLocked?.(); }}
             >
               <Icon name="lock" size={13} /> Lock Budget
             </button>

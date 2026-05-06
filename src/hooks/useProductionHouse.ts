@@ -1,6 +1,7 @@
 "use client";
-import { useState } from "react";
+import { useMemo } from "react";
 import type { ProductionHouse } from "@/lib/types";
+import { useAuthStore } from "@/store/auth";
 
 const MOCK_PH: ProductionHouse = {
   id: "ph-1",
@@ -12,6 +13,10 @@ const MOCK_PH: ProductionHouse = {
 };
 
 export function useProductionHouse() {
-  const [data] = useState<ProductionHouse>(MOCK_PH);
+  const customName = useAuthStore(s => s.production_house_name);
+  const data = useMemo<ProductionHouse>(
+    () => customName ? { ...MOCK_PH, name: customName, brand_name: customName } : MOCK_PH,
+    [customName]
+  );
   return { data, loading: false, error: null, refetch: () => {} };
 }
