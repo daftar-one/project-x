@@ -35,32 +35,34 @@ export function VendorFrame({ children, movies, selectedMovie }: VendorFrameProp
         </div>
 
         <div
-          className={`side-item${pathname === "/vendor/portal" ? " active" : ""}`}
+          className={`side-item${pathname === "/vendor/portal" && !selectedMovie ? " active" : ""}`}
           onClick={() => router.push("/vendor/portal")}
         >
           <Icon name="list" size={16} stroke={1.5} />
           <span>Payment Insights</span>
         </div>
 
-        {movies && movies.length > 0 && (
-          <div className="sidebar-scroll">
-            <div className="side-section-label">Movies</div>
-            {movies.map(movie => (
-              <div
-                key={movie}
-                className={`side-item-project${selectedMovie === movie ? " active" : ""}`}
-                onClick={() => router.push(`/vendor/portal?movie=${encodeURIComponent(movie)}`)}
-                title={movie}
-              >
+        <div className="sidebar-scroll">
+          {movies && movies.length > 0 && (
+            <>
+              <div className="side-section-label">Movies</div>
+              {movies.map(movie => (
                 <div
-                  className="w-1.5 h-1.5 rounded-[2px] shrink-0"
-                  style={{ background: selectedMovie === movie ? "#a5b4fc" : "#374151" }}
-                />
-                <span className="overflow-hidden text-ellipsis flex-1">{movie}</span>
-              </div>
-            ))}
-          </div>
-        )}
+                  key={movie}
+                  className={`side-item-project${selectedMovie === movie ? " active" : ""}`}
+                  onClick={() => router.push(`/vendor/portal?movie=${encodeURIComponent(movie)}`)}
+                  title={movie}
+                >
+                  <div
+                    className="w-1.5 h-1.5 rounded-[2px] shrink-0"
+                    style={{ background: selectedMovie === movie ? "#a5b4fc" : "#374151" }}
+                  />
+                  <span className="overflow-hidden text-ellipsis flex-1">{movie}</span>
+                </div>
+              ))}
+            </>
+          )}
+        </div>
 
         <div
           className="flex items-center gap-2.5 px-5 py-2 cursor-pointer rounded-lg mx-2 mb-0.5 hover:bg-[rgba(255,255,255,.04)]"

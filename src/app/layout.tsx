@@ -22,7 +22,7 @@ export default function RootLayout({
     <html lang="en" className={`${inter.variable} h-full antialiased`}>
       <body className="min-h-full flex flex-col font-sans">
         {children}
-        <Toaster position="top-center" richColors />
+        <Toaster position="bottom-right" />
       </body>
     </html>
   );

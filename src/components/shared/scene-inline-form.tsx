@@ -192,6 +192,9 @@ export function SceneInlineForm({ projectId, sceneId, isDraft, isLP, vendors, on
   /* ── bill viewer ── */
   const [viewingBill, setViewingBill] = useState<{ bill: BillEntry; vendorName: string; reason: string } | null>(null);
 
+  /* ── breakdown delete confirm ── */
+  const [deleteRowConfirmId, setDeleteRowConfirmId] = useState<string | null>(null);
+
   /* ── breakdown state ── */
   const [rows, setRows] = useState<BreakdownRow[]>(() => initRows(projectId, sceneId, isDraft, isSceneWrapped));
   const [addingRow, setAddingRow] = useState(false);
@@ -280,11 +283,18 @@ export function SceneInlineForm({ projectId, sceneId, isDraft, isLP, vendors, on
     }]);
     // When locked, new row amount goes to over budget — don't increment the locked budget
     if (!locked) setBudget(prev => prev + amt);
+    const addedReason = newReason.trim();
     setNewReason(''); setNewAmount(''); setNewAmountUnit('L'); setNewVendorId('');
     setAddingRow(false);
+    toast.success(`"${addedReason}" added to breakdown`);
   };
 
-  const deleteRow = (rowId: string) => setRows(prev => prev.filter(r => r.id !== rowId));
+  const deleteRow = (rowId: string) => {
+    const rowReason = rows.find(r => r.id === rowId)?.reason ?? 'Breakdown';
+    setRows(prev => prev.filter(r => r.id !== rowId));
+    setDeleteRowConfirmId(null);
+    toast.success(`"${rowReason}" removed from breakdown`);
+  };
 
   const statusColor = (s: BillEntry['status']) =>
     s === 'Paid' ? '#34d399' : s === 'Rejected' ? '#f87171' : '#6b7280';
@@ -542,7 +552,7 @@ export function SceneInlineForm({ projectId, sceneId, isDraft, isLP, vendors, on
                         {isFirst && isLP && !locked && (
                           <td rowSpan={span} className={`${tdCCls} align-top`}>
                             <button
-                              onClick={() => deleteRow(row.id)}
+                              onClick={() => setDeleteRowConfirmId(row.id)}
                               className="bg-transparent border-0 cursor-pointer text-[#f87171] p-0.5"
                             >
                               <Trash2Icon name="x" size={12} />
@@ -715,9 +725,39 @@ export function SceneInlineForm({ projectId, sceneId, isDraft, isLP, vendors, on
             </button>
             <button
               className="btn btn-primary btn-sm flex-1 justify-center"
-              onClick={() => { setLocked(true); setLockedRowCount(rows.length); setLockedBudget(budget); setLockConfirmOpen(false); onSceneLocked?.(); }}
+              onClick={() => {
+                setLocked(true);
+                setLockedRowCount(rows.length);
+                setLockedBudget(budget);
+                setLockConfirmOpen(false);
+                onSceneLocked?.();
+                toast.success(`"${sceneName}" budget locked`);
+              }}
             >
               <Icon name="lock" size={13} /> Lock Budget
+            </button>
+          </div>
+        </div>
+      </Modal>
+
+      {/* ── Delete Breakdown Confirmation ── */}
+      <Modal open={deleteRowConfirmId !== null} onClose={() => setDeleteRowConfirmId(null)}>
+        <div className="p-8">
+          <div className="w-[52px] h-[52px] rounded-[14px] mb-5 bg-[rgba(239,68,68,.1)] border border-[rgba(239,68,68,.2)] flex items-center justify-center">
+            <Icon name="trash" size={22} style={{ color: '#f87171' }} />
+          </div>
+          <div className="text-[17px] font-bold text-[#f9fafb] mb-2 tracking-[-0.01em]">Remove Breakdown?</div>
+          <p className="text-[13px] text-gray-400 m-0 mb-4 leading-[1.7]">
+            This will permanently remove the breakdown line and all associated bill records. This action cannot be undone.
+          </p>
+          <div className="h-px bg-[rgba(255,255,255,.06)] mb-5" />
+          <div className="flex gap-2">
+            <button className="btn btn-secondary btn-sm flex-1 justify-center" onClick={() => setDeleteRowConfirmId(null)}>Cancel</button>
+            <button
+              className="btn btn-danger btn-sm flex-1 justify-center"
+              onClick={() => deleteRowConfirmId && deleteRow(deleteRowConfirmId)}
+            >
+              <Icon name="trash" size={13} /> Remove
             </button>
           </div>
         </div>

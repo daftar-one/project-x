@@ -116,7 +116,7 @@ export default function LoginPage() {
           <div className="text-[11px] text-[#374151] flex gap-2">
             <span>Studio OS</span>
             <span>·</span>
-            <span>v0.9 · staging</span>
+            <span>Beta</span>
           </div>
         </div>
       </div>

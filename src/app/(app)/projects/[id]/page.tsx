@@ -79,7 +79,9 @@ function TeamContent({ projectId, isLP }: { projectId: string; isLP: boolean }) 
   const resetInviteModal = () => { setInviteEmail(''); setInviteRole('executive_producer'); setInviteError(''); setColSearch(''); setColOpen(false); setSelectedCol(null); };
   const handleInvite = () => {
     if (!inviteEmail.trim()) { setInviteError('Email is required'); return; }
+    const email = inviteEmail.trim();
     setInviteOpen(false); resetInviteModal();
+    toast.success(`Invitation sent to ${email}`);
   };
   const filteredCollaborators = collaborators.filter(c => {
     const q = colSearch.toLowerCase();
@@ -88,7 +90,9 @@ function TeamContent({ projectId, isLP }: { projectId: string; isLP: boolean }) 
   const openNewVendor = () => { setVendorName(''); setVendorEmail(''); setVendorLocation(''); setVendorError(''); setVendorModalOpen(true); };
   const handleSaveVendor = () => {
     if (!vendorName.trim()) { setVendorError('Vendor name is required'); return; }
+    const name = vendorName.trim();
     setVendorModalOpen(false);
+    toast.success(`${name} invited as vendor`);
   };
   const handleRemoveMember = (_memberId: string, _name: string) => {};
   const handleDeleteVendor = (_v: Vendor) => {};
@@ -476,6 +480,7 @@ export default function ProjectPage() {
     setDraftSceneId(newId);
     setDraftSceneName('New Scene');
     setView({ sceneId: newId, isDraft: true });
+    toast.success('"New Scene" added to project');
   };
 
   const handleTakeItLive = () => {
@@ -687,8 +692,9 @@ export default function ProjectPage() {
             }
             initialLocked={!isDraftView && lockedSceneIds.has(activeSceneId)}
             onWrapScene={() => {
+              const wrappedName = scenes.find(s => s.id === activeSceneId)?.name ?? 'Scene';
               setWrappedSceneIds(prev => new Set([...prev, activeSceneId!]));
-              toast.success('Scene marked as wrapped');
+              toast.success(`"${wrappedName}" marked as wrapped`);
             }}
             onSceneLocked={() => {
               setLockedSceneIds(prev => new Set([...prev, activeSceneId!]));
@@ -711,14 +717,14 @@ export default function ProjectPage() {
           <div className="flex gap-2">
             <button className="btn btn-secondary btn-sm flex-1 justify-center" onClick={() => setDeleteSceneConfirmOpen(false)}>Cancel</button>
             <button
-              className="btn btn-sm flex-1 justify-center"
-              style={{ background: '#dc2626', color: 'white' }}
+              className="btn btn-danger btn-sm flex-1 justify-center"
               onClick={() => {
+                const deletedName = scenes.find(s => s.id === pendingDeleteSceneId)?.name ?? 'Scene';
                 setDeletedSceneIds(prev => new Set([...prev, pendingDeleteSceneId!]));
                 if (activeSceneId === pendingDeleteSceneId) setView('overview');
                 setDeleteSceneConfirmOpen(false);
                 setPendingDeleteSceneId(null);
-                toast.success('Scene deleted');
+                toast.success(`"${deletedName}" deleted`);
               }}
             >
               <Icon name="trash" size={13} /> Delete Scene

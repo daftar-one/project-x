@@ -5,6 +5,7 @@ import { AppFrame } from '@/components/shared/app-frame';
 import { PageTitle } from '@/components/shared/page-title';
 import { Icon } from '@/components/shared/icon';
 import { Modal } from '@/components/shared/modal';
+import { toast } from 'sonner';
 
 interface Note {
   id: string;
@@ -58,6 +59,7 @@ export default function NotesPage() {
     setNotes(prev => [note, ...prev]);
     setSelected(note);
     setCreateOpen(false);
+    toast.success(`"${note.title}" created`);
   }
 
   function openEdit(note: Note) {
@@ -75,9 +77,11 @@ export default function NotesPage() {
   }
 
   function handleDelete(id: string) {
+    const noteTitle = notes.find(n => n.id === id)?.title ?? 'Note';
     setNotes(prev => prev.filter(n => n.id !== id));
     if (selected?.id === id) setSelected(null);
     setDeleteConfirmId(null);
+    toast.success(`"${noteTitle}" deleted`);
   }
 
   return (
@@ -237,8 +241,7 @@ export default function NotesPage() {
           <div className="flex gap-2">
             <button className="btn btn-secondary btn-sm flex-1 justify-center" onClick={() => setDeleteConfirmId(null)}>Cancel</button>
             <button
-              className="btn btn-sm flex-1 justify-center"
-              style={{ background: 'rgba(239,68,68,.2)', color: '#f87171', border: '1px solid rgba(239,68,68,.3)' }}
+              className="btn btn-danger btn-sm flex-1 justify-center"
               onClick={() => deleteConfirmId && handleDelete(deleteConfirmId)}
             >
               <Icon name="trash" size={13} /> Delete
