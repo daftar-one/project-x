@@ -38,50 +38,33 @@ function fmtDate(iso: string) {
 
 export default function NotesPage() {
   const [notes, setNotes] = useState<Note[]>(INITIAL_NOTES);
-  const [selected, setSelected] = useState<Note | null>(null);
-  const [createOpen, setCreateOpen] = useState(false);
-  const [editOpen, setEditOpen] = useState(false);
+  const [selectedId, setSelectedId] = useState<string | null>('n-1');
   const [deleteConfirmId, setDeleteConfirmId] = useState<string | null>(null);
 
-  const [formTitle, setFormTitle] = useState('');
-  const [formBody, setFormBody] = useState('');
+  const selected = notes.find(n => n.id === selectedId) ?? null;
 
-  function openCreate() {
-    setFormTitle('');
-    setFormBody('');
-    setCreateOpen(true);
-  }
-
-  function handleCreate() {
-    if (!formTitle.trim()) return;
+  function handleNewNote() {
     const now = new Date().toISOString();
-    const note: Note = { id: `n-${Date.now()}`, title: formTitle.trim(), body: formBody.trim(), createdAt: now, updatedAt: now };
+    const note: Note = { id: `n-${Date.now()}`, title: '', body: '', createdAt: now, updatedAt: now };
     setNotes(prev => [note, ...prev]);
-    setSelected(note);
-    setCreateOpen(false);
-    toast.success(`"${note.title}" created`);
+    setSelectedId(note.id);
   }
 
-  function openEdit(note: Note) {
-    setFormTitle(note.title);
-    setFormBody(note.body);
-    setEditOpen(true);
-  }
-
-  function handleEdit() {
-    if (!formTitle.trim() || !selected) return;
-    const updated = { ...selected, title: formTitle.trim(), body: formBody.trim(), updatedAt: new Date().toISOString() };
-    setNotes(prev => prev.map(n => n.id === selected.id ? updated : n));
-    setSelected(updated);
-    setEditOpen(false);
+  function updateSelected(patch: Partial<Pick<Note, 'title' | 'body'>>) {
+    if (!selectedId) return;
+    const updatedAt = new Date().toISOString();
+    setNotes(prev => prev.map(n => n.id === selectedId ? { ...n, ...patch, updatedAt } : n));
   }
 
   function handleDelete(id: string) {
-    const noteTitle = notes.find(n => n.id === id)?.title ?? 'Note';
+    const title = notes.find(n => n.id === id)?.title || 'Untitled';
     setNotes(prev => prev.filter(n => n.id !== id));
-    if (selected?.id === id) setSelected(null);
+    if (selectedId === id) {
+      const remaining = notes.filter(n => n.id !== id);
+      setSelectedId(remaining.length > 0 ? remaining[0].id : null);
+    }
     setDeleteConfirmId(null);
-    toast.success(`"${noteTitle}" deleted`);
+    toast.success(`"${title}" deleted`);
   }
 
   return (
@@ -89,7 +72,7 @@ export default function NotesPage() {
       <div className="flex flex-col h-full">
         <div className="flex flex-row justify-between items-start mb-4">
           <PageTitle title="Notes" sub="Your personal production notes" />
-          <button className="btn btn-primary btn-sm mt-1" onClick={openCreate}>
+          <button className="btn btn-primary btn-sm mt-1" onClick={handleNewNote}>
             <Icon name="plus" size={13} /> New Note
           </button>
         </div>
@@ -100,46 +83,53 @@ export default function NotesPage() {
               <Icon name="file-text" size={18} className="text-[#a5b4fc]" />
             </div>
             <div className="text-[14px] font-semibold text-[#f0f2f5] mb-1">No notes yet</div>
-            <div className="text-[13px] text-gray-500">Click &ldquo;New Note&rdquo; to create your first note.</div>
+            <div className="text-[13px] text-gray-500">Click &ldquo;New Note&rdquo; to get started.</div>
           </div>
         ) : (
-          <div className="grid grid-cols-[280px_1fr] gap-4 flex-1 min-h-0">
+          <div className="grid grid-cols-[260px_1fr] gap-4 flex-1 min-h-0">
             {/* Note list */}
-            <div className="flex flex-col gap-2 overflow-y-auto">
+            <div className="flex flex-col gap-2 overflow-y-auto pr-0.5">
               {notes.map(note => (
                 <div
                   key={note.id}
-                  className={`card px-4 py-3 cursor-pointer transition-all${selected?.id === note.id ? ' ring-1 ring-[#6366f1]' : ''}`}
-                  onClick={() => setSelected(note)}
+                  className={`card px-4 py-3 cursor-pointer transition-all${selectedId === note.id ? ' ring-1 ring-[#6366f1]' : ''}`}
+                  onClick={() => setSelectedId(note.id)}
                 >
-                  <div className="text-[13px] font-semibold text-[#f0f2f5] truncate mb-1">{note.title}</div>
+                  <div className="text-[13px] font-semibold text-[#f0f2f5] truncate mb-1">{note.title || <span className="text-gray-600 italic">Untitled</span>}</div>
                   <div className="text-[11px] text-gray-500 line-clamp-2 leading-[1.5]">{note.body || 'No content'}</div>
                   <div className="text-[10px] text-gray-600 mt-1.5">{fmtDate(note.updatedAt)}</div>
                 </div>
               ))}
             </div>
 
-            {/* Note detail */}
+            {/* Note detail — inline editable */}
             {selected ? (
               <div className="card px-6 py-5 flex flex-col overflow-hidden">
-                <div className="flex items-start justify-between gap-3 mb-4">
-                  <div className="text-[18px] font-bold text-[#f0f2f5] leading-tight flex-1">{selected.title}</div>
-                  <div className="flex gap-1.5 shrink-0">
-                    <button className="btn btn-secondary btn-sm" onClick={() => openEdit(selected)}>
-                      <Icon name="edit" size={12} /> Edit
-                    </button>
-                    <button className="btn btn-danger-ghost btn-sm" onClick={() => setDeleteConfirmId(selected.id)}>
-                      <Icon name="trash" size={12} />
-                    </button>
-                  </div>
+                <div className="flex items-start justify-between gap-3 mb-2">
+                  <input
+                    className="flex-1 text-[18px] font-bold text-[#f0f2f5] bg-transparent border-0 outline-none placeholder:text-gray-600 leading-tight min-w-0"
+                    value={selected.title}
+                    onChange={e => updateSelected({ title: e.target.value })}
+                    placeholder="Note title…"
+                  />
+                  <button
+                    className="btn btn-danger-ghost btn-sm shrink-0"
+                    onClick={() => setDeleteConfirmId(selected.id)}
+                    title="Delete note"
+                  >
+                    <Icon name="trash" size={12} />
+                  </button>
                 </div>
-                <div className="text-[11px] text-gray-500 mb-4">
-                  Created {fmtDate(selected.createdAt)}
+                <div className="text-[11px] text-gray-500 mb-3 select-none">
+                  {fmtDate(selected.createdAt)}
                   {selected.updatedAt !== selected.createdAt && ` · Updated ${fmtDate(selected.updatedAt)}`}
                 </div>
-                <div className="flex-1 overflow-y-auto">
-                  <p className="text-[14px] text-[#d1d5db] leading-[1.75] whitespace-pre-wrap m-0">{selected.body || <span className="text-gray-600 italic">No content</span>}</p>
-                </div>
+                <textarea
+                  className="flex-1 bg-transparent border-0 outline-none text-[14px] text-[#d1d5db] leading-[1.75] resize-none placeholder:text-gray-600 min-h-0"
+                  value={selected.body}
+                  onChange={e => updateSelected({ body: e.target.value })}
+                  placeholder="Start typing your note…"
+                />
               </div>
             ) : (
               <div className="card flex items-center justify-center text-gray-600 text-[13px]">
@@ -149,87 +139,6 @@ export default function NotesPage() {
           </div>
         )}
       </div>
-
-      {/* Create modal */}
-      <Modal open={createOpen} onClose={() => setCreateOpen(false)}>
-        <div className="p-7">
-          <div className="flex items-center justify-between mb-5">
-            <div className="text-[15px] font-bold text-[#f9fafb]">New Note</div>
-            <button className="btn btn-ghost btn-sm" onClick={() => setCreateOpen(false)}><Icon name="x" size={15} /></button>
-          </div>
-          <div className="flex flex-col gap-4">
-            <div className="field">
-              <label className="label">Title *</label>
-              <div className="input-underline">
-                <Icon name="file-text" size={15} />
-                <input
-                  autoFocus
-                  value={formTitle}
-                  onChange={e => setFormTitle(e.target.value)}
-                  onKeyDown={e => e.key === 'Enter' && handleCreate()}
-                  placeholder="Note title…"
-                />
-              </div>
-            </div>
-            <div className="field">
-              <label className="label">Body</label>
-              <textarea
-                value={formBody}
-                onChange={e => setFormBody(e.target.value)}
-                placeholder="Write your note here…"
-                rows={6}
-                className="w-full bg-transparent border border-[rgba(255,255,255,.12)] rounded-lg text-[#f0f2f5] text-[13px] px-3 py-2.5 outline-none resize-none leading-[1.6] focus:border-[rgba(99,102,241,.5)]"
-              />
-            </div>
-          </div>
-          <div className="flex gap-2 justify-end mt-5">
-            <button className="btn btn-ghost btn-sm" onClick={() => setCreateOpen(false)}>Cancel</button>
-            <button className="btn btn-primary btn-sm" onClick={handleCreate} disabled={!formTitle.trim()}>
-              <Icon name="plus" size={13} /> Create
-            </button>
-          </div>
-        </div>
-      </Modal>
-
-      {/* Edit modal */}
-      <Modal open={editOpen} onClose={() => setEditOpen(false)}>
-        <div className="p-7">
-          <div className="flex items-center justify-between mb-5">
-            <div className="text-[15px] font-bold text-[#f9fafb]">Edit Note</div>
-            <button className="btn btn-ghost btn-sm" onClick={() => setEditOpen(false)}><Icon name="x" size={15} /></button>
-          </div>
-          <div className="flex flex-col gap-4">
-            <div className="field">
-              <label className="label">Title *</label>
-              <div className="input-underline">
-                <Icon name="file-text" size={15} />
-                <input
-                  autoFocus
-                  value={formTitle}
-                  onChange={e => setFormTitle(e.target.value)}
-                  placeholder="Note title…"
-                />
-              </div>
-            </div>
-            <div className="field">
-              <label className="label">Body</label>
-              <textarea
-                value={formBody}
-                onChange={e => setFormBody(e.target.value)}
-                placeholder="Write your note here…"
-                rows={6}
-                className="w-full bg-transparent border border-[rgba(255,255,255,.12)] rounded-lg text-[#f0f2f5] text-[13px] px-3 py-2.5 outline-none resize-none leading-[1.6] focus:border-[rgba(99,102,241,.5)]"
-              />
-            </div>
-          </div>
-          <div className="flex gap-2 justify-end mt-5">
-            <button className="btn btn-ghost btn-sm" onClick={() => setEditOpen(false)}>Cancel</button>
-            <button className="btn btn-primary btn-sm" onClick={handleEdit} disabled={!formTitle.trim()}>
-              Save
-            </button>
-          </div>
-        </div>
-      </Modal>
 
       {/* Delete confirmation */}
       <Modal open={deleteConfirmId !== null} onClose={() => setDeleteConfirmId(null)}>

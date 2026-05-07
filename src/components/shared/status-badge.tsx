@@ -11,6 +11,7 @@ const STATUS_MAP: Record<string, { cls: string; label: string }> = {
   'In Progress':      { cls: 'badge-active',     label: 'In Progress' },
   'Delayed':          { cls: 'badge-over',       label: 'Delayed' },
   'Active':           { cls: 'badge-active',     label: 'Active' },
+  'Live':             { cls: 'badge-active',     label: 'Live' },
   'Over Budget':      { cls: 'badge-over',       label: 'Over Budget' },
   'OverBudget':       { cls: 'badge-over',       label: 'Over Budget' },
   'Pending Approval': { cls: 'badge-pending',    label: 'Pending Approval' },

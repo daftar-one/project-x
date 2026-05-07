@@ -8,10 +8,11 @@ import { Modal } from './modal';
 import { useAuthStore } from '@/store/auth';
 import { useProjects } from '@/hooks/useProjects';
 import { useProductionHouse } from '@/hooks/useProductionHouse';
+import { SUPPORTED_CURRENCIES } from '@/lib/format';
 
 const GENRES = [
   'Action', 'Comedy', 'Drama', 'Horror', 'Thriller', 'Romance',
-  'Documentary', 'Sci-Fi', 'Fantasy', 'Animation', 'Biographical', 'Other',
+  'Documentary', 'Sci-Fi', 'Fantasy', 'Animation', 'Biographical', 'More',
 ];
 
 const inputCls = "w-full bg-transparent border-0 border-b border-[rgba(255,255,255,.15)] text-[#f9fafb] text-[14px] py-2 pl-7 pr-0 outline-none transition-[border-color]";
@@ -20,12 +21,14 @@ export function ModalNewProject({ open, onClose }: { open: boolean; onClose: () 
   const [filmName, setFilmName] = useState('');
   const [genre, setGenre]       = useState('');
   const [customGenre, setCustomGenre] = useState('');
+  const [currency, setCurrency] = useState('INR');
   const [saving, setSaving] = useState(false);
 
   function handleClose() {
     setFilmName('');
     setGenre('');
     setCustomGenre('');
+    setCurrency('INR');
     setSaving(false);
     onClose();
   }
@@ -72,18 +75,27 @@ export function ModalNewProject({ open, onClose }: { open: boolean; onClose: () 
                 {GENRES.map(g => <option key={g} value={g}>{g}</option>)}
               </select>
             </div>
-            {genre === 'Other' && (
+            {genre === 'More' && (
               <div className="relative w-full mt-[10px]">
                 <span className="absolute left-0 top-1/2 -translate-y-1/2 text-gray-500 flex items-center"><Icon name="file" size={15} /></span>
                 <input
                   className={inputCls}
-                  placeholder="Enter custom genre…"
+                  placeholder="Enter genre…"
                   value={customGenre}
                   onChange={e => setCustomGenre(e.target.value)}
                   autoFocus
                 />
               </div>
             )}
+          </div>
+          <div>
+            <label className="text-[11px] font-semibold text-gray-500 uppercase tracking-[0.07em] mb-1 block">Currency</label>
+            <div className="relative w-full">
+              <span className="absolute left-0 top-1/2 -translate-y-1/2 text-gray-500 flex items-center"><Icon name="wallet" size={15} /></span>
+              <select className={`${inputCls} cursor-pointer`} value={currency} onChange={e => setCurrency(e.target.value)}>
+                {SUPPORTED_CURRENCIES.map(c => <option key={c} value={c}>{c}</option>)}
+              </select>
+            </div>
           </div>
         </div>
 
@@ -158,7 +170,14 @@ export function AppFrame({ children, secondarySidebar, projectSubnav, innerBg }:
 
         {/* Production house card */}
         {house?.name && (
-          <div className="mx-3 mb-3 rounded-[9px] px-3 py-2.5" style={{ background: 'rgba(99,102,241,.1)', border: '1px solid rgba(99,102,241,.18)' }}>
+          <div
+            className="mx-3 mb-3 rounded-[9px] px-3 py-2.5 cursor-pointer transition-[background,border-color] duration-[120ms]"
+            style={{ background: 'rgba(99,102,241,.1)', border: '1px solid rgba(99,102,241,.18)' }}
+            onClick={() => router.push('/production-house')}
+            onMouseEnter={e => { (e.currentTarget as HTMLDivElement).style.background = 'rgba(99,102,241,.18)'; }}
+            onMouseLeave={e => { (e.currentTarget as HTMLDivElement).style.background = 'rgba(99,102,241,.1)'; }}
+            title="View production house profile"
+          >
             <div className="text-[9px] font-bold text-[#6366f1] uppercase tracking-[0.1em] mb-0.5">Production House</div>
             <div className="text-[13px] font-bold text-[#e0e7ff] truncate leading-tight">{house.brand_name ?? house.name}</div>
           </div>

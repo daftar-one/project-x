@@ -8,7 +8,7 @@ import { VendorFrame } from "@/components/shared/vendor-frame";
 import { PageTitle } from "@/components/shared/page-title";
 import { KPI } from "@/components/shared/kpi";
 import { useVendorStore } from "@/store/vendor-auth";
-import { fmtShort, fmtDateTime } from "@/lib/format";
+import { fmtShort, fmtDateTime, convertCurrency, getCurrencySymbol, EXCHANGE_RATES_TO_INR, SUPPORTED_CURRENCIES } from "@/lib/format";
 import { toast } from "sonner";
 
 /* ─── types ──────────────────────────────────────────────────────────── */
@@ -207,6 +207,7 @@ function VendorPortalPage() {
   const [mpAmount,   setMpAmount]   = useState("");
   const [mpUnit,     setMpUnit]     = useState<AmountUnit>("L");
   const [mpFiles,    setMpFiles]    = useState<File[]>([]);
+  const [mpCurrency, setMpCurrency] = useState('INR');
 
   const availableScenes     = scenesForProject(mpProject);
   const availableBreakdowns = mpScene ? breakdownsForScene(mpProject, mpScene) : [];
@@ -214,9 +215,14 @@ function VendorPortalPage() {
   const mpAmountVal         = (parseFloat(mpAmount) || 0) * UNIT_MULT[mpUnit];
   const canSubmit           = mpScene && mpBdId && mpAmountVal > 0 && mpFiles.length > 0;
 
+  const mpAmountNum   = parseFloat(mpAmount) || 0;
+  const mpAmountInINR = mpCurrency !== 'INR' && mpAmountNum > 0
+    ? convertCurrency(mpAmountNum * UNIT_MULT[mpUnit], mpCurrency, 'INR')
+    : mpAmountVal;
+
   function resetForm() {
     setMpProject(PROJECTS[0].name);
-    setMpScene(""); setMpBdId(""); setMpLocation(""); setMpAmount(""); setMpUnit("L"); setMpFiles([]);
+    setMpScene(""); setMpBdId(""); setMpLocation(""); setMpAmount(""); setMpUnit("L"); setMpFiles([]); setMpCurrency('INR');
   }
 
   function handleSubmit() {
@@ -468,26 +474,54 @@ function VendorPortalPage() {
             )}
           </div>
 
-          {/* Amount */}
-          <div className="field">
-            <label className="label">Amount</label>
-            <div className="input-underline">
-              <Icon name="rupee" size={16} />
-              <input type="number" value={mpAmount} onChange={e => setMpAmount(e.target.value)} placeholder="0" />
-              <select
-                value={mpUnit}
-                onChange={e => setMpUnit(e.target.value as AmountUnit)}
-                className="bg-[rgba(255,255,255,.07)] border border-[rgba(255,255,255,.12)] rounded text-[10px] font-bold text-[#a5b4fc] outline-none cursor-pointer shrink-0 py-0.5 px-1"
-              >
-                <option value="K">K</option>
-                <option value="L">L</option>
-                <option value="Cr">Cr</option>
-              </select>
+          {/* Amount + Currency */}
+          <div className="grid grid-cols-[1fr_130px] gap-3">
+            <div className="field">
+              <label className="label">Amount</label>
+              <div className="input-underline">
+                <Icon name="rupee" size={16} />
+                <input type="number" value={mpAmount} onChange={e => setMpAmount(e.target.value)} placeholder="0" />
+                <select
+                  value={mpUnit}
+                  onChange={e => setMpUnit(e.target.value as AmountUnit)}
+                  className="bg-[rgba(255,255,255,.07)] border border-[rgba(255,255,255,.12)] rounded text-[10px] font-bold text-[#a5b4fc] outline-none cursor-pointer shrink-0 py-0.5 px-1"
+                >
+                  <option value="K">K</option>
+                  <option value="L">L</option>
+                  <option value="Cr">Cr</option>
+                </select>
+              </div>
             </div>
-            {mpAmountVal > 0 && (
-              <div className="text-[11px] text-gray-500 mt-1">= {fmtShort(mpAmountVal)}</div>
-            )}
+            <div className="field">
+              <label className="label">Currency</label>
+              <div className="input-underline">
+                <select
+                  value={mpCurrency}
+                  onChange={e => setMpCurrency(e.target.value)}
+                  className="bg-transparent text-[#f0f2f5] text-[13px] outline-none flex-1"
+                >
+                  {SUPPORTED_CURRENCIES.map(c => <option key={c} value={c}>{c}</option>)}
+                </select>
+              </div>
+            </div>
           </div>
+          {mpCurrency !== 'INR' && mpAmountNum > 0 && (
+            <div className="rounded-[8px] px-4 py-3 flex flex-col gap-1 -mt-1" style={{ background: 'rgba(99,102,241,.08)', border: '1px solid rgba(99,102,241,.18)' }}>
+              <div className="text-[11px] text-gray-400">
+                Exchange rate (today):&nbsp;
+                <span className="font-semibold text-[#a5b4fc]">
+                  1 {mpCurrency} = {getCurrencySymbol('INR')}{(EXCHANGE_RATES_TO_INR[mpCurrency] ?? 1).toFixed(4)} INR
+                </span>
+              </div>
+              <div className="text-[12px] text-[#f0f2f5]">
+                {fmtShort(mpAmountNum * UNIT_MULT[mpUnit])} {mpCurrency}&nbsp;→&nbsp;
+                <span className="font-bold text-[#34d399]">{fmtShort(mpAmountInINR)}</span>
+              </div>
+            </div>
+          )}
+          {mpCurrency === 'INR' && mpAmountVal > 0 && (
+            <div className="text-[11px] text-gray-500 -mt-1">= {fmtShort(mpAmountVal)}</div>
+          )}
 
           {/* Bill / Invoice upload */}
           <div className="field mb-0">

@@ -5,28 +5,31 @@ import { useRouter } from 'next/navigation';
 import { AppFrame, ModalNewProject } from '@/components/shared/app-frame';
 import { KPI } from '@/components/shared/kpi';
 import { PageTitle } from '@/components/shared/page-title';
+import { Modal } from '@/components/shared/modal';
 import { LoadingCard, ErrorCard } from '@/components/shared/loading-card';
 import { useProjects } from '@/hooks/useProjects';
 import { useProductionHouse } from '@/hooks/useProductionHouse';
 import { useBills } from '@/hooks/useBills';
 import { usePHWallet } from '@/hooks/useWallet';
 import { useAuthStore } from '@/store/auth';
-import { fmtShort } from '@/lib/format';
+import { fmtShortCur } from '@/lib/format';
 import { Icon } from '@/components/shared/icon';
 import { AddFundsDialog } from '@/components/shared/add-funds-dialog';
+import { toast } from 'sonner';
 
 export default function DashboardPage() {
   const router = useRouter();
   const user = useAuthStore(s => s.user);
   const { data: projects, loading, error } = useProjects();
-  const { data: house } = useProductionHouse();
   const { data: pendingBills } = useBills('Pending');
   const { data: wallet, refetch: refetchWallet } = usePHWallet();
-  const [timeframe, setTimeframe] = useState<'monthly' | 'weekly'>('monthly');
-  void timeframe; void setTimeframe; void pendingBills; void wallet; void refetchWallet;
+  void pendingBills; void wallet; void refetchWallet;
+  const { data: house } = useProductionHouse(); void house;
   const isLP = user?.role === 'line_producer';
   const [createOpen, setCreateOpen] = useState(false);
   const [addFundsOpen, setAddFundsOpen] = useState(false);
+  const [deletedIds, setDeletedIds] = useState<Set<string>>(new Set());
+  const [deleteConfirmId, setDeleteConfirmId] = useState<string | null>(null);
 
   useEffect(() => {
     if (user && user.role !== 'line_producer') {
@@ -38,17 +41,22 @@ export default function DashboardPage() {
   if (loading) return <AppFrame><LoadingCard message="Loading dashboard…" /></AppFrame>;
   if (error) return <AppFrame><ErrorCard message={error} /></AppFrame>;
 
-  const totalSpent = projects.reduce((a, p) => a + p.spent, 0);
-  const totalBudget = projects.reduce((a, p) => a + p.total_budget, 0);
+  const visibleProjects = projects.filter(p => !deletedIds.has(p.id));
+  const totalSpent = visibleProjects.reduce((a, p) => a + p.spent, 0);
+  const totalBudget = visibleProjects.reduce((a, p) => a + p.total_budget, 0);
   const netBudget = totalBudget - totalSpent;
+
+  const deleteMovie = (id: string) => {
+    const name = projects.find(p => p.id === id)?.name ?? 'Movie';
+    setDeletedIds(prev => new Set([...prev, id]));
+    setDeleteConfirmId(null);
+    toast.success(`"${name}" deleted`);
+  };
 
   return (
     <AppFrame>
       <div className="flex flex-row justify-between">
-        <PageTitle
-          title="Dashboard"
-          // sub={`${house?.name ?? 'Loading…'} · Line Producer Overview`}
-        />
+        <PageTitle title="Dashboard" />
         <div className="flex flex-row items-center gap-2">
           {isLP && (
             <button
@@ -72,12 +80,12 @@ export default function DashboardPage() {
         <div className="flex flex-col gap-4">
           {/* KPI Strip */}
           <div className="grid grid-cols-3 gap-3">
-            <KPI label="Portfolio" value={fmtShort(totalBudget)} sub="Total portfolio budget" icon="wallet" />
-            <KPI label="Movies" value={projects.length} sub="Across portfolio" icon="film" />
+            <KPI label="Portfolio" value={fmtShortCur(totalBudget)} sub="Total portfolio budget" icon="wallet" />
+            <KPI label="Movies" value={visibleProjects.length} sub="Across portfolio" icon="film" />
             <KPI
-              label="Over / Under Budget"
-              value={netBudget >= 0 ? `+${fmtShort(netBudget)}` : fmtShort(netBudget)}
-              sub={netBudget >= 0 ? 'Under budget' : 'Over budget'}
+              label="Budget Health"
+              value={fmtShortCur(netBudget)}
+              sub={netBudget >= 0 ? 'Remaining from portfolio budget' : 'Exceeded portfolio budget'}
               icon="trend"
             />
           </div>
@@ -88,57 +96,97 @@ export default function DashboardPage() {
               <thead>
                 <tr>
                   <th className="w-full">Movies</th>
-                  <th className="text-right whitespace-nowrap">Planned</th>
-                  <th className="text-right whitespace-nowrap">Spent</th>
+                  <th className="text-right whitespace-nowrap">Currency</th>
+                  <th className="text-right whitespace-nowrap">Planned Budget</th>
                   <th className="text-right whitespace-nowrap">Wallet</th>
-                  <th className="text-right whitespace-nowrap">Pending</th>
+                  <th className="text-right whitespace-nowrap">Pending Bills</th>
                   <th className="text-right whitespace-nowrap">Actual Spent</th>
                   <th className="text-right whitespace-nowrap">Over Budget</th>
                   <th className="text-right whitespace-nowrap">Scenes</th>
                   <th className="text-right whitespace-nowrap">Status</th>
+                  {isLP && <th className="w-8" />}
                 </tr>
               </thead>
               <tbody>
-                {projects.length === 0 ? (
-                  <tr><td colSpan={9} className="text-center text-gray-500 px-5 py-6">No movies yet</td></tr>
-                ) : projects.map(p => (
-                  <tr key={p.id} onClick={() => router.push(`/projects/${p.id}`)} className="cursor-pointer">
-                    <td className="w-full">
-                      <div className="font-semibold text-[#f0f2f5]">{p.name}</div>
-                    </td>
-                    <td className="text-right whitespace-nowrap">
-                      <span className="num text-[13px] text-[#f0f2f5]">{fmtShort(p.total_budget)}</span>
-                    </td>
-                    <td className="text-right whitespace-nowrap">
-                      <span className="num text-[13px] text-[#f0f2f5]">{fmtShort(p.spent)}</span>
-                    </td>
-                    <td className="text-right whitespace-nowrap">
-                      <span className="num text-[13px] text-[#f0f2f5]">{p.id === '1' ? 0 : fmtShort(p.wallet_balance)}</span>
-                    </td>
-                    <td className="text-right whitespace-nowrap">
-                      <span className="num text-[13px] text-[#f0f2f5]">{fmtShort(p.pending)}</span>
-                    </td>
-                    <td className="text-right whitespace-nowrap">
-                      <span className="num text-[13px] text-[#f0f2f5]">{fmtShort(p.spent)}</span>
-                    </td>
-                    <td className="text-right whitespace-nowrap">
-                      <span className="num text-[13px] text-[#f0f2f5]">{fmtShort(p.over_budget)}</span>
-                    </td>
-                    <td className="text-right whitespace-nowrap">
-                      <span className="num text-[13px] text-gray-400">{p.wrapped_scenes}/{p.scene_count}</span>
-                    </td>
-                    <td className="text-right whitespace-nowrap">
-                      <span className="num text-[13px] text-gray-400">{p.status}</span>
-                    </td>
-                  </tr>
-                ))}
+                {visibleProjects.length === 0 ? (
+                  <tr><td colSpan={isLP ? 10 : 9} className="text-center text-gray-500 px-5 py-6">No movies yet</td></tr>
+                ) : visibleProjects.map(p => {
+                  const cur = p.currency ?? 'INR';
+                  const fmt = (n: number) => fmtShortCur(n, cur);
+                  return (
+                    <tr key={p.id} onClick={() => router.push(`/projects/${p.id}`)} className="cursor-pointer">
+                      <td className="w-full">
+                        <div className="font-semibold text-[#f0f2f5]">{p.name}</div>
+                      </td>
+                      <td className="text-right whitespace-nowrap">
+                        <span className="num text-[12px] text-gray-400">{cur}</span>
+                      </td>
+                      <td className="text-right whitespace-nowrap">
+                        <span className="num text-[13px] text-[#f0f2f5]">{fmt(p.total_budget)}</span>
+                      </td>
+                      <td className="text-right whitespace-nowrap">
+                        <span className="num text-[13px] text-[#f0f2f5]">{p.id === '1' ? 0 : fmt(p.wallet_balance)}</span>
+                      </td>
+                      <td className="text-right whitespace-nowrap">
+                        <span className="num text-[13px] text-[#f0f2f5]">{fmt(p.pending)}</span>
+                      </td>
+                      <td className="text-right whitespace-nowrap">
+                        <span className="num text-[13px] text-[#f0f2f5]">{fmt(p.spent)}</span>
+                      </td>
+                      <td className="text-right whitespace-nowrap">
+                        <span className="num text-[13px] text-[#f0f2f5]">{fmt(p.over_budget)}</span>
+                      </td>
+                      <td className="text-right whitespace-nowrap">
+                        <span className="num text-[13px] text-gray-400">{p.wrapped_scenes}/{p.scene_count}</span>
+                      </td>
+                      <td className="text-right whitespace-nowrap">
+                        <span className="num text-[13px] text-gray-400">{p.status}</span>
+                      </td>
+                      {isLP && (
+                        <td className="text-right">
+                          <button
+                            className="btn btn-danger-ghost btn-sm"
+                            onClick={e => { e.stopPropagation(); setDeleteConfirmId(p.id); }}
+                            title="Delete movie"
+                          >
+                            <Icon name="trash" size={13} />
+                          </button>
+                        </td>
+                      )}
+                    </tr>
+                  );
+                })}
               </tbody>
             </table>
           </div>
         </div>
       </div>
+
       <ModalNewProject open={createOpen} onClose={() => setCreateOpen(false)} />
       <AddFundsDialog open={addFundsOpen} onClose={() => setAddFundsOpen(false)} />
+
+      {/* Delete movie confirmation */}
+      <Modal open={deleteConfirmId !== null} onClose={() => setDeleteConfirmId(null)}>
+        <div className="p-8">
+          <div className="w-[52px] h-[52px] rounded-[14px] mb-5 bg-[rgba(239,68,68,.1)] border border-[rgba(239,68,68,.2)] flex items-center justify-center">
+            <Icon name="trash" size={22} style={{ color: '#f87171' }} />
+          </div>
+          <div className="text-[17px] font-bold text-[#f9fafb] mb-2 tracking-[-0.01em]">Delete Movie?</div>
+          <p className="text-[13px] text-gray-400 m-0 mb-4 leading-[1.7]">
+            This will permanently delete &ldquo;{projects.find(p => p.id === deleteConfirmId)?.name ?? 'this movie'}&rdquo; and all its data. This action cannot be undone.
+          </p>
+          <div className="h-px bg-[rgba(255,255,255,.06)] mb-5" />
+          <div className="flex gap-2">
+            <button className="btn btn-secondary btn-sm flex-1 justify-center" onClick={() => setDeleteConfirmId(null)}>Cancel</button>
+            <button
+              className="btn btn-danger btn-sm flex-1 justify-center"
+              onClick={() => deleteConfirmId && deleteMovie(deleteConfirmId)}
+            >
+              <Icon name="trash" size={13} /> Delete Movie
+            </button>
+          </div>
+        </div>
+      </Modal>
     </AppFrame>
   );
 }

@@ -34,6 +34,7 @@ const V = {
   indRailways:   'v-ind-railways',
   blueOcean:     'v-blue-ocean',
   medFilm:       'v-med-film',
+  pacificFx:     'v-pacific-fx',
 };
 
 const VN: Record<string, string> = {
@@ -54,6 +55,7 @@ const VN: Record<string, string> = {
   [V.indRailways]:  'Indian Railways Coordination',
   [V.blueOcean]:    'Blue Ocean Events',
   [V.medFilm]:      'Medfilm Safety',
+  [V.pacificFx]:    'Pacific FX Inc.',
 };
 
 const now = '2025-04-01T00:00:00Z';
@@ -67,7 +69,8 @@ export const MOCK_PROJECTS: ProjectWithStats[] = [
     name: 'Dhurandhar 1',
     director: 'Rohit Shetty',
     genre: 'Action',
-    status: 'Planning',
+    status: 'Live',
+    currency: 'INR',
     pending: 15_000_000,       // b-d1-01-3 Pending only (SC-02 all Paid)
     total_budget: 248_000_000, // SC-01 (40M) + SC-02 (208M)
     working_budget: 248_000_000,
@@ -89,6 +92,7 @@ export const MOCK_PROJECTS: ProjectWithStats[] = [
     director: 'Rohit Shetty',
     genre: 'Action',
     status: 'Live',
+    currency: 'INR',
     pending: 77_000_000,        // SC-01 (25M+20M) + SC-02 (20M+12M) Pending bills
     total_budget: 270_000_000,  // SC-01 (160M) + SC-02 (110M) scene budgets
     working_budget: 230_000_000,
@@ -150,6 +154,7 @@ const BUDGET_LINES: Record<string, SceneBudgetLine[]> = {
     line('bl-d2-02-2', S.d2_02, 'Camera & lighting equipment',     25_000_000, V.cineGear,   0,          '2024-10-07'),
     line('bl-d2-02-3', S.d2_02, 'Stunt & action sequences',        30_000_000, V.actionCrew, 10_000_000, '2024-10-06'),
     line('bl-d2-02-4', S.d2_02, 'VFX cleanup & compositing',       15_000_000, null,         0,          '2024-10-08'),
+    line('bl-d2-02-5', S.d2_02, 'International VFX consultation',  12_615_000, V.pacificFx,  0,          '2024-10-09'),
   ],
 };
 
@@ -239,7 +244,7 @@ export const PROJECT_WALLETS: Record<string, Wallet> = {
 
 const SCENE_WALLET_BALANCES: Record<string, number> = {
   [S.d1_01]: 28_000_000,  // 40M budget − 12M actual
-  [S.d1_02]: 85_000_000,  // Wrapped
+  [S.d1_02]: 82_000_000,  // Wrapped
   [S.d2_01]: 68_000_000,  // Wrapped
   [S.d2_02]: 58_500_000,  // Wrapped
 };
@@ -250,6 +255,7 @@ export const MOCK_VENDORS: Vendor[] = [
   { id: V.actionCrew,   production_house_id: 'ph-1', name: 'Action Crew India',   category: 'Cast & Talent',         email: 'hello@actioncrew.in',  rep_name: 'Rajesh Kumar',  phone: '+91 98765 43210', status: 'Invited',  created_at: now },
   { id: V.vfxPrime,     production_house_id: 'ph-1', name: 'Prime VFX Studios',   category: 'VFX & Post Production', email: 'contact@primevfx.com', rep_name: 'Ananya Singh',  phone: '+91 87654 32109', status: 'Active',   location: 'Andheri West, Mumbai', created_at: now },
   { id: V.cineGear,     production_house_id: 'ph-1', name: 'Cine Gear Mumbai',    category: 'Equipment & Machinery', email: 'info@cinegear.in',     rep_name: 'Vikram Patel',  phone: '+91 76543 21098', status: 'Active',   location: 'Bandra, Mumbai', created_at: now },
+  { id: V.pacificFx,    production_house_id: 'ph-1', name: 'Pacific FX Inc.',     category: 'VFX & Post Production', email: 'hello@pacificfx.com',  rep_name: 'Jason Miller',  phone: '+1 310 555 0192', status: 'Active',   location: 'Los Angeles, USA', created_at: now },
 ];
 
 export function getMockVendors(): Vendor[] {
