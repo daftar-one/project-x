@@ -1,6 +1,7 @@
 "use client";
 
 import { useState, Fragment } from "react";
+import { useSearchParams } from "next/navigation";
 import { Icon } from "@/components/shared/icon";
 import { Modal } from "@/components/shared/modal";
 import { VendorFrame } from "@/components/shared/vendor-frame";
@@ -34,35 +35,17 @@ interface Payment {
   billFileName: string | null;
 }
 
-/* ─── mock catalogue — aligned with production house mock data ─────── */
+/* ─── mock catalogue — Prime VFX Studios (Active) budget lines ──────── */
 
 const VENDOR_BREAKDOWNS: Record<string, Record<string, Breakdown[]>> = {
   "Dhurandhar 1": {
-    "SC-01 – Gateway of India Chase": [
-      { id: "bd-d1-01-1", reason: "Stunt team & coordinators" },
-    ],
     "SC-02 – Mumbai Port Explosion": [
-      { id: "bd-d1-02-1", reason: "VFX & digital effects" },
-      { id: "bd-d1-02-2", reason: "Practical explosives & pyrotechnics" },
-      { id: "bd-d1-02-3", reason: "Crane & heavy equipment" },
-      { id: "bd-d1-02-4", reason: "Port location & marine crew" },
-      { id: "bd-d1-02-5", reason: "Night shoot crew overtime" },
-      { id: "bd-d1-02-6", reason: "Safety & medical team" },
+      { id: "bl-d1-02-1", reason: "VFX & digital effects" },
     ],
   },
   "Bhoot Bangla": {
-    "SC-01 – Goa Beach Heist": [
-      { id: "bd-d2-01-1", reason: "Goa beach location & permits" },
-      { id: "bd-d2-01-2", reason: "Boat & marine equipment" },
-      { id: "bd-d2-01-3", reason: "Water stunt team" },
-      { id: "bd-d2-01-4", reason: "Underwater camera crew" },
-      { id: "bd-d2-01-5", reason: "Helicopter aerial shots" },
-    ],
     "SC-02 – Police HQ Infiltration": [
-      { id: "bd-d2-02-1", reason: "Police station set construction" },
-      { id: "bd-d2-02-2", reason: "Camera & lighting equipment" },
-      { id: "bd-d2-02-3", reason: "Stunt & action sequences" },
-      { id: "bd-d2-02-4", reason: "VFX cleanup & compositing" },
+      { id: "bl-d2-02-4", reason: "VFX cleanup & compositing" },
     ],
   },
 };
@@ -78,14 +61,10 @@ function breakdownsForScene(project: string, scene: string): Breakdown[] {
 }
 
 const INITIAL_PAYMENTS: Payment[] = [
-  { id: "p1",  project: "Dhurandhar 1", scene: "SC-01 – Gateway of India Chase",  location: "Mumbai",    breakdownId: "bd-d1-01-1", breakdown: "Stunt team & coordinators",      amount: 12_000_000, status: "Paid",    submittedAt: "2025-01-10", statusChangedAt: "2025-01-14", billFileName: "stunt_invoice.pdf"    },
-  { id: "p2",  project: "Dhurandhar 1", scene: "SC-01 – Gateway of India Chase",  location: "Mumbai",    breakdownId: "bd-d1-01-1", breakdown: "Stunt team & coordinators",      amount:  8_000_000, status: "Rejected", submittedAt: "2025-01-18", statusChangedAt: "2025-01-20", billFileName: "stunt_invoice_2.pdf"  },
-  { id: "p3",  project: "Dhurandhar 1", scene: "SC-02 – Mumbai Port Explosion",   location: "Mumbai",    breakdownId: "bd-d1-02-1", breakdown: "VFX & digital effects",           amount: 76_000_000, status: "Paid",    submittedAt: "2025-02-03", statusChangedAt: "2025-02-06", billFileName: "vfx_invoice.pdf"      },
-  { id: "p4",  project: "Dhurandhar 1", scene: "SC-02 – Mumbai Port Explosion",   location: "Mumbai",    breakdownId: "bd-d1-02-2", breakdown: "Practical explosives & pyrotechnics", amount: 47_000_000, status: "Paid", submittedAt: "2025-02-05", statusChangedAt: "2025-02-07", billFileName: "pyro_bill.pdf"        },
-  { id: "p5",  project: "Bhoot Bangla", scene: "SC-01 – Goa Beach Heist",         location: "Goa",       breakdownId: "bd-d2-01-2", breakdown: "Boat & marine equipment",         amount: 37_000_000, status: "Paid",    submittedAt: "2025-03-22", statusChangedAt: "2025-03-26", billFileName: "boat_invoice.pdf"     },
-  { id: "p6",  project: "Bhoot Bangla", scene: "SC-01 – Goa Beach Heist",         location: "Goa",       breakdownId: "bd-d2-01-3", breakdown: "Water stunt team",               amount: 32_000_000, status: "Paid",    submittedAt: "2025-03-25", statusChangedAt: "2025-03-28", billFileName: "stunt_goa.pdf"        },
-  { id: "p7",  project: "Bhoot Bangla", scene: "SC-02 – Police HQ Infiltration",  location: "Mumbai",    breakdownId: "bd-d2-02-1", breakdown: "Police station set construction", amount: 37_500_000, status: "Paid",    submittedAt: "2025-04-01", statusChangedAt: null,         billFileName: "set_invoice.pdf"      },
-  { id: "p8",  project: "Bhoot Bangla", scene: "SC-02 – Police HQ Infiltration",  location: "Mumbai",    breakdownId: "bd-d2-02-2", breakdown: "Camera & lighting equipment",     amount: 20_000_000, status: "Pending", submittedAt: "2025-04-03", statusChangedAt: null,         billFileName: "camera_invoice.pdf"   },
+  { id: "b-d1-02-1r1", project: "Dhurandhar 1", scene: "SC-02 – Mumbai Port Explosion",   location: "Mumbai", breakdownId: "bl-d1-02-1", breakdown: "VFX & digital effects",    amount: 30_000_000, status: "Rejected", submittedAt: "2024-11-10", statusChangedAt: "2024-11-15", billFileName: "vfx_invoice_v1.pdf"     },
+  { id: "b-d1-02-1r2", project: "Dhurandhar 1", scene: "SC-02 – Mumbai Port Explosion",   location: "Mumbai", breakdownId: "bl-d1-02-1", breakdown: "VFX & digital effects",    amount: 25_000_000, status: "Rejected", submittedAt: "2024-11-20", statusChangedAt: "2024-11-25", billFileName: "vfx_invoice_v2.pdf"     },
+  { id: "b-d1-02-1",   project: "Dhurandhar 1", scene: "SC-02 – Mumbai Port Explosion",   location: "Mumbai", breakdownId: "bl-d1-02-1", breakdown: "VFX & digital effects",    amount: 76_000_000, status: "Paid",     submittedAt: "2024-12-05", statusChangedAt: "2024-12-08", billFileName: "vfx_invoice_final.pdf"  },
+  { id: "b-d2-02-4",   project: "Bhoot Bangla",  scene: "SC-02 – Police HQ Infiltration", location: "Mumbai", breakdownId: "bl-d2-02-4", breakdown: "VFX cleanup & compositing", amount: 12_000_000, status: "Pending",  submittedAt: "2024-11-23", statusChangedAt: null,         billFileName: "vfx_compositing_inv.pdf" },
 ];
 
 /* ─── bill viewer ─────────────────────────────────────────────────────── */
@@ -198,14 +177,16 @@ const STATUS_COLORS: Record<string, string> = {
   Pending: "#f59e0b",
 };
 
-function fmt(d: string) {
-  return new Date(d).toLocaleDateString("en-IN", { day: "numeric", month: "short", year: "numeric" });
-}
-
 /* ─── component ──────────────────────────────────────────────────────── */
 
-export default function VendorPortalPage() {
+const DEMO_VENDOR = { name: "Prime VFX Studios", email: "contact@primevfx.com" };
+
+function VendorPortalPage() {
+  const searchParams = useSearchParams();
+  const selectedMovie = searchParams.get("movie");
   const { name, email } = useVendorStore();
+  const displayName  = name  || DEMO_VENDOR.name;
+  const displayEmail = email || DEMO_VENDOR.email;
   const [logoUrl, setLogoUrl] = useState<string | null>(null);
   const [payments, setPayments] = useState<Payment[]>(INITIAL_PAYMENTS);
 
@@ -268,24 +249,28 @@ export default function VendorPortalPage() {
     setMpFiles(prev => prev.filter((_, i) => i !== idx));
   }
 
-  const totalSettled       = payments.filter(p => p.status === "Paid").reduce((s, p) => s + p.amount, 0);
-  const totalPending       = payments.filter(p => p.status === "Pending").reduce((s, p) => s + p.amount, 0);
-  const totalRejectedAmt   = payments.filter(p => p.status === "Rejected").reduce((s, p) => s + p.amount, 0);
-  const paidCount          = payments.filter(p => p.status === "Paid").length;
-  const rejectedCount      = payments.filter(p => p.status === "Rejected").length;
-  const pendingCount       = payments.filter(p => p.status === "Pending").length;
-  const movieCount         = new Set(payments.map(p => p.project)).size;
+  const allMovies       = PROJECTS.map(p => p.name);
+  const scopedPayments  = selectedMovie ? payments.filter(p => p.project === selectedMovie) : payments;
 
-  const groupedPayments = getGroupedPayments(payments);
+  const totalSettled     = scopedPayments.filter(p => p.status === "Paid").reduce((s, p) => s + p.amount, 0);
+  const totalPending     = scopedPayments.filter(p => p.status === "Pending").reduce((s, p) => s + p.amount, 0);
+  const totalRejectedAmt = scopedPayments.filter(p => p.status === "Rejected").reduce((s, p) => s + p.amount, 0);
+  const paidCount        = scopedPayments.filter(p => p.status === "Paid").length;
+  const rejectedCount    = scopedPayments.filter(p => p.status === "Rejected").length;
+  const pendingCount     = scopedPayments.filter(p => p.status === "Pending").length;
+  const movieCount       = new Set(payments.map(p => p.project)).size;
+  const sceneCount       = selectedMovie ? new Set(scopedPayments.map(p => p.scene)).size : 0;
+
+  const groupedPayments = getGroupedPayments(scopedPayments);
 
   return (
-    <VendorFrame>
+    <VendorFrame movies={allMovies} selectedMovie={selectedMovie}>
       <div className="flex flex-col h-full">
 
         {/* Fixed header */}
         <div className="shrink-0">
           <PageTitle
-            title="Payment History"
+            title="Payment Insights"
             right={
               <button className="btn btn-primary btn-sm" onClick={() => setModalOpen(true)}>
                 Request Payment
@@ -300,7 +285,7 @@ export default function VendorPortalPage() {
                 <img src={logoUrl} alt="Logo" className="w-full h-full object-cover" />
               ) : (
                 <div className="w-full h-full bg-gradient-to-br from-[#6366f1] to-[#e83e8c] flex items-center justify-center text-white font-bold text-[16px]">
-                  {(name || email || 'V').charAt(0).toUpperCase()}
+                  {displayName.charAt(0).toUpperCase()}
                 </div>
               )}
               <div className="absolute inset-0 bg-black/50 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity rounded-[12px]">
@@ -309,8 +294,8 @@ export default function VendorPortalPage() {
               <input type="file" accept="image/*" className="hidden" onChange={handleLogoChange} />
             </label>
             <div>
-              <div className="text-[14px] font-semibold text-[#f0f2f5]">{name || 'Vendor'}</div>
-              <div className="text-[11px] text-gray-500">{email || '—'}</div>
+              <div className="text-[14px] font-semibold text-[#f0f2f5]">{displayName}</div>
+              <div className="text-[11px] text-gray-500">{displayEmail}</div>
             </div>
           </div>
 
@@ -319,17 +304,26 @@ export default function VendorPortalPage() {
             <KPI label="Total Settled"  value={fmtShort(totalSettled)}    sub={`${paidCount} bills`}     icon="wallet"    />
             <KPI label="Total Pending"  value={fmtShort(totalPending)}    sub={`${pendingCount} bills`}  icon="rupee"     />
             <KPI label="Total Rejected" value={fmtShort(totalRejectedAmt)} sub={`${rejectedCount} bills`} icon="trendDown" />
-            <KPI label="Movies"         value={movieCount}                 sub="Across portfolio"         icon="film"      />
+            {selectedMovie
+              ? <KPI label="Scenes"  value={sceneCount}  sub="In this movie"     icon="camera" />
+              : <KPI label="Movies"  value={movieCount}  sub="Across portfolio"  icon="film"   />
+            }
           </div>
         </div>
 
-        {/* Scrollable list */}
+        {/* Scrollable list — only shown when a movie is selected */}
         <div className="flex-1 min-h-0 overflow-y-auto">
-          {payments.length === 0 ? (
+          {!selectedMovie ? (
+            <div className="text-center py-[60px] px-5 text-gray-500 text-[13px]">
+              Select a movie from the sidebar to view payment history.
+            </div>
+          ) : scopedPayments.length === 0 ? (
             <div className="text-center py-[60px] px-5 text-gray-600 text-[13px]">
               No payment requests yet.
             </div>
           ) : (
+            <>
+              <div className="text-[13px] font-semibold text-[#f0f2f5] mb-3">Payment History</div>
             <div className="card overflow-hidden">
               <div className="overflow-x-auto">
                 <table className="w-full border-collapse min-w-[900px]">
@@ -346,7 +340,7 @@ export default function VendorPortalPage() {
                   <tbody>
                     {groupedPayments.map(({ payment: p, projectSpan, sceneSpan, breakdownSpan }, idx) => {
                       const isLastOfProject = idx === groupedPayments.length - 1 || groupedPayments[idx + 1].payment.project !== p.project;
-                      const projectTotal = isLastOfProject ? payments.filter(pay => pay.project === p.project).reduce((s, r) => s + r.amount, 0) : 0;
+                      const projectTotal = isLastOfProject ? scopedPayments.filter(pay => pay.project === p.project).reduce((s, r) => s + r.amount, 0) : 0;
 
                       return (
                         <Fragment key={p.id}>
@@ -405,6 +399,7 @@ export default function VendorPortalPage() {
                 </table>
               </div>
             </div>
+            </>
           )}
         </div>
       </div>
@@ -539,4 +534,9 @@ export default function VendorPortalPage() {
       </Modal>
     </VendorFrame>
   );
+}
+
+import { Suspense } from "react";
+export default function VendorPortalPageWrapper() {
+  return <Suspense><VendorPortalPage /></Suspense>;
 }

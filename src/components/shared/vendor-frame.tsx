@@ -8,14 +8,16 @@ import { useVendorStore } from "@/store/vendor-auth";
 
 interface VendorFrameProps {
   children: ReactNode;
+  movies?: string[];
+  selectedMovie?: string | null;
 }
 
-export function VendorFrame({ children }: VendorFrameProps) {
+export function VendorFrame({ children, movies, selectedMovie }: VendorFrameProps) {
   const router = useRouter();
   const pathname = usePathname();
   const { name, email, clearVendor } = useVendorStore();
 
-  const vendorName = name || email || "Vendor";
+  const vendorName = name || email || "Prime VFX Studios";
 
   function handleLogout() {
     clearVendor();
@@ -32,15 +34,33 @@ export function VendorFrame({ children }: VendorFrameProps) {
           <span className="text-[14px] font-bold text-[#f0f2f5] tracking-[-0.02em]">Studio OS</span>
         </div>
 
-        <div className="sidebar-scroll">
-          <div
-            className={`side-item${pathname === "/vendor/portal" ? " active" : ""}`}
-            onClick={() => router.push("/vendor/portal")}
-          >
-            <Icon name="list" size={16} stroke={1.5} />
-            <span>Payment History</span>
-          </div>
+        <div
+          className={`side-item${pathname === "/vendor/portal" ? " active" : ""}`}
+          onClick={() => router.push("/vendor/portal")}
+        >
+          <Icon name="list" size={16} stroke={1.5} />
+          <span>Payment Insights</span>
         </div>
+
+        {movies && movies.length > 0 && (
+          <div className="sidebar-scroll">
+            <div className="side-section-label">Movies</div>
+            {movies.map(movie => (
+              <div
+                key={movie}
+                className={`side-item-project${selectedMovie === movie ? " active" : ""}`}
+                onClick={() => router.push(`/vendor/portal?movie=${encodeURIComponent(movie)}`)}
+                title={movie}
+              >
+                <div
+                  className="w-1.5 h-1.5 rounded-[2px] shrink-0"
+                  style={{ background: selectedMovie === movie ? "#a5b4fc" : "#374151" }}
+                />
+                <span className="overflow-hidden text-ellipsis flex-1">{movie}</span>
+              </div>
+            ))}
+          </div>
+        )}
 
         <div
           className="flex items-center gap-2.5 px-5 py-2 cursor-pointer rounded-lg mx-2 mb-0.5 hover:bg-[rgba(255,255,255,.04)]"
