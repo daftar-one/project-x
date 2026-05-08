@@ -418,10 +418,10 @@ function VendorPortalPage() {
 
           {/* Movie Currency (Read-only) */}
           <div className="field">
-            <label className="label">Movie Currency</label>
+            <label className="label">Movie Base Currency</label>
             <div className="input-underline opacity-60 cursor-not-allowed">
               <Icon name="rupee" size={16} />
-              <input value={`${projectCur} (Project Base)`} readOnly tabIndex={-1} className="cursor-not-allowed" />
+              <input value={`${projectCur}`} readOnly tabIndex={-1} className="cursor-not-allowed" />
             </div>
           </div>
 
@@ -484,7 +484,7 @@ function VendorPortalPage() {
               </div>
             </div>
             <div className="field">
-              <label className="label">Currency</label>
+              <label className="label pb-1">Currency</label>
               <div className="input-underline">
                 <select
                   value={mpCurrency}
