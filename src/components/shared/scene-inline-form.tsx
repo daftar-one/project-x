@@ -3,12 +3,14 @@
 import { useState, useEffect } from 'react';
 import { Icon } from './icon';
 import { Modal } from './modal';
-import { fmtShortCur, fmtDateTime, convertCurrency, getCurrencySymbol, EXCHANGE_RATES_TO_INR, SUPPORTED_CURRENCIES } from '@/lib/format';
+import { fmtShortCur, getCurrencySymbol } from '@/lib/format';
 import { MOCK_SCENES, getMockBudgetLines, getMockSceneBills, getMockSceneWallet, getMockSceneWalletCredits } from '@/lib/mock-data';
 import { TransactionHistory, type WalletCredit } from './transaction-history';
 import { useAuthStore } from '@/store/auth';
 import type { Vendor } from '@/lib/types';
 import { toast } from 'sonner';
+import { BillViewerDialog } from './bill-viewer-dialog';
+import { useProject } from '@/hooks/useProject';
 
 /* ─── internal types ─────────────────────────────────────────────── */
 
@@ -27,62 +29,6 @@ interface BillEntry {
 }
 
 const DEMO_PDF_URL = '/sample_invoice.pdf';
-
-const STATUS_STYLE: Record<BillEntry['status'], { bg: string; color: string }> = {
-  Paid:     { bg: 'rgba(16,185,129,.15)',  color: '#34d399' },
-  Rejected: { bg: 'rgba(239,68,68,.15)',   color: '#f87171' },
-  NA:       { bg: 'rgba(245,158,11,.15)',  color: '#fbbf24' },
-};
-
-function BillViewerDialog({ bill, vendorName, reason, projectCurrency, onClose }: {
-  bill: BillEntry; vendorName: string; reason: string; projectCurrency: string; onClose: () => void;
-}) {
-  const sc = STATUS_STYLE[bill.status];
-  return (
-    <div
-      className="fixed inset-0 z-50 flex items-center justify-center"
-      style={{ background: 'rgba(0,0,0,.72)' }}
-      onClick={onClose}
-    >
-      <div
-        className="relative flex flex-col rounded-[14px] overflow-hidden"
-        style={{ background: '#1a1d23', border: '1px solid rgba(255,255,255,.1)', width: 'min(760px, 94vw)', height: 'min(640px, 90vh)' }}
-        onClick={e => e.stopPropagation()}
-      >
-        <div className="flex items-center gap-3 px-5 py-4 border-b border-[rgba(255,255,255,.07)]">
-          <div className="w-8 h-8 rounded-lg bg-[rgba(99,102,241,.18)] flex items-center justify-center text-[#a5b4fc]">
-            <Icon name="file-text" size={15} />
-          </div>
-          <div className="flex-1 min-w-0">
-            <div className="text-[14px] font-semibold text-[#f0f2f5]">{vendorName || 'Self'} — {reason}</div>
-            <div className="flex items-center gap-3 mt-1">
-              <span className="text-[13px] font-bold text-[#34d399]">
-                {bill.actualAmount > 0 ? fmtShortCur(bill.actualAmount, projectCurrency) : '—'}
-              </span>
-              {bill.originalCurrency && bill.originalCurrency !== projectCurrency && bill.originalAmount && (
-                <span className="text-[12px] text-gray-400">
-                  (originally {fmtShortCur(bill.originalAmount, bill.originalCurrency)})
-                </span>
-              )}
-              {bill.uploadedAt && (
-                <span className="text-[13px] text-gray-400">Raised on {fmtDateTime(bill.uploadedAt)}</span>
-              )}
-            </div>
-          </div>
-          <span className="text-[11px] font-semibold px-2 py-[3px] rounded-full" style={{ background: sc.bg, color: sc.color }}>
-            {bill.status === 'NA' ? 'Pending' : bill.status}
-          </span>
-          <button onClick={onClose} className="ml-1 text-gray-500 hover:text-[#f0f2f5] transition-colors">
-            <Icon name="x" size={16} />
-          </button>
-        </div>
-        <div className="flex-1 overflow-hidden bg-[#111317]">
-          <iframe src={DEMO_PDF_URL} className="w-full h-full border-0" title="Bill document" />
-        </div>
-      </div>
-    </div>
-  );
-}
 
 interface BreakdownRow {
   id: string;
@@ -114,14 +60,19 @@ function initRows(projectId: string, sceneId: string, isDraft: boolean, isWrappe
   return lines.map(bl => {
     const matching = bills.filter(b => bl.vendor_id && b.vendor_id === bl.vendor_id);
     const billEntries: BillEntry[] = matching.length > 0
-      ? matching.map(b => ({
-        id: b.id,
-        status: toPayStatus(b.status),
-        paidBy: (b.status === 'Rejected' || b.status === 'Paid') ? 'Arjun Mehta' : '',
-        billFileName: b.file_url ? 'bill.pdf' : 'bill.pdf',
-        actualAmount: b.amount,
-        uploadedAt: b.created_at,
-      }))
+      ? matching.map(b => {
+        const exchangeRate = b.exchange_rate ?? 1;
+        return {
+          id: b.id,
+          status: toPayStatus(b.status),
+          paidBy: (b.status === 'Rejected' || b.status === 'Paid') ? 'Arjun Mehta' : '',
+          billFileName: b.file_url ? 'bill.pdf' : 'bill.pdf',
+          actualAmount: b.amount * exchangeRate,
+          originalAmount: b.amount,
+          originalCurrency: b.currency,
+          uploadedAt: b.created_at,
+        };
+      })
       : [{ id: `draft-${bl.id}`, status: isWrapped ? 'Paid' as const : 'NA' as const, paidBy: isWrapped ? 'Arjun Mehta' : '', billFileName: 'bill.pdf', actualAmount: isWrapped ? bl.allocated_amount : 0, uploadedAt: null }];
 
     return {
@@ -172,6 +123,7 @@ interface Props {
 }
 
 export function SceneInlineForm({ projectId, sceneId, isDraft, isLP, vendors, projectCurrency = 'INR', onSceneNameChange, onFundsAdded, isSceneWrapped = false, initialLocked = false, onWrapScene, onSceneLocked }: Props) {
+  const { data: project } = useProject(projectId);
   const user = useAuthStore(s => s.user);
   const scene = isDraft ? null : (MOCK_SCENES[projectId] ?? []).find(s => s.id === sceneId) ?? null;
   const currSym = getCurrencySymbol(projectCurrency);
@@ -244,7 +196,8 @@ export function SceneInlineForm({ projectId, sceneId, isDraft, isLP, vendors, pr
     ? rows.slice(lockedRowCount).reduce((a, r) => a + r.amount, 0)
     : 0;
   const effectiveBudget = lockedBudget ?? budget;
-  const overBudget = Math.max(0, totalActual - effectiveBudget) + postLockTotal;
+  const overBudget = totalActual - totalPlanned;
+  console.log("totalPlanned", totalPlanned, "totalActual", totalActual, "overBudget", overBudget);
   const newAmountVal = (parseFloat(newAmount) || 0) * UNIT_MULT[newAmountUnit];
 
   // Per-row totals for footer
@@ -365,10 +318,20 @@ export function SceneInlineForm({ projectId, sceneId, isDraft, isLP, vendors, pr
     <div className="flex flex-col gap-[14px]">
       {viewingBill && (
         <BillViewerDialog
-          bill={viewingBill.bill}
-          vendorName={viewingBill.vendorName}
-          reason={viewingBill.reason}
-          projectCurrency={projectCurrency}
+          bill={{
+            id: viewingBill.bill.id,
+            vendor_name: viewingBill.vendorName || 'Self',
+            bill_type: viewingBill.reason,
+            amount: viewingBill.bill.originalAmount || viewingBill.bill.actualAmount,
+            status: viewingBill.bill.status === 'NA' ? 'Pending' : viewingBill.bill.status,
+            created_at: viewingBill.bill.uploadedAt || new Date().toISOString(),
+            file_url: DEMO_PDF_URL,
+            project_name: project?.name,
+            scene_name: sceneName,
+            project_currency: projectCurrency,
+            currency: viewingBill.bill.originalCurrency || projectCurrency,
+            exchange_rate: (viewingBill.bill.originalAmount && viewingBill.bill.actualAmount) ? (viewingBill.bill.actualAmount / viewingBill.bill.originalAmount) : 1,
+          }}
           onClose={() => setViewingBill(null)}
         />
       )}
@@ -381,9 +344,9 @@ export function SceneInlineForm({ projectId, sceneId, isDraft, isLP, vendors, pr
           <div className="grid grid-cols-1 gap-x-5 gap-y-[10px]">
             <div className="col-span-2">
               <label className={lblCls}>Scene Name</label>
-              {locked
+              {/* {locked
                 ? <div className={`${roValCls} font-semibold`}>{sceneName || '—'}</div>
-                : (
+                : ( */}
                   <div className="input-underline py-1.5">
                     <Icon name="film" size={14} />
                     <input
@@ -393,8 +356,8 @@ export function SceneInlineForm({ projectId, sceneId, isDraft, isLP, vendors, pr
                       className="text-[13px] text-[#f0f2f5]"
                     />
                   </div>
-                )
-              }
+                {/* )
+              } */}
             </div>
             <div className="grid grid-cols-5">
               <div>
@@ -416,7 +379,7 @@ export function SceneInlineForm({ projectId, sceneId, isDraft, isLP, vendors, pr
               <div>
                 <label className={lblCls}>Over Budget</label>
                 <div className={`${roValCls} font-mono`} style={{ color: overBudget > 0 ? '#f87171' : '#ffffff' }}>
-                  {overBudget > 0 ? fmtShortCur(overBudget, projectCurrency) : '—'}
+                  {overBudget > 0 ? fmtShortCur(Math.abs(overBudget), projectCurrency) : '—'}
                 </div>
               </div>
             </div>
@@ -474,8 +437,8 @@ export function SceneInlineForm({ projectId, sceneId, isDraft, isLP, vendors, pr
           <table className="w-full border-collapse min-w-[1000px] table-fixed">
             <thead>
               <tr>
-                <th className={`${thCCls} w-[9.09%]`}>#</th>
-                <th className={`${thCls} w-[17.27%]`}>Reason</th>
+                <th className={`${thCCls} w-[4%]`}></th>
+                <th className={`${thCls} w-[22.36%]`}>Reason</th>
                 <th className={`${thRCls} w-[9.09%]`}>Planned Value</th>
                 <th className={`${thCls} w-[9.09%]`}>Vendor</th>
                 <th className={`${thRCls} w-[9.09%]`}>Pending Payment</th>
@@ -483,7 +446,7 @@ export function SceneInlineForm({ projectId, sceneId, isDraft, isLP, vendors, pr
                 <th className={`${thRCls} w-[9.09%]`}>Actual Spent</th>
                 <th className={`${thRCls} w-[9.09%]`}>Over Budget</th>
                 <th className={`${thRCls} w-[9.09%]`}>Savings</th>
-                <th className={`${thCCls} w-[5%]`}>Bill</th>
+                <th className={`${thCls} w-[5%]`}>Bill</th>
                 <th className={`${thCls} w-[5%]`}></th>
               </tr>
             </thead>
@@ -617,7 +580,7 @@ export function SceneInlineForm({ projectId, sceneId, isDraft, isLP, vendors, pr
                         )}
 
                         {/* Bill viewer */}
-                        <td className={subTdCCls}>
+                        <td className={subTdCls}>
                           {bill?.billFileName
                             ? (
                               <button
@@ -736,7 +699,7 @@ export function SceneInlineForm({ projectId, sceneId, isDraft, isLP, vendors, pr
                   </td>
                 </tr>
               )} */}
-
+₹
               {/* Total row */}
               {rows.length > 0 && (
                 <tr className="bg-[rgba(255,255,255,.04)]">

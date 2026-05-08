@@ -107,7 +107,9 @@ export interface Bill {
   work_order_id: string | null;
   bill_type: BillType;
   bill_date: string | null;
-  amount: number;
+  amount: number; // original amount in 'currency'
+  currency?: string;
+  exchange_rate?: number;
   status: BillStatus;
   file_url: string | null;
   submitted_by: string | null;

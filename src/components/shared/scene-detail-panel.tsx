@@ -3,78 +3,17 @@
 import { useState } from 'react';
 import { Icon } from './icon';
 import { StatusBadge } from './status-badge';
-import { fmtShort, fmtDate, fmtDateTime } from '@/lib/format';
+import { fmtShort, fmtDate } from '@/lib/format';
 import { useScene } from '@/hooks/useScene';
 import { useSceneBills } from '@/hooks/useSceneBills';
 import { useSceneBudgetLines } from '@/hooks/useSceneBudgetLines';
 import { useVendors } from '@/hooks/useVendors';
 import type { Bill, Vendor } from '@/lib/types';
+import { BillViewerDialog } from './bill-viewer-dialog';
+import { useProject } from '@/hooks/useProject';
 
 // Demo PDF — a publicly available sample invoice PDF
 const DEMO_PDF_URL = 'https://www.w3.org/WAI/WCAG21/Techniques/pdf/img/table-word.pdf';
-
-function BillViewerDialog({ bill, onClose }: { bill: Bill; onClose: () => void }) {
-  const sc = billStatusColor(bill.status);
-  return (
-    <div
-      className="fixed inset-0 z-50 flex items-center justify-center"
-      style={{ background: 'rgba(0,0,0,.72)' }}
-      onClick={onClose}
-    >
-      <div
-        className="relative flex flex-col rounded-[14px] overflow-hidden"
-        style={{
-          background: '#1a1d23',
-          border: '1px solid rgba(255,255,255,.1)',
-          width: 'min(760px, 94vw)',
-          height: 'min(640px, 90vh)',
-        }}
-        onClick={e => e.stopPropagation()}
-      >
-        {/* Header */}
-        <div className="flex items-center gap-3 px-5 py-4 border-b border-[rgba(255,255,255,.07)]">
-          <div className="w-8 h-8 rounded-lg bg-[rgba(99,102,241,.18)] flex items-center justify-center text-[#a5b4fc]">
-            <Icon name="file-text" size={15} />
-          </div>
-          <div className="flex-1 min-w-0">
-            <div className="text-[14px] font-semibold text-[#f0f2f5]">
-              {bill.vendor_name} — {bill.bill_type}
-            </div>
-            <div className="flex items-center gap-3 mt-1">
-              <span className="text-[13px] font-bold text-[#34d399]">{fmtShort(bill.amount)}</span>
-              <span className="text-[11px] text-gray-400">
-                {bill.bill_date ? `Bill date: ${fmtDate(bill.bill_date)}` : ''}
-                {bill.created_at ? ` · ${fmtDateTime(bill.created_at)}` : ''}
-              </span>
-            </div>
-          </div>
-          <span
-            className="text-[11px] font-semibold px-2 py-[3px] rounded-full"
-            style={{ background: sc.bg, color: sc.color }}
-          >
-            {bill.status}
-          </span>
-          <button
-            onClick={onClose}
-            className="ml-1 text-gray-500 hover:text-[#f0f2f5] transition-colors"
-          >
-            <Icon name="x" size={16} />
-          </button>
-        </div>
-
-        {/* PDF viewer */}
-        <div className="flex-1 overflow-hidden bg-[#111317]">
-          <iframe
-            src={DEMO_PDF_URL}
-            className="w-full h-full border-0"
-            title="Bill document"
-          />
-        </div>
-
-      </div>
-    </div>
-  );
-}
 
 interface SceneDetailPanelProps {
   projectId: string;
@@ -95,6 +34,7 @@ const billStatusColor = (status: string) => {
 
 export function SceneDetailPanel({ projectId, sceneId, isLP, onSceneUpdated }: SceneDetailPanelProps) {
   const { data: scene } = useScene(projectId, sceneId);
+  const { data: project } = useProject(projectId);
   const { data: bills } = useSceneBills(projectId, sceneId);
   const { data: lines } = useSceneBudgetLines(projectId, sceneId);
   const { data: vendors } = useVendors();
@@ -127,7 +67,7 @@ export function SceneDetailPanel({ projectId, sceneId, isLP, onSceneUpdated }: S
     );
   }
 
-  const totalActual = bills.reduce((a, b) => a + b.amount, 0);
+  const totalActual = bills.reduce((a, b) => a + (b.amount * (b.exchange_rate ?? 1)), 0);
   const totalVendors = new Set([
     ...lines.filter(l => l.vendor_id).map(l => l.vendor_id),
     ...bills.map(b => b.vendor_id),
@@ -135,7 +75,26 @@ export function SceneDetailPanel({ projectId, sceneId, isLP, onSceneUpdated }: S
 
   return (
     <div className="p-5 flex flex-col gap-5 overflow-y-auto h-full">
-      {viewingBill && <BillViewerDialog bill={viewingBill} onClose={() => setViewingBill(null)} />}
+      {viewingBill && (
+        <BillViewerDialog
+          bill={{
+            id: viewingBill.id,
+            vendor_name: viewingBill.vendor_name,
+            bill_type: viewingBill.bill_type,
+            amount: viewingBill.amount,
+            status: viewingBill.status,
+            created_at: viewingBill.created_at,
+            bill_date: viewingBill.bill_date,
+            file_url: viewingBill.file_url || DEMO_PDF_URL,
+            project_name: project?.name,
+            scene_name: scene?.name,
+            project_currency: project?.currency || 'INR',
+            currency: viewingBill.currency,
+            exchange_rate: viewingBill.exchange_rate,
+          }}
+          onClose={() => setViewingBill(null)}
+        />
+      )}
       {/* Scene header */}
       <div>
         <div className="flex items-start gap-3 mb-3">
@@ -306,7 +265,7 @@ export function SceneDetailPanel({ projectId, sceneId, isLP, onSceneUpdated }: S
                           </div>
                         </div>
                         <div className="num text-[11px] font-semibold text-[#d1d5db] shrink-0">
-                          {fmtShort(bill.amount)}
+                          {fmtShort(bill.amount * (bill.exchange_rate ?? 1))}
                         </div>
                         <span className="text-[10px] font-semibold px-1.5 py-0.5 rounded-[999px] shrink-0" style={{ background: sc.bg, color: sc.color }}>
                           {bill.status}
@@ -348,7 +307,7 @@ export function SceneDetailPanel({ projectId, sceneId, isLP, onSceneUpdated }: S
                       <div className="text-[11px] text-gray-500">{bill.bill_type}{bill.bill_date ? ` · ${fmtDate(bill.bill_date)}` : ''}</div>
                     </div>
                     <div className="num text-[12px] font-semibold text-[#f0f2f5] shrink-0">
-                      {fmtShort(bill.amount)}
+                      {fmtShort(bill.amount * (bill.exchange_rate ?? 1))}
                     </div>
                     <span className="text-[10px] font-semibold px-[7px] py-0.5 rounded-[999px] shrink-0" style={{ background: sc.bg, color: sc.color }}>
                       {bill.status}

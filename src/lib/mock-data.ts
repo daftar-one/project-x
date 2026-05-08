@@ -164,20 +164,20 @@ export function getMockBudgetLines(projectId: string, sceneId: string): SceneBud
 
 // ─── Bills ────────────────────────────────────────────────────────────────────
 
-function bill(id: string, project_id: string, scene_id: string, vendor_id: string, bill_type: 'Advance' | 'Partial' | 'Final', amount: number, status: 'Pending' | 'Approved' | 'Rejected' | 'Paid', bill_date: string, hasFile = true): Bill {
-  return { id, project_id, scene_id, vendor_id, vendor_name: VN[vendor_id] ?? vendor_id, work_order_id: null, bill_type, bill_date, amount, status, file_url: hasFile ? 'bill.pdf' : null, submitted_by: null, rejection_reason: null, created_at: now };
+function bill(id: string, project_id: string, scene_id: string, vendor_id: string, bill_type: 'Advance' | 'Partial' | 'Final', amount: number, status: 'Pending' | 'Approved' | 'Rejected' | 'Paid', bill_date: string, hasFile = true, currency = 'INR', exchange_rate = 1): Bill {
+  return { id, project_id, scene_id, vendor_id, vendor_name: VN[vendor_id] ?? vendor_id, work_order_id: null, bill_type, bill_date, amount, currency, exchange_rate, status, file_url: hasFile ? 'bill.pdf' : null, submitted_by: null, rejection_reason: null, created_at: now };
 }
 
 const BILLS: Bill[] = [
   // D1 SC-01 — stunt team (actionCrew): 3 bills
-  bill('b-d1-01-1', D1, S.d1_01, V.actionCrew, 'Partial', 12_000_000, 'Paid',     '2024-11-01'),
+  bill('b-d1-01-1', D1, S.d1_01, V.actionCrew, 'Partial', 129_032, 'Paid',     '2024-11-01', true, 'USD', 93),
   bill('b-d1-01-2', D1, S.d1_01, V.actionCrew, 'Partial',  8_000_000, 'Rejected', '2024-11-05'),
   bill('b-d1-01-3', D1, S.d1_01, V.actionCrew, 'Final',   15_000_000, 'Pending',  '2024-11-10'),
   // D1 SC-02 Wrapped — VFX has 2 rejected submissions before final; blastFx paid
   bill('b-d1-02-1r1', D1, S.d1_02, V.vfxPrime, 'Partial', 30_000_000, 'Rejected', '2024-11-10'),
   bill('b-d1-02-1r2', D1, S.d1_02, V.vfxPrime, 'Partial', 25_000_000, 'Rejected', '2024-11-20'),
   bill('b-d1-02-1',   D1, S.d1_02, V.vfxPrime, 'Final',   76_000_000, 'Paid',     '2024-12-05'),
-  bill('b-d1-02-2',   D1, S.d1_02, V.blastFx,  'Final',   47_000_000, 'Paid',     '2024-12-06'),
+  bill('b-d1-02-2',   D1, S.d1_02, V.blastFx,  'Final',   56_000_000, 'Paid',     '2024-12-06'),
   // D2 SC-01 Wrapped
   bill('b-d2-01-1', D2, S.d2_01, V.coastalLoc, 'Partial', 25_000_000, 'Pending',  '2024-10-18'),
   bill('b-d2-01-2', D2, S.d2_01, V.oceanProps,  'Final',   37_000_000, 'Paid',     '2024-10-20'),

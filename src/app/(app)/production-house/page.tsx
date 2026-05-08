@@ -26,7 +26,7 @@ function PHProfileCard({ isLP }: { isLP: boolean }) {
   const [editing, setEditing] = useState(false);
   const [name, setName] = useState(house?.brand_name ?? house?.name ?? 'Studio One Films');
   const [location, setLocation] = useState('Mumbai, Maharashtra');
-  const [email, setEmail] = useState('contact@sofentertainment.in');
+  const [email, setEmail] = useState('contact@universalstudio.in');
   const [phone, setPhone] = useState('+91 22 4567 8900');
   const [logoUrl, setLogoUrl] = useState<string | null>(null);
 
@@ -146,7 +146,7 @@ export default function ProductionHousePage() {
         <PHProfileCard isLP={isLP} />
 
         {/* Team Members */}
-        <div>
+        {/* <div>
           <div className="text-[16px] font-bold tracking-[-0.02em] text-[#f0f2f5] mb-4">Team</div>
           <div className="card">
             <table className="tbl">
@@ -177,7 +177,7 @@ export default function ProductionHousePage() {
               </tbody>
             </table>
           </div>
-        </div>
+        </div> */}
       </div>
     </AppFrame>
   );

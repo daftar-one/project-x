@@ -6,7 +6,7 @@ import { useAuthStore } from "@/store/auth";
 const MOCK_PH: ProductionHouse = {
   id: "ph-1",
   name: "Studio One Films",
-  brand_name: "SOF Entertainment",
+  brand_name: "Universal Studio",
   logo_url: null,
   created_by: "u-1",
   created_at: "2025-01-01T00:00:00Z",

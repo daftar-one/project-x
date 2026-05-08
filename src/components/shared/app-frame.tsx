@@ -269,7 +269,7 @@ export function AppFrame({ children, secondarySidebar, projectSubnav, innerBg }:
           {children}
         </div>
         <div className="px-6 py-2 border-t border-[rgba(255,255,255,.04)] text-[11px] text-[#374151] text-center shrink-0">
-          Powered by{' '}
+          Studio OS · Software for Film & TV Production by{' '}
           <a href="https://daftar.one" target="_blank" rel="noopener noreferrer" className="text-[#4b5563] no-underline hover:text-gray-400">Daftar.One</a>
         </div>
       </div>

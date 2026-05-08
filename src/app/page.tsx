@@ -415,9 +415,9 @@ export default function LandingPage() {
 
           {/* ── Footer ─────────────────────────────────────────────────── */}
           <footer className="border-t border-[rgba(255,255,255,.05)] py-7 px-6 text-center text-[12px] text-[#374151]">
-            <div className="mb-[6px]">© {new Date().getFullYear()} Studio OS · Built for Indian film &amp; TV production</div>
+            {/* <div className="mb-[6px]">© {new Date().getFullYear()} Studio OS · Built for Indian film &amp; TV production</div> */}
             <div>
-              Powered by{' '}
+              Studio OS · Software for Film & TV Production by{' '}
               <a href="https://daftar.one" target="_blank" rel="noopener noreferrer" className="text-gray-500 no-underline font-medium hover:text-gray-400">Daftar.One</a>
             </div>
           </footer>

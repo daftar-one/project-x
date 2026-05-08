@@ -96,7 +96,6 @@ export default function DashboardPage() {
               <thead>
                 <tr>
                   <th className="w-full">Movies</th>
-                  <th className="text-right whitespace-nowrap">Currency</th>
                   <th className="text-right whitespace-nowrap">Planned Budget</th>
                   <th className="text-right whitespace-nowrap">Wallet</th>
                   <th className="text-right whitespace-nowrap">Pending Bills</th>
@@ -117,9 +116,6 @@ export default function DashboardPage() {
                     <tr key={p.id} onClick={() => router.push(`/projects/${p.id}`)} className="cursor-pointer">
                       <td className="w-full">
                         <div className="font-semibold text-[#f0f2f5]">{p.name}</div>
-                      </td>
-                      <td className="text-right whitespace-nowrap">
-                        <span className="num text-[12px] text-gray-400">{cur}</span>
                       </td>
                       <td className="text-right whitespace-nowrap">
                         <span className="num text-[13px] text-[#f0f2f5]">{fmt(p.total_budget)}</span>

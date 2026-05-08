@@ -8,8 +8,9 @@ import { VendorFrame } from "@/components/shared/vendor-frame";
 import { PageTitle } from "@/components/shared/page-title";
 import { KPI } from "@/components/shared/kpi";
 import { useVendorStore } from "@/store/vendor-auth";
-import { fmtShort, fmtDateTime, convertCurrency, getCurrencySymbol, EXCHANGE_RATES_TO_INR, SUPPORTED_CURRENCIES } from "@/lib/format";
+import { fmtShortCur, fmtDateTime, getCurrencySymbol, EXCHANGE_RATES_TO_INR, SUPPORTED_CURRENCIES } from "@/lib/format";
 import { toast } from "sonner";
+import { BillViewerDialog } from "@/components/shared/bill-viewer-dialog";
 
 /* ─── types ──────────────────────────────────────────────────────────── */
 
@@ -24,11 +25,14 @@ interface Breakdown {
 interface Payment {
   id: string;
   project: string;
+  projectCurrency: string;
   scene: string;
   location: string;
   breakdownId: string;
   breakdown: string;
-  amount: number;
+  amount: number; // in requested currency
+  currency: string; // requested currency
+  exchangeRate: number; // 1 currency = exchangeRate projectCurrency
   status: "Paid" | "Rejected" | "Pending";
   submittedAt: string;
   statusChangedAt: string | null;
@@ -50,7 +54,10 @@ const VENDOR_BREAKDOWNS: Record<string, Record<string, Breakdown[]>> = {
   },
 };
 
-const PROJECTS = Object.keys(VENDOR_BREAKDOWNS).map(name => ({ name }));
+const PROJECTS = [
+  { name: "Dhurandhar 1", currency: "INR" },
+  { name: "Bhoot Bangla", currency: "INR" },
+];
 
 function scenesForProject(project: string) {
   return Object.keys(VENDOR_BREAKDOWNS[project] ?? {});
@@ -61,62 +68,11 @@ function breakdownsForScene(project: string, scene: string): Breakdown[] {
 }
 
 const INITIAL_PAYMENTS: Payment[] = [
-  { id: "b-d1-02-1r1", project: "Dhurandhar 1", scene: "SC-02 – Mumbai Port Explosion",   location: "Mumbai", breakdownId: "bl-d1-02-1", breakdown: "VFX & digital effects",    amount: 30_000_000, status: "Rejected", submittedAt: "2024-11-10", statusChangedAt: "2024-11-15", billFileName: "vfx_invoice_v1.pdf"     },
-  { id: "b-d1-02-1r2", project: "Dhurandhar 1", scene: "SC-02 – Mumbai Port Explosion",   location: "Mumbai", breakdownId: "bl-d1-02-1", breakdown: "VFX & digital effects",    amount: 25_000_000, status: "Rejected", submittedAt: "2024-11-20", statusChangedAt: "2024-11-25", billFileName: "vfx_invoice_v2.pdf"     },
-  { id: "b-d1-02-1",   project: "Dhurandhar 1", scene: "SC-02 – Mumbai Port Explosion",   location: "Mumbai", breakdownId: "bl-d1-02-1", breakdown: "VFX & digital effects",    amount: 76_000_000, status: "Paid",     submittedAt: "2024-12-05", statusChangedAt: "2024-12-08", billFileName: "vfx_invoice_final.pdf"  },
-  { id: "b-d2-02-4",   project: "Bhoot Bangla",  scene: "SC-02 – Police HQ Infiltration", location: "Mumbai", breakdownId: "bl-d2-02-4", breakdown: "VFX cleanup & compositing", amount: 12_000_000, status: "Pending",  submittedAt: "2024-11-23", statusChangedAt: null,         billFileName: "vfx_compositing_inv.pdf" },
+  { id: "b-d1-02-1r1", project: "Dhurandhar 1", projectCurrency: "INR", scene: "SC-02 – Mumbai Port Explosion", location: "Mumbai", breakdownId: "bl-d1-02-1", breakdown: "VFX & digital effects", amount: 30_000_000, currency: "INR", exchangeRate: 1, status: "Rejected", submittedAt: "2024-11-10", statusChangedAt: "2024-11-15", billFileName: "vfx_invoice_v1.pdf" },
+  { id: "b-d1-02-1r2", project: "Dhurandhar 1", projectCurrency: "INR", scene: "SC-02 – Mumbai Port Explosion", location: "Mumbai", breakdownId: "bl-d1-02-1", breakdown: "VFX & digital effects", amount: 25_000_000, currency: "INR", exchangeRate: 1, status: "Rejected", submittedAt: "2024-11-20", statusChangedAt: "2024-11-25", billFileName: "vfx_invoice_v2.pdf" },
+  { id: "b-d1-02-1", project: "Dhurandhar 1", projectCurrency: "INR", scene: "SC-02 – Mumbai Port Explosion", location: "Mumbai", breakdownId: "bl-d1-02-1", breakdown: "VFX & digital effects", amount: 76_000, currency: "USD", exchangeRate: 93, status: "Paid", submittedAt: "2024-12-05", statusChangedAt: "2024-12-08", billFileName: "vfx_invoice_final.pdf" },
+  { id: "b-d2-02-4", project: "Bhoot Bangla", projectCurrency: "INR", scene: "SC-02 – Police HQ Infiltration", location: "Mumbai", breakdownId: "bl-d2-02-4", breakdown: "VFX cleanup & compositing", amount: 12_000_000, currency: "INR", exchangeRate: 1, status: "Pending", submittedAt: "2024-11-23", statusChangedAt: null, billFileName: "vfx_compositing_inv.pdf" },
 ];
-
-/* ─── bill viewer ─────────────────────────────────────────────────────── */
-
-const STATUS_STYLE: Record<"Paid" | "Rejected" | "Pending", { bg: string; color: string }> = {
-  Paid:     { bg: "rgba(16,185,129,.15)",  color: "#34d399" },
-  Rejected: { bg: "rgba(239,68,68,.15)",   color: "#f87171" },
-  Pending:  { bg: "rgba(245,158,11,.15)",  color: "#fbbf24" },
-};
-
-function BillViewerDialog({ payment, onClose }: { payment: Payment; onClose: () => void }) {
-  const sc = STATUS_STYLE[payment.status];
-  return (
-    <div
-      className="fixed inset-0 z-50 flex items-center justify-center"
-      style={{ background: "rgba(0,0,0,.72)" }}
-      onClick={onClose}
-    >
-      <div
-        className="relative flex flex-col rounded-[14px] overflow-hidden"
-        style={{ background: "#1a1d23", border: "1px solid rgba(255,255,255,.1)", width: "min(760px, 94vw)", height: "min(640px, 90vh)" }}
-        onClick={e => e.stopPropagation()}
-      >
-        {/* Header */}
-        <div className="flex items-center gap-3 px-5 py-4 border-b border-[rgba(255,255,255,.07)]">
-          <div className="w-8 h-8 rounded-lg bg-[rgba(99,102,241,.18)] flex items-center justify-center text-[#a5b4fc]">
-            <Icon name="file-text" size={15} />
-          </div>
-          <div className="flex-1 min-w-0">
-            <div className="text-[14px] font-semibold text-[#f0f2f5]">{payment.breakdown}</div>
-            <div className="flex items-center gap-3 mt-1">
-              <span className="text-[13px] font-bold text-[#34d399]">{fmtShort(payment.amount)}</span>
-              <span className="text-[13px] text-gray-400">{payment.scene}</span>
-            </div>
-          </div>
-          <span className="text-[11px] font-semibold px-2 py-[3px] rounded-full" style={{ background: sc.bg, color: sc.color }}>
-            {payment.status}
-          </span>
-          <button onClick={onClose} className="ml-1 text-gray-500 hover:text-[#f0f2f5] transition-colors">
-            <Icon name="x" size={16} />
-          </button>
-        </div>
-        {/* PDF */}
-        <div className="flex-1 overflow-hidden bg-[#111317]">
-          <iframe src="/sample_invoice.pdf" className="w-full h-full border-0" title="Bill document" />
-        </div>
-      </div>
-    </div>
-  );
-}
-
-/* ─── grouping ───────────────────────────────────────────────────────── */
 
 function getGroupedPayments(payments: Payment[]) {
   // Sort payments: Project -> Scene -> Breakdown -> SubmittedAt (desc)
@@ -185,7 +141,7 @@ function VendorPortalPage() {
   const searchParams = useSearchParams();
   const selectedMovie = searchParams.get("movie");
   const { name, email } = useVendorStore();
-  const displayName  = name  || DEMO_VENDOR.name;
+  const displayName = name || DEMO_VENDOR.name;
   const displayEmail = email || DEMO_VENDOR.email;
   const [logoUrl, setLogoUrl] = useState<string | null>(null);
   const [payments, setPayments] = useState<Payment[]>(INITIAL_PAYMENTS);
@@ -200,25 +156,27 @@ function VendorPortalPage() {
   const [modalOpen, setModalOpen] = useState(false);
   const [viewingBill, setViewingBill] = useState<Payment | null>(null);
 
-  const [mpProject,  setMpProject]  = useState(PROJECTS[0].name);
-  const [mpScene,    setMpScene]    = useState("");
-  const [mpBdId,     setMpBdId]     = useState("");
+  const [mpProject, setMpProject] = useState(PROJECTS[0].name);
+  const [mpScene, setMpScene] = useState("");
+  const [mpBdId, setMpBdId] = useState("");
   const [mpLocation, setMpLocation] = useState("");
-  const [mpAmount,   setMpAmount]   = useState("");
-  const [mpUnit,     setMpUnit]     = useState<AmountUnit>("L");
-  const [mpFiles,    setMpFiles]    = useState<File[]>([]);
+  const [mpAmount, setMpAmount] = useState("");
+  const [mpUnit, setMpUnit] = useState<AmountUnit>("L");
+  const [mpFiles, setMpFiles] = useState<File[]>([]);
   const [mpCurrency, setMpCurrency] = useState('INR');
 
-  const availableScenes     = scenesForProject(mpProject);
+  const availableScenes = scenesForProject(mpProject);
   const availableBreakdowns = mpScene ? breakdownsForScene(mpProject, mpScene) : [];
-  const selectedBreakdown   = availableBreakdowns.find(b => b.id === mpBdId) ?? null;
-  const mpAmountVal         = (parseFloat(mpAmount) || 0) * UNIT_MULT[mpUnit];
-  const canSubmit           = mpScene && mpBdId && mpAmountVal > 0 && mpFiles.length > 0;
+  const selectedBreakdown = availableBreakdowns.find(b => b.id === mpBdId) ?? null;
+  const mpAmountVal = (parseFloat(mpAmount) || 0) * UNIT_MULT[mpUnit];
+  const canSubmit = mpScene && mpBdId && mpAmountVal > 0 && mpFiles.length > 0;
 
-  const mpAmountNum   = parseFloat(mpAmount) || 0;
-  const mpAmountInINR = mpCurrency !== 'INR' && mpAmountNum > 0
-    ? convertCurrency(mpAmountNum * UNIT_MULT[mpUnit], mpCurrency, 'INR')
-    : mpAmountVal;
+  const project = PROJECTS.find(p => p.name === mpProject)!;
+  const projectCur = project.currency;
+  const mpAmountNum = parseFloat(mpAmount) || 0;
+  const mpAmountTotal = mpAmountNum * UNIT_MULT[mpUnit];
+  const exchangeRate = EXCHANGE_RATES_TO_INR[mpCurrency] / EXCHANGE_RATES_TO_INR[projectCur];
+  const convertedAmt = mpAmountTotal * exchangeRate;
 
   function resetForm() {
     setMpProject(PROJECTS[0].name);
@@ -228,14 +186,18 @@ function VendorPortalPage() {
   function handleSubmit() {
     if (!canSubmit || !selectedBreakdown) return;
     const submittedAt = new Date().toISOString();
+
     const newPayments: Payment[] = mpFiles.map((file, i) => ({
       id: `p-${Date.now()}-${i}`,
       project: mpProject,
+      projectCurrency: projectCur,
       scene: mpScene,
       location: mpLocation,
       breakdownId: selectedBreakdown.id,
       breakdown: selectedBreakdown.reason,
-      amount: mpAmountVal,
+      amount: mpAmountTotal,
+      currency: mpCurrency,
+      exchangeRate: exchangeRate,
       status: "Pending",
       submittedAt,
       statusChangedAt: null,
@@ -255,19 +217,21 @@ function VendorPortalPage() {
     setMpFiles(prev => prev.filter((_, i) => i !== idx));
   }
 
-  const allMovies       = PROJECTS.map(p => p.name);
-  const scopedPayments  = selectedMovie ? payments.filter(p => p.project === selectedMovie) : payments;
+  const allMovies = PROJECTS.map(p => p.name);
+  const scopedPayments = selectedMovie ? payments.filter(p => p.project === selectedMovie) : payments;
 
-  const totalSettled     = scopedPayments.filter(p => p.status === "Paid").reduce((s, p) => s + p.amount, 0);
-  const totalPending     = scopedPayments.filter(p => p.status === "Pending").reduce((s, p) => s + p.amount, 0);
-  const totalRejectedAmt = scopedPayments.filter(p => p.status === "Rejected").reduce((s, p) => s + p.amount, 0);
-  const paidCount        = scopedPayments.filter(p => p.status === "Paid").length;
-  const rejectedCount    = scopedPayments.filter(p => p.status === "Rejected").length;
-  const pendingCount     = scopedPayments.filter(p => p.status === "Pending").length;
-  const movieCount       = new Set(payments.map(p => p.project)).size;
-  const sceneCount       = selectedMovie ? new Set(scopedPayments.map(p => p.scene)).size : 0;
+  const totalSettled = scopedPayments.filter(p => p.status === "Paid").reduce((s, p) => s + (p.amount * p.exchangeRate), 0);
+  const totalPending = scopedPayments.filter(p => p.status === "Pending").reduce((s, p) => s + (p.amount * p.exchangeRate), 0);
+  const totalRejectedAmt = scopedPayments.filter(p => p.status === "Rejected").reduce((s, p) => s + (p.amount * p.exchangeRate), 0);
+  const paidCount = scopedPayments.filter(p => p.status === "Paid").length;
+  const rejectedCount = scopedPayments.filter(p => p.status === "Rejected").length;
+  const pendingCount = scopedPayments.filter(p => p.status === "Pending").length;
+  const movieCount = new Set(payments.map(p => p.project)).size;
+  const sceneCount = selectedMovie ? new Set(scopedPayments.map(p => p.scene)).size : 0;
 
   const groupedPayments = getGroupedPayments(scopedPayments);
+
+  const movieCurrency = selectedMovie ? PROJECTS.find(p => p.name === selectedMovie)?.currency ?? 'INR' : 'INR';
 
   return (
     <VendorFrame movies={allMovies} selectedMovie={selectedMovie}>
@@ -305,14 +269,14 @@ function VendorPortalPage() {
             </div>
           </div>
 
-          {/* KPI strip */}
+          {/* KPI strip — values in the movie's currency (or INR as fallback) */}
           <div className="grid grid-cols-4 gap-3 mb-5">
-            <KPI label="Total Settled"  value={fmtShort(totalSettled)}    sub={`${paidCount} bills`}     icon="wallet"    />
-            <KPI label="Total Pending"  value={fmtShort(totalPending)}    sub={`${pendingCount} bills`}  icon="rupee"     />
-            <KPI label="Total Rejected" value={fmtShort(totalRejectedAmt)} sub={`${rejectedCount} bills`} icon="trendDown" />
+            <KPI label="Total Settled" value={fmtShortCur(totalSettled, movieCurrency)} sub={`${paidCount} bills`} icon="wallet" />
+            <KPI label="Total Pending" value={fmtShortCur(totalPending, movieCurrency)} sub={`${pendingCount} bills`} icon="rupee" />
+            <KPI label="Total Rejected" value={fmtShortCur(totalRejectedAmt, movieCurrency)} sub={`${rejectedCount} bills`} icon="trendDown" />
             {selectedMovie
-              ? <KPI label="Scenes"  value={sceneCount}  sub="In this movie"     icon="camera" />
-              : <KPI label="Movies"  value={movieCount}  sub="Across portfolio"  icon="film"   />
+              ? <KPI label="Scenes" value={sceneCount} sub="In this movie" icon="camera" />
+              : <KPI label="Movies" value={movieCount} sub="Across portfolio" icon="film" />
             }
           </div>
         </div>
@@ -330,88 +294,106 @@ function VendorPortalPage() {
           ) : (
             <>
               <div className="text-[13px] font-semibold text-[#f0f2f5] mb-3">Payment History</div>
-            <div className="card overflow-hidden">
-              <div className="overflow-x-auto">
-                <table className="w-full border-collapse min-w-[900px]">
-                  <thead>
-                    <tr>
-                      <th className={thCls}>Movie Name</th>
-                      <th className={thCls}>Scene Name</th>
-                      <th className={thCls}>Reason</th>
-                      <th className={thRCls}>Requested Amount</th>
-                      <th className={thCCls}>Bill</th>
-                      <th className={thCls}>Status</th>
-                    </tr>
-                  </thead>
-                  <tbody>
-                    {groupedPayments.map(({ payment: p, projectSpan, sceneSpan, breakdownSpan }, idx) => {
-                      const isLastOfProject = idx === groupedPayments.length - 1 || groupedPayments[idx + 1].payment.project !== p.project;
-                      const projectTotal = isLastOfProject ? scopedPayments.filter(pay => pay.project === p.project).reduce((s, r) => s + r.amount, 0) : 0;
+              <div className="card overflow-hidden">
+                <div className="overflow-x-auto">
+                  <table className="w-full border-collapse min-w-[900px]">
+                    <thead>
+                      <tr>
+                        <th className={thCls}>Movie Name</th>
+                        <th className={thCls}>Scene Name</th>
+                        <th className={thCls}>Reason</th>
+                        <th className={thRCls}>Requested Amount</th>
+                        <th className={thCls}>Bill</th>
+                        <th className={thCls}>Status</th>
+                      </tr>
+                    </thead>
+                    <tbody>
+                      {groupedPayments.map(({ payment: p, projectSpan, sceneSpan, breakdownSpan }, idx) => {
+                        const isLastOfProject = idx === groupedPayments.length - 1 || groupedPayments[idx + 1].payment.project !== p.project;
+                        const projectTotal = isLastOfProject ? scopedPayments.filter(pay => pay.project === p.project).reduce((s, r) => s + (r.amount * r.exchangeRate), 0) : 0;
 
-                      return (
-                        <Fragment key={p.id}>
-                          <tr>
-                            {projectSpan > 0 && (
-                              <td rowSpan={projectSpan} className={`${tdCls} font-bold text-[#f0f2f5] max-w-[180px]`}>
-                                <span className="truncate" title={p.project}>{p.project}</span>
-                              </td>
-                            )}
-                            {sceneSpan > 0 && (
-                              <td rowSpan={sceneSpan} className={`${tdCls} text-gray-400 font-semibold max-w-[180px]`}>
-                                <span className="truncate" title={p.scene}>{p.scene}</span>
-                              </td>
-                            )}
-                            {breakdownSpan > 0 && (
-                              <td rowSpan={breakdownSpan} className={`${tdCls} text-gray-400 max-w-[200px]`}>
-                                <span className="line-clamp-2" title={p.breakdown}>{p.breakdown}</span>
-                              </td>
-                            )}
-                            <td className={`${tdRCls} font-bold text-[#f0f2f5]`}>
-                              {fmtShort(p.amount)}
-                            </td>
-                            <td className={tdCCls}>
-                              {p.billFileName ? (
-                                <button
-                                  onClick={() => setViewingBill(p)}
-                                  className="bg-transparent border-0 cursor-pointer text-[#a5b4fc] hover:text-[#c4b5fd] transition-colors p-0"
-                                  title={p.billFileName}
-                                >
-                                  <Icon name="file" size={14} />
-                                </button>
-                              ) : (
-                                <span className="text-gray-600">—</span>
+                        return (
+                          <Fragment key={p.id}>
+                            <tr>
+                              {projectSpan > 0 && (
+                                <td rowSpan={projectSpan} className={`${tdCls} font-bold text-[#f0f2f5] max-w-[180px]`}>
+                                  <span className="truncate" title={p.project}>{p.project}</span>
+                                </td>
                               )}
-                            </td>
-                            <td className={tdCls}>
-                              <div className="flex flex-col items-start gap-1">
-                                <span className="text-[11px] font-bold" style={{ color: STATUS_COLORS[p.status] }}>{p.status}</span>
-                                <span className="text-[10px] text-gray-400 whitespace-nowrap">
-                                  {fmtDateTime(p.statusChangedAt ?? p.submittedAt)}
-                                </span>
-                              </div>
-                            </td>
-                          </tr>
-                          {isLastOfProject && (
-                            <tr className="bg-[rgba(255,255,255,.04)]">
-                              <td colSpan={3} className={`${tdCls} font-bold text-gray-500 text-[10px] text-right tracking-[0.05em]`}>Movie Total</td>
-                              <td className={`${tdRCls} font-bold text-[#f0f2f5]`}>{fmtShort(projectTotal)}</td>
-                              <td colSpan={2} className={tdCls} />
+                              {sceneSpan > 0 && (
+                                <td rowSpan={sceneSpan} className={`${tdCls} text-gray-400 font-semibold max-w-[180px]`}>
+                                  <span className="truncate" title={p.scene}>{p.scene}</span>
+                                </td>
+                              )}
+                              {breakdownSpan > 0 && (
+                                <td rowSpan={breakdownSpan} className={`${tdCls} text-gray-400 max-w-[200px]`}>
+                                  <span className="line-clamp-2" title={p.breakdown}>{p.breakdown}</span>
+                                </td>
+                              )}
+                              <td className={`${tdRCls} font-bold text-[#f0f2f5]`}>
+                                {fmtShortCur(p.amount * p.exchangeRate, p.projectCurrency)}
+                              </td>
+                              <td className={tdCls}>
+                                {p.billFileName ? (
+                                  <button
+                                    onClick={() => setViewingBill(p)}
+                                    className="bg-transparent border-0 cursor-pointer text-[#a5b4fc] hover:text-[#c4b5fd] transition-colors p-0"
+                                    title={p.billFileName}
+                                  >
+                                    <Icon name="file" size={14} />
+                                  </button>
+                                ) : (
+                                  <span className="text-gray-600">—</span>
+                                )}
+                              </td>
+                              <td className={tdCls}>
+                                <div className="flex flex-col items-start gap-1">
+                                  <span className="text-[11px] font-bold" style={{ color: STATUS_COLORS[p.status] }}>{p.status}</span>
+                                  <span className="text-[10px] text-gray-400 whitespace-nowrap">
+                                    {fmtDateTime(p.statusChangedAt ?? p.submittedAt)}
+                                  </span>
+                                </div>
+                              </td>
                             </tr>
-                          )}
-                        </Fragment>
-                      );
-                    })}
-                  </tbody>
-                </table>
+                            {isLastOfProject && (
+                              <tr className="bg-[rgba(255,255,255,.04)]">
+                                <td colSpan={3} className={`${tdCls} font-bold text-gray-500 text-[10px] text-right tracking-[0.05em]`}>Movie Total</td>
+                                <td className={`${tdRCls} font-bold text-[#f0f2f5]`}>{fmtShortCur(projectTotal, projectCur)}</td>
+                                <td colSpan={2} className={tdCls} />
+                              </tr>
+                            )}
+                          </Fragment>
+                        );
+                      })}
+                    </tbody>
+                  </table>
+                </div>
               </div>
-            </div>
             </>
           )}
         </div>
       </div>
 
       {/* Bill viewer */}
-      {viewingBill && <BillViewerDialog payment={viewingBill} onClose={() => setViewingBill(null)} />}
+      {viewingBill && (
+        <BillViewerDialog
+          bill={{
+            id: viewingBill.id,
+            vendor_name: displayName,
+            bill_type: viewingBill.breakdown,
+            amount: viewingBill.amount,
+            status: viewingBill.status,
+            created_at: viewingBill.submittedAt,
+            project_name: viewingBill.project,
+            scene_name: viewingBill.scene,
+            currency: viewingBill.currency,
+            project_currency: viewingBill.projectCurrency,
+            exchange_rate: viewingBill.exchangeRate,
+            file_url: viewingBill.billFileName ? "/sample_invoice.pdf" : null,
+          }}
+          onClose={() => setViewingBill(null)}
+        />
+      )}
 
       {/* Submit Bill modal */}
       <Modal open={modalOpen} onClose={() => { setModalOpen(false); resetForm(); }}>
@@ -431,6 +413,15 @@ function VendorPortalPage() {
               <select value={mpProject} onChange={e => { setMpProject(e.target.value); setMpScene(""); setMpBdId(""); }}>
                 {PROJECTS.map(p => <option key={p.name} value={p.name}>{p.name}</option>)}
               </select>
+            </div>
+          </div>
+
+          {/* Movie Currency (Read-only) */}
+          <div className="field">
+            <label className="label">Movie Currency</label>
+            <div className="input-underline opacity-60 cursor-not-allowed">
+              <Icon name="rupee" size={16} />
+              <input value={`${projectCur} (Project Base)`} readOnly tabIndex={-1} className="cursor-not-allowed" />
             </div>
           </div>
 
@@ -505,23 +496,23 @@ function VendorPortalPage() {
               </div>
             </div>
           </div>
-          {mpCurrency !== 'INR' && mpAmountNum > 0 && (
+          {mpAmountNum > 0 && (
             <div className="rounded-[8px] px-4 py-3 flex flex-col gap-1 -mt-1" style={{ background: 'rgba(99,102,241,.08)', border: '1px solid rgba(99,102,241,.18)' }}>
               <div className="text-[11px] text-gray-400">
                 Exchange rate (today):&nbsp;
                 <span className="font-semibold text-[#a5b4fc]">
-                  1 {mpCurrency} = {getCurrencySymbol('INR')}{(EXCHANGE_RATES_TO_INR[mpCurrency] ?? 1).toFixed(4)} INR
+                  1 {mpCurrency} = {getCurrencySymbol(projectCur)}{exchangeRate.toFixed(4)} {projectCur}
                 </span>
               </div>
               <div className="text-[12px] text-[#f0f2f5]">
-                {fmtShort(mpAmountNum * UNIT_MULT[mpUnit])} {mpCurrency}&nbsp;→&nbsp;
-                <span className="font-bold text-[#34d399]">{fmtShort(mpAmountInINR)}</span>
+                {fmtShortCur(mpAmountTotal, mpCurrency)}&nbsp;→&nbsp;
+                <span className="font-bold text-[#34d399]">{fmtShortCur(convertedAmt, projectCur)}</span>
               </div>
             </div>
           )}
-          {mpCurrency === 'INR' && mpAmountVal > 0 && (
-            <div className="text-[11px] text-gray-500 -mt-1">= {fmtShort(mpAmountVal)}</div>
-          )}
+          {/* {mpCurrency === projectCur && mpAmountVal > 0 && (
+            <div className="text-[11px] text-gray-500 -mt-1">= {fmtShortCur(mpAmountVal, projectCur)}</div>
+          )} */}
 
           {/* Bill / Invoice upload */}
           <div className="field mb-0">
