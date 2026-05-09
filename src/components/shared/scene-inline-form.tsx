@@ -192,17 +192,22 @@ export function SceneInlineForm({ projectId, sceneId, isDraft, isLP, vendors, pr
   const totalActual = rows.reduce((a, r) => a + rowActual(r), 0);
   const totalPending = rows.reduce((a, r) => a + r.bills.filter(b => b.status === 'NA').reduce((s, b) => s + b.actualAmount, 0), 0);
   const totalRejected = rows.reduce((a, r) => a + r.bills.filter(b => b.status === 'Rejected').reduce((s, b) => s + b.actualAmount, 0), 0);
-  const postLockTotal = (locked && lockedRowCount !== null)
-    ? rows.slice(lockedRowCount).reduce((a, r) => a + r.amount, 0)
-    : 0;
-  const effectiveBudget = lockedBudget ?? budget;
-  const overBudget = totalActual - totalPlanned;
-  console.log("totalPlanned", totalPlanned, "totalActual", totalActual, "overBudget", overBudget);
+  
+  const lockedRows = lockedRowCount !== null ? rows.slice(0, lockedRowCount) : rows;
+  const unplannedRows = lockedRowCount !== null ? rows.slice(lockedRowCount) : [];
+  
+  const lockedOverages = lockedRows.reduce((a, r) => a + Math.max(0, rowActual(r) - r.amount), 0);
+  const unplannedTotal = unplannedRows.reduce((a, r) => a + Math.max(r.amount, rowActual(r)), 0);
+  const overBudget = lockedOverages + unplannedTotal;
+
   const newAmountVal = (parseFloat(newAmount) || 0) * UNIT_MULT[newAmountUnit];
 
   // Per-row totals for footer
   const totalRowOverBudget = rows.reduce((a, r) => a + Math.max(0, rowActual(r) - r.amount), 0);
-  const totalRowSavings = rows.reduce((a, r) => a + Math.max(0, r.amount - rowActual(r)), 0);
+  const totalRowSavings = rows.reduce((a, r) => {
+    const hasBills = r.bills.some(b => b.uploadedAt || b.status !== 'NA');
+    return a + (hasBills ? Math.max(0, r.amount - rowActual(r)) : 0);
+  }, 0);
 
   /* ── handlers ── */
   const handleNameChange = (v: string) => { setSceneName(v); onSceneNameChange?.(v); };
@@ -419,17 +424,15 @@ export function SceneInlineForm({ projectId, sceneId, isDraft, isLP, vendors, pr
                 <Icon name="lock" size={13} /> Budget locked
               </span>
             )}
-            {!isDraft && (
-              isSceneWrapped ? (
-                <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-[11px] font-semibold" style={{ background: 'rgba(16,185,129,.15)', color: '#34d399' }}>
-                  Wrapped
-                </span>
-              ) : isLP && locked ? (
-                <button className="btn btn-secondary btn-sm" onClick={handleWrapScene}>
-                  Wrap Scene
-                </button>
-              ) : null
-            )}
+            {isSceneWrapped ? (
+              <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-[11px] font-semibold" style={{ background: 'rgba(16,185,129,.15)', color: '#34d399' }}>
+                Wrapped
+              </span>
+            ) : isLP && locked ? (
+              <button className="btn btn-secondary btn-sm" onClick={handleWrapScene}>
+                Wrap Scene
+              </button>
+            ) : null}
           </div>
         </div>
 
@@ -575,7 +578,7 @@ export function SceneInlineForm({ projectId, sceneId, isDraft, isLP, vendors, pr
                         {/* Savings (rowspanned) */}
                         {isFirst && (
                           <td rowSpan={span} className={`${tdRCls} align-top`} style={{ color: rowSavings > 0 ? '#34d399' : '#374151' }}>
-                            {rowSavings > 0 ? fmtShortCur(rowSavings, projectCurrency) : '—'}
+                            {rowSavings > 0 && row.bills.some(b => b.uploadedAt || b.status !== 'NA') ? fmtShortCur(rowSavings, projectCurrency) : '—'}
                           </td>
                         )}
 
@@ -614,6 +617,20 @@ export function SceneInlineForm({ projectId, sceneId, isDraft, isLP, vendors, pr
                   }),
                 ];
               })}
+
+              {/* Show locked separator at the end if budget just locked and no unplanned rows yet */}
+              {locked && lockedRowCount !== null && rows.length === lockedRowCount && (
+                <tr key="lock-label-final">
+                  <td colSpan={colCount} className="px-3 pt-[10px] pb-1 bg-[rgba(255,255,255,.02)]">
+                    <div className="flex items-center gap-1.5">
+                      <Icon name="lock" size={11} style={{ color: '#a5b4fc' }} />
+                      <span className="text-[10px] font-bold text-[#a5b4fc] uppercase tracking-[0.08em]">
+                        Budget is Locked
+                      </span>
+                    </div>
+                  </td>
+                </tr>
+              )}
 
               {/* Add Row inline form */}
               {addingRow && (
@@ -684,21 +701,6 @@ export function SceneInlineForm({ projectId, sceneId, isDraft, isLP, vendors, pr
                   </td>
                 </tr>
               )}
-
-              {/* Add trigger row */}
-              {/* {!addingRow && isLP && (
-                <tr>
-                  <td colSpan={colCount} className="px-[10px] py-4">
-                    <button
-                      className="w-full py-3 flex items-center justify-center gap-2 text-[12px] text-[#f9fafb] tracking-[-0.01em] bg-[rgba(99,102,241,.06)] border border-dashed border-[rgba(99,102,241,.25)] rounded-[8px] hover:bg-[rgba(99,102,241,.12)] hover:border-[rgba(99,102,241,.45)] transition-all"
-                      onClick={() => setAddingRow(true)}
-                    > 
-                      <Icon name="plus" size={14} stroke={2.5} />
-                      Add Breakdown
-                    </button>
-                  </td>
-                </tr>
-              )} */}
 
               {/* Total row */}
               {rows.length > 0 && (

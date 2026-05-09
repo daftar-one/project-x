@@ -9,7 +9,7 @@ const MOCK_PH: ProductionHouse = {
   brand_name: "Universal Studio",
   logo_url: null,
   created_by: "u-1",
-  created_at: "2025-01-01T00:00:00Z",
+  created_at: "2026-05-01T00:00:00Z",
 };
 
 export function useProductionHouse() {

@@ -248,6 +248,17 @@ export function AppFrame({ children, secondarySidebar, projectSubnav, innerBg }:
           </div>
         </div>
 
+        {/* Plan */}
+        {isLP && (
+          <div
+            className={`flex items-center gap-2.5 px-5 py-2 mx-2 mb-0.5 rounded-lg cursor-pointer transition-[background,color] duration-[120ms] ${pathname === '/plan' ? 'bg-[rgba(99,102,241,.12)] text-[#fff]' : 'text-gray-500 hover:bg-[rgba(255,255,255,.04)]'}`}
+            onClick={() => router.push('/plan')}
+          >
+            <Icon name="wallet" size={15} stroke={pathname === '/plan' ? 2 : 1.5} />
+            <span className={`text-[13px] font-medium ${pathname === '/plan' ? 'text-[#e0e7ff]' : ''}`}>Plan</span>
+          </div>
+        )}
+
         {/* Logout button */}
         <button
           onClick={handleLogout}

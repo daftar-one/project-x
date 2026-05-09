@@ -55,12 +55,12 @@ export function TransactionHistory({ walletBalance, walletCredits, onAddMoney, i
         {/* Balance amount */}
         <div
           className="num text-[20px] font-bold tracking-[-0.02em] mb-[14px]"
-          style={{ color: isDraft ? '#4b5563' : '#f0f2f5' }}
+          style={{ color: '#f0f2f5' }}
         >
-          {isDraft ? '—' : fmtShort(walletBalance)}
+          {fmtShort(walletBalance)}
         </div>
 
-        {!isDraft && !showAdd && (
+        {!showAdd && (
           <div className="flex flex-col gap-1.5">
             <button
               className="btn btn-primary btn-sm w-full justify-center"
@@ -77,7 +77,7 @@ export function TransactionHistory({ walletBalance, walletCredits, onAddMoney, i
           </div>
         )}
 
-        {!isDraft && showAdd && (
+        {showAdd && (
           <div className="flex flex-col gap-[10px]">
             <div className="text-[11px] font-semibold text-[#a5b4fc]">Add Money</div>
 

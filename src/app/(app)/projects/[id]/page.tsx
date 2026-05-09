@@ -39,9 +39,9 @@ type View = 'overview' | 'team' | { sceneId: string; isDraft?: boolean };
 /* ─── Team content (inline) ──────────────────────────────────────── */
 
 const STATIC_TEAM = [
-  { id: 's1', project_id: '', user_id: 'u1', role: 'executive_producer', status: 'pending'   as const, user_email: 'priya.sharma@studioos.in', user_full_name: 'Priya Sharma', joined_at: '2025-01-12' },
-  { id: 's2', project_id: '', user_id: 'u2', role: 'line_producer',      status: 'accepted'  as const, user_email: 'arjun.mehta@studioos.in',  user_full_name: 'Arjun Mehta',  joined_at: '2025-01-10' },
-  { id: 's3', project_id: '', user_id: 'u3', role: 'accounts_manager',   status: 'accepted'  as const, user_email: 'rahul.nair@studioos.in',   user_full_name: 'Rahul Nair',   joined_at: '2025-01-15' },
+  { id: 's1', project_id: '', user_id: 'u1', role: 'executive_producer', status: 'pending'   as const, user_email: 'priya.sharma@studioos.in', user_full_name: 'Priya Sharma', joined_at: '2026-05-12' },
+  { id: 's2', project_id: '', user_id: 'u2', role: 'line_producer',      status: 'accepted'  as const, user_email: 'arjun.mehta@studioos.in',  user_full_name: 'Arjun Mehta',  joined_at: '2026-05-10' },
+  { id: 's3', project_id: '', user_id: 'u3', role: 'accounts_manager',   status: 'accepted'  as const, user_email: 'rahul.nair@studioos.in',   user_full_name: 'Rahul Nair',   joined_at: '2026-05-15' },
 ];
 
 function TeamContent({ projectId, isLP }: { projectId: string; isLP: boolean }) {
@@ -363,7 +363,7 @@ export default function ProjectPage() {
     setDraftSceneId(newId);
     setDraftSceneName('New Scene');
     setView({ sceneId: newId, isDraft: true });
-    toast.success('"New Scene" added to project');
+    toast.success('Added a new scene to "' + p.name+'"');
   };
 
   const handleWrapMovie = () => {
@@ -552,12 +552,10 @@ export default function ProjectPage() {
             onSceneNameChange={isDraftView ? setDraftSceneName : undefined}
             onFundsAdded={amount => setWalletBalance(prev => prev + amount)}
             isSceneWrapped={
-              !isDraftView && (
-                scenes.find(s => s.id === activeSceneId)?.status === 'Wrapped' ||
-                wrappedSceneIds.has(activeSceneId)
-              )
+              scenes.find(s => s.id === activeSceneId)?.status === 'Wrapped' ||
+              wrappedSceneIds.has(activeSceneId)
             }
-            initialLocked={!isDraftView && lockedSceneIds.has(activeSceneId)}
+            initialLocked={lockedSceneIds.has(activeSceneId)}
             onWrapScene={() => {
               const wrappedName = scenes.find(s => s.id === activeSceneId)?.name ?? 'Scene';
               setWrappedSceneIds(prev => new Set([...prev, activeSceneId!]));

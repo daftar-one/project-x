@@ -58,7 +58,7 @@ const VN: Record<string, string> = {
   [V.pacificFx]:    'Pacific FX Inc.',
 };
 
-const now = '2025-04-01T00:00:00Z';
+const now = '2026-05-15T00:00:00Z';
 
 // ─── Projects ────────────────────────────────────────────────────────────────
 
@@ -81,8 +81,8 @@ export const MOCK_PROJECTS: ProjectWithStats[] = [
     allocated: 187_000_000,
     scene_count: 2,
     wrapped_scenes: 1,         // Only SC-02 is Wrapped
-    over_scenes: 0,
-    over_budget: 0,
+    over_scenes: 1,            // SC-01 is over budget
+    over_budget: 5_000_000,
     wallet_balance: 61_000_000,
   },
   {
@@ -135,26 +135,26 @@ function line(id: string, scene_id: string, reason: string, allocated_amount: nu
 const BUDGET_LINES: Record<string, SceneBudgetLine[]> = {
   // D1 SC-01: location permit removed; only stunt team remains
   [S.d1_01]: [
-    line('bl-d1-01-2', S.d1_01, 'Stunt team & coordinators', 40_000_000, V.actionCrew, 0, '2024-10-20'),
+    line('bl-d1-01-2', S.d1_01, 'Stunt team & coordinators', 40_000_000, V.actionCrew, 0, '2026-04-20'),
   ],
   [S.d1_02]: [
-    line('bl-d1-02-1', S.d1_02, 'VFX & digital effects',               80_000_000, V.vfxPrime, 20_000_000, '2024-11-01'),
-    line('bl-d1-02-2', S.d1_02, 'Practical explosives & pyrotechnics', 50_000_000, V.blastFx,  15_000_000, '2024-11-05'),
-    line('bl-d1-02-5', S.d1_02, 'Night shoot crew overtime',           15_000_000, null,        0,          '2024-11-07'),
+    line('bl-d1-02-1', S.d1_02, 'VFX & digital effects',               80_000_000, V.vfxPrime, 20_000_000, '2026-04-01'),
+    line('bl-d1-02-2', S.d1_02, 'Practical explosives & pyrotechnics', 50_000_000, V.blastFx,  15_000_000, '2026-04-05'),
+    line('bl-d1-02-5', S.d1_02, 'Night shoot crew overtime',           15_000_000, null,        0,          '2026-04-07'),
   ],
   [S.d2_01]: [
-    line('bl-d2-01-1', S.d2_01, 'Goa beach location & permits',  30_000_000, V.coastalLoc, 0,          '2024-09-10'),
-    line('bl-d2-01-2', S.d2_01, 'Boat & marine equipment',        40_000_000, V.oceanProps, 12_000_000, '2024-09-12'),
-    line('bl-d2-01-3', S.d2_01, 'Water stunt team',               35_000_000, V.actionCrew, 10_000_000, '2024-09-11'),
-    line('bl-d2-01-4', S.d2_01, 'Underwater camera crew',         30_000_000, V.aquaFilm,   0,          '2024-09-13'),
-    line('bl-d2-01-5', S.d2_01, 'Helicopter aerial shots',        25_000_000, V.skyShot,    0,          '2024-09-14'),
+    line('bl-d2-01-1', S.d2_01, 'Goa beach location & permits',  30_000_000, V.coastalLoc, 0,          '2026-04-10'),
+    line('bl-d2-01-2', S.d2_01, 'Boat & marine equipment',        40_000_000, V.oceanProps, 12_000_000, '2026-04-12'),
+    line('bl-d2-01-3', S.d2_01, 'Water stunt team',               35_000_000, V.actionCrew, 10_000_000, '2026-04-11'),
+    line('bl-d2-01-4', S.d2_01, 'Underwater camera crew',         30_000_000, V.aquaFilm,   0,          '2026-04-13'),
+    line('bl-d2-01-5', S.d2_01, 'Helicopter aerial shots',        25_000_000, V.skyShot,    0,          '2026-04-14'),
   ],
   [S.d2_02]: [
-    line('bl-d2-02-1', S.d2_02, 'Police station set construction', 40_000_000, V.dreamProps, 12_000_000, '2024-10-05'),
-    line('bl-d2-02-2', S.d2_02, 'Camera & lighting equipment',     25_000_000, V.cineGear,   0,          '2024-10-07'),
-    line('bl-d2-02-3', S.d2_02, 'Stunt & action sequences',        30_000_000, V.actionCrew, 10_000_000, '2024-10-06'),
-    line('bl-d2-02-4', S.d2_02, 'VFX cleanup & compositing',       15_000_000, null,         0,          '2024-10-08'),
-    line('bl-d2-02-5', S.d2_02, 'International VFX consultation',  12_615_000, V.pacificFx,  0,          '2024-10-09'),
+    line('bl-d2-02-1', S.d2_02, 'Police station set construction', 40_000_000, V.dreamProps, 12_000_000, '2026-04-05'),
+    line('bl-d2-02-2', S.d2_02, 'Camera & lighting equipment',     25_000_000, V.cineGear,   0,          '2026-04-07'),
+    line('bl-d2-02-3', S.d2_02, 'Stunt & action sequences',        30_000_000, V.actionCrew, 10_000_000, '2026-04-06'),
+    line('bl-d2-02-4', S.d2_02, 'VFX cleanup & compositing',       15_000_000, null,         0,          '2026-04-08'),
+    line('bl-d2-02-5', S.d2_02, 'International VFX consultation',  12_615_000, V.pacificFx,  0,          '2026-04-09'),
   ],
 };
 
@@ -170,25 +170,25 @@ function bill(id: string, project_id: string, scene_id: string, vendor_id: strin
 
 const BILLS: Bill[] = [
   // D1 SC-01 — stunt team (actionCrew): 3 bills
-  bill('b-d1-01-1', D1, S.d1_01, V.actionCrew, 'Partial', 129_032, 'Paid',     '2024-11-01', true, 'USD', 93),
-  bill('b-d1-01-2', D1, S.d1_01, V.actionCrew, 'Partial',  8_000_000, 'Rejected', '2024-11-05'),
-  bill('b-d1-01-3', D1, S.d1_01, V.actionCrew, 'Final',   15_000_000, 'Pending',  '2024-11-10'),
+  bill('b-d1-01-1', D1, S.d1_01, V.actionCrew, 'Partial', 129_032, 'Paid',     '2026-04-01', true, 'USD', 93),
+  bill('b-d1-01-2', D1, S.d1_01, V.actionCrew, 'Partial',  8_000_000, 'Rejected', '2026-04-05'),
+  bill('b-d1-01-3', D1, S.d1_01, V.actionCrew, 'Final',   15_000_000, 'Pending',  '2026-04-10'),
   // D1 SC-02 Wrapped — VFX has 2 rejected submissions before final; blastFx paid
-  bill('b-d1-02-1r1', D1, S.d1_02, V.vfxPrime, 'Partial', 30_000_000, 'Rejected', '2024-11-10'),
-  bill('b-d1-02-1r2', D1, S.d1_02, V.vfxPrime, 'Partial', 25_000_000, 'Rejected', '2024-11-20'),
-  bill('b-d1-02-1',   D1, S.d1_02, V.vfxPrime, 'Final',   76_000_000, 'Paid',     '2024-12-05'),
-  bill('b-d1-02-2',   D1, S.d1_02, V.blastFx,  'Final',   56_000_000, 'Paid',     '2024-12-06'),
+  bill('b-d1-02-1r1', D1, S.d1_02, V.vfxPrime, 'Partial', 30_000_000, 'Rejected', '2026-04-10'),
+  bill('b-d1-02-1r2', D1, S.d1_02, V.vfxPrime, 'Partial', 25_000_000, 'Rejected', '2026-04-20'),
+  bill('b-d1-02-1',   D1, S.d1_02, V.vfxPrime, 'Final',   76_000_000, 'Paid',     '2026-04-25'),
+  bill('b-d1-02-2',   D1, S.d1_02, V.blastFx,  'Final',   56_000_000, 'Paid',     '2026-04-26'),
   // D2 SC-01 Wrapped
-  bill('b-d2-01-1', D2, S.d2_01, V.coastalLoc, 'Partial', 25_000_000, 'Pending',  '2024-10-18'),
-  bill('b-d2-01-2', D2, S.d2_01, V.oceanProps,  'Final',   37_000_000, 'Paid',     '2024-10-20'),
-  bill('b-d2-01-3', D2, S.d2_01, V.actionCrew,  'Final',   32_000_000, 'Approved', '2024-10-21'),
-  bill('b-d2-01-4', D2, S.d2_01, V.aquaFilm,    'Final',   23_000_000, 'Paid',     '2024-10-22'),
-  bill('b-d2-01-5', D2, S.d2_01, V.skyShot,     'Partial', 20_000_000, 'Pending',  '2024-10-23'),
+  bill('b-d2-01-1', D2, S.d2_01, V.coastalLoc, 'Partial', 25_000_000, 'Pending',  '2026-04-18'),
+  bill('b-d2-01-2', D2, S.d2_01, V.oceanProps,  'Final',   37_000_000, 'Paid',     '2026-04-20'),
+  bill('b-d2-01-3', D2, S.d2_01, V.actionCrew,  'Final',   32_000_000, 'Approved', '2026-04-21'),
+  bill('b-d2-01-4', D2, S.d2_01, V.aquaFilm,    'Final',   23_000_000, 'Paid',     '2026-04-22'),
+  bill('b-d2-01-5', D2, S.d2_01, V.skyShot,     'Partial', 20_000_000, 'Pending',  '2026-04-23'),
   // D2 SC-02 Wrapped
-  bill('b-d2-02-1', D2, S.d2_02, V.dreamProps,  'Final',   37_500_000, 'Approved', '2024-11-20'),
-  bill('b-d2-02-2', D2, S.d2_02, V.cineGear,    'Partial', 20_000_000, 'Paid',     '2024-11-22'),
-  bill('b-d2-02-3', D2, S.d2_02, V.actionCrew,  'Final',   14_000_000, 'Paid',     '2024-11-21'),
-  bill('b-d2-02-4', D2, S.d2_02, V.vfxPrime,    'Partial', 12_000_000, 'Pending',  '2024-11-23'),
+  bill('b-d2-02-1', D2, S.d2_02, V.dreamProps,  'Final',   37_500_000, 'Approved', '2026-04-20'),
+  bill('b-d2-02-2', D2, S.d2_02, V.cineGear,    'Partial', 20_000_000, 'Paid',     '2026-04-22'),
+  bill('b-d2-02-3', D2, S.d2_02, V.actionCrew,  'Final',   14_000_000, 'Paid',     '2026-04-21'),
+  bill('b-d2-02-4', D2, S.d2_02, V.vfxPrime,    'Partial', 12_000_000, 'Pending',  '2026-04-23'),
 ];
 
 export function getMockSceneBills(sceneId: string): Bill[] {
@@ -223,22 +223,22 @@ function wallet(id: string, balance: number, opts: { ph?: string; project?: stri
 }
 
 export const PH_WALLET = wallet('w-ph', 500_000_000, { ph: 'ph-1' }, [
-  { id: 'wt-ph-1', type: 'credit', amount: 2_000_000_000, description: 'Initial capital injection',     date: '2024-08-01T00:00:00Z' },
-  { id: 'wt-ph-2', type: 'credit', amount: 1_500_000_000, description: 'Investor top-up — Series B',    date: '2024-10-15T00:00:00Z' },
-  { id: 'wt-ph-3', type: 'debit',  amount:   260_000_000, description: 'Dhurandhar 1 — project budget', date: '2024-09-01T00:00:00Z' },
-  { id: 'wt-ph-4', type: 'debit',  amount:   300_000_000, description: 'Bhoot Bangla — initial budget',  date: '2024-10-20T00:00:00Z' },
+  { id: 'wt-ph-1', type: 'credit', amount: 2_000_000_000, description: 'Initial capital injection',     date: '2026-04-01T00:00:00Z' },
+  { id: 'wt-ph-2', type: 'credit', amount: 1_500_000_000, description: 'Investor top-up — Series B',    date: '2026-04-15T00:00:00Z' },
+  { id: 'wt-ph-3', type: 'debit',  amount:   260_000_000, description: 'Dhurandhar 1 — project budget', date: '2026-04-05T00:00:00Z' },
+  { id: 'wt-ph-4', type: 'debit',  amount:   300_000_000, description: 'Bhoot Bangla — initial budget',  date: '2026-04-20T00:00:00Z' },
 ]);
 
 export const PROJECT_WALLETS: Record<string, Wallet> = {
   [D1]: wallet('w-d1', 113_000_000, { project: D1 }, [
-    { id: 'wt-d1-1', type: 'credit', amount: 260_000_000, description: 'Initial budget',               date: '2024-09-01T00:00:00Z' },
-    { id: 'wt-d1-2', type: 'debit',  amount:  40_000_000, description: 'SC-01 Gateway of India Chase', date: '2024-10-20T00:00:00Z' },
-    { id: 'wt-d1-3', type: 'debit',  amount:  95_000_000, description: 'SC-02 Mumbai Port Explosion',  date: '2024-11-10T00:00:00Z' },
+    { id: 'wt-d1-1', type: 'credit', amount: 260_000_000, description: 'Initial budget',               date: '2026-04-05T00:00:00Z' },
+    { id: 'wt-d1-2', type: 'debit',  amount:  40_000_000, description: 'SC-01 Gateway of India Chase', date: '2026-04-20T00:00:00Z' },
+    { id: 'wt-d1-3', type: 'debit',  amount:  95_000_000, description: 'SC-02 Mumbai Port Explosion',  date: '2026-04-25T00:00:00Z' },
   ]),
   [D2]: wallet('w-d2', 126_500_000, { project: D2 }, [
-    { id: 'wt-d2-1', type: 'credit', amount: 300_000_000, description: 'Initial budget',               date: '2024-10-20T00:00:00Z' },
-    { id: 'wt-d2-2', type: 'debit',  amount:  92_000_000, description: 'SC-01 Goa Beach Heist',        date: '2024-09-20T00:00:00Z' },
-    { id: 'wt-d2-3', type: 'debit',  amount:  51_500_000, description: 'SC-02 Police HQ Infiltration', date: '2024-10-25T00:00:00Z' },
+    { id: 'wt-d2-1', type: 'credit', amount: 300_000_000, description: 'Initial budget',               date: '2026-04-20T00:00:00Z' },
+    { id: 'wt-d2-2', type: 'debit',  amount:  92_000_000, description: 'SC-01 Goa Beach Heist',        date: '2026-04-10T00:00:00Z' },
+    { id: 'wt-d2-3', type: 'debit',  amount:  51_500_000, description: 'SC-02 Police HQ Infiltration', date: '2026-04-25T00:00:00Z' },
   ]),
 };
 
@@ -266,19 +266,19 @@ export function getMockVendors(): Vendor[] {
 
 const SCENE_WALLET_CREDITS: Record<string, WalletCredit[]> = {
   [S.d1_01]: [
-    { id: 'wc-d1-01-1', amount: 40_000_000, createdAt: '2024-09-10T09:30:00Z', addedBy: 'Arjun Mehta' },
+    { id: 'wc-d1-01-1', amount: 40_000_000, createdAt: '2026-04-10T09:30:00Z', addedBy: 'Arjun Mehta' },
   ],
   [S.d1_02]: [
-    { id: 'wc-d1-02-1', amount: 150_000_000, createdAt: '2024-10-01T10:00:00Z', addedBy: 'Arjun Mehta' },
-    { id: 'wc-d1-02-2', amount:  70_000_000, createdAt: '2024-10-28T14:15:00Z', addedBy: 'Priya Kapoor' },
+    { id: 'wc-d1-02-1', amount: 150_000_000, createdAt: '2026-04-11T10:00:00Z', addedBy: 'Arjun Mehta' },
+    { id: 'wc-d1-02-2', amount:  70_000_000, createdAt: '2026-04-12T14:15:00Z', addedBy: 'Priya Kapoor' },
   ],
   [S.d2_01]: [
-    { id: 'wc-d2-01-1', amount: 120_000_000, createdAt: '2024-08-20T11:00:00Z', addedBy: 'Arjun Mehta' },
-    { id: 'wc-d2-01-2', amount:  60_000_000, createdAt: '2024-09-05T09:45:00Z', addedBy: 'Priya Kapoor' },
+    { id: 'wc-d2-01-1', amount: 120_000_000, createdAt: '2026-04-02T11:00:00Z', addedBy: 'Arjun Mehta' },
+    { id: 'wc-d2-01-2', amount:  60_000_000, createdAt: '2026-04-05T09:45:00Z', addedBy: 'Priya Kapoor' },
   ],
   [S.d2_02]: [
-    { id: 'wc-d2-02-1', amount:  80_000_000, createdAt: '2024-09-20T10:30:00Z', addedBy: 'Arjun Mehta' },
-    { id: 'wc-d2-02-2', amount:  40_000_000, createdAt: '2024-10-10T16:00:00Z', addedBy: 'Nisha Patel' },
+    { id: 'wc-d2-02-1', amount:  80_000_000, createdAt: '2026-04-06T10:30:00Z', addedBy: 'Arjun Mehta' },
+    { id: 'wc-d2-02-2', amount:  40_000_000, createdAt: '2026-04-10T16:00:00Z', addedBy: 'Nisha Patel' },
   ],
 };
 
@@ -291,9 +291,9 @@ export function getMockSceneWallet(sceneId: string): Wallet {
   const scene = allScenes.find(s => s.id === sceneId);
   const balance = SCENE_WALLET_BALANCES[sceneId] ?? 0;
   return wallet(`w-scene-${sceneId}`, balance, { scene: sceneId }, [
-    { id: `wt-sc-${sceneId}-1`, type: 'credit', amount: scene?.budget ?? balance, description: 'Scene budget allocation', date: '2024-09-15T00:00:00Z' },
+    { id: `wt-sc-${sceneId}-1`, type: 'credit', amount: scene?.budget ?? balance, description: 'Scene budget allocation', date: '2026-04-07T00:00:00Z' },
     ...(balance < (scene?.budget ?? balance) ? [{
-      id: `wt-sc-${sceneId}-2`, type: 'debit' as const, amount: (scene?.budget ?? balance) - balance, description: 'Vendor disbursements', date: '2025-01-01T00:00:00Z'
+      id: `wt-sc-${sceneId}-2`, type: 'debit' as const, amount: (scene?.budget ?? balance) - balance, description: 'Vendor disbursements', date: '2026-05-01T00:00:00Z'
     }] : []),
   ]);
 }

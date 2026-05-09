@@ -20,15 +20,15 @@ const INITIAL_NOTES: Note[] = [
     id: 'n-1',
     title: 'Dhurandhar 1 — Shoot reminders',
     body: 'Confirm port location permit with Mumbai civic authority by end of week.\nVFX team needs final storyboard 2 weeks before night shoot.\nBackup explosives team on standby for SC-02.',
-    createdAt: '2025-03-10T09:00:00Z',
-    updatedAt: '2025-03-10T09:00:00Z',
+    createdAt: '2026-05-10T09:00:00Z',
+    updatedAt: '2026-05-10T09:00:00Z',
   },
   {
     id: 'n-2',
     title: 'Budget review — April',
     body: 'SC-01 came in under budget (12Cr actual vs 40Cr planned). Investigate variance and document for stakeholder review.\nSafety costs for night shoots higher than expected.',
-    createdAt: '2025-04-01T14:30:00Z',
-    updatedAt: '2025-04-02T10:00:00Z',
+    createdAt: '2026-05-15T14:30:00Z',
+    updatedAt: '2026-05-16T10:00:00Z',
   },
 ];
 

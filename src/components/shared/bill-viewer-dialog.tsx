@@ -71,10 +71,10 @@ export function BillViewerDialog({ bill, onClose }: BillViewerDialogProps) {
           </div>
 
           <div className="flex flex-col grid grid-cols-2 gap-4">
-            <div>
+            {/* <div>
               <div className="text-[10px] text-gray-500 uppercase tracking-wider font-bold mb-1">Vendor Name</div>
               <div className="text-[13px] text-[#e5e7eb] font-medium">{bill.vendor_name}</div>
-            </div>
+            </div> */}
             {bill.project_name && (
               <div>
                 <div className="text-[10px] text-gray-500 uppercase tracking-wider font-bold mb-1">Movie Name</div>
@@ -85,6 +85,16 @@ export function BillViewerDialog({ bill, onClose }: BillViewerDialogProps) {
               <div>
                 <div className="text-[10px] text-gray-500 uppercase tracking-wider font-bold mb-1">Scene Name</div>
                 <div className="text-[13px] text-[#e5e7eb] font-medium">{bill.scene_name}</div>
+              </div>
+            )}
+            <div>
+              <div className="text-[10px] text-gray-500 uppercase tracking-wider font-bold mb-1">Submitted On</div>
+              <div className="text-[13px] text-[#e5e7eb]">{fmtDateTime(bill.created_at)}</div>
+            </div>
+            {bill.bill_date && (
+              <div>
+                <div className="text-[10px] text-gray-500 uppercase tracking-wider font-bold mb-1">Bill Date</div>
+                <div className="text-[13px] text-[#e5e7eb]">{fmtDate(bill.bill_date)}</div>
               </div>
             )}
             <div>
@@ -109,16 +119,6 @@ export function BillViewerDialog({ bill, onClose }: BillViewerDialogProps) {
                 </div>
               </div>
             </div>
-            <div>
-              <div className="text-[10px] text-gray-500 uppercase tracking-wider font-bold mb-1">Submitted On</div>
-              <div className="text-[13px] text-[#e5e7eb]">{fmtDateTime(bill.created_at)}</div>
-            </div>
-            {bill.bill_date && (
-              <div>
-                <div className="text-[10px] text-gray-500 uppercase tracking-wider font-bold mb-1">Bill Date</div>
-                <div className="text-[13px] text-[#e5e7eb]">{fmtDate(bill.bill_date)}</div>
-              </div>
-            )}
           </div>
         </div>
         {/* PDF */}

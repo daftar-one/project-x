@@ -1,6 +1,7 @@
 "use client";
 
 import { useState } from 'react';
+import { useRouter } from 'next/navigation';
 import { AppFrame } from '@/components/shared/app-frame';
 import { Icon } from '@/components/shared/icon';
 import { PageTitle } from '@/components/shared/page-title';
@@ -16,9 +17,9 @@ const ROLE_LABELS: Record<string, string> = {
 };
 
 const TEAM_MEMBERS = [
-  { id: 's1', role: 'executive_producer', status: 'pending'  as const, email: 'priya.sharma@studioos.in', name: 'Priya Sharma',  joined_at: '2025-01-12' },
-  { id: 's2', role: 'line_producer',      status: 'accepted' as const, email: 'arjun.mehta@studioos.in',  name: 'Arjun Mehta',   joined_at: '2025-01-10' },
-  { id: 's3', role: 'accounts_manager',   status: 'accepted' as const, email: 'rahul.nair@studioos.in',   name: 'Rahul Nair',    joined_at: '2025-01-15' },
+  { id: 's1', role: 'executive_producer', status: 'pending'  as const, email: 'priya.sharma@studioos.in', name: 'Priya Sharma',  joined_at: '2026-05-12' },
+  { id: 's2', role: 'line_producer',      status: 'accepted' as const, email: 'arjun.mehta@studioos.in',  name: 'Arjun Mehta',   joined_at: '2026-05-10' },
+  { id: 's3', role: 'accounts_manager',   status: 'accepted' as const, email: 'rahul.nair@studioos.in',   name: 'Rahul Nair',    joined_at: '2026-05-15' },
 ];
 
 function PHProfileCard({ isLP }: { isLP: boolean }) {
@@ -135,6 +136,7 @@ function PHProfileCard({ isLP }: { isLP: boolean }) {
 }
 
 export default function ProductionHousePage() {
+  const router = useRouter();
   const user = useAuthStore(s => s.user);
   const isLP = user?.role === 'line_producer';
 
@@ -144,6 +146,25 @@ export default function ProductionHousePage() {
 
       <div className="flex flex-col gap-5">
         <PHProfileCard isLP={isLP} />
+
+        {/* Plan Summary */}
+        <div 
+          className="card p-5 cursor-pointer hover:border-[rgba(99,102,241,.3)] transition-colors relative overflow-hidden group"
+          onClick={() => router.push('/plan')}
+        >
+          <div className="flex items-center justify-between relative z-10">
+            <div>
+              <div className="text-[10px] font-bold text-[#6366f1] uppercase tracking-[0.1em] mb-1">Current Plan</div>
+              <div className="text-[16px] font-bold text-[#f0f2f5]">Free Beta Plan</div>
+              <p className="text-[12px] text-gray-500 mt-1">Full access to all features for 6 months.</p>
+            </div>
+            <div className="flex items-center gap-2 text-[12px] font-semibold text-[#6366f1] group-hover:translate-x-1 transition-transform">
+              View Plan Details
+              <Icon name="arrowRight" size={14} />
+            </div>
+          </div>
+          <div className="absolute top-0 right-0 w-32 h-32 bg-gradient-to-br from-[#6366f1] to-[#e83e8c] opacity-[0.03] blur-3xl pointer-events-none" />
+        </div>
 
         {/* Team Members */}
         {/* <div>

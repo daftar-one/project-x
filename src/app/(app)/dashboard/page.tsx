@@ -44,7 +44,10 @@ export default function DashboardPage() {
   const visibleProjects = projects.filter(p => !deletedIds.has(p.id));
   const totalSpent = visibleProjects.reduce((a, p) => a + p.spent, 0);
   const totalBudget = visibleProjects.reduce((a, p) => a + p.total_budget, 0);
-  const netBudget = totalBudget - totalSpent;
+  
+  const totalScenes = visibleProjects.reduce((a, p) => a + p.scene_count, 0);
+  const totalOverScenes = visibleProjects.reduce((a, p) => a + (p.over_scenes || 0), 0);
+  const overScenesPct = totalScenes > 0 ? Math.round((totalOverScenes / totalScenes) * 100) : 0;
 
   const deleteMovie = (id: string) => {
     const name = projects.find(p => p.id === id)?.name ?? 'Movie';
@@ -83,39 +86,39 @@ export default function DashboardPage() {
             <KPI label="Portfolio" value={fmtShortCur(totalBudget)} sub="Total portfolio budget" icon="wallet" />
             <KPI label="Movies" value={visibleProjects.length} sub="Across portfolio" icon="film" />
             <KPI
-              label="Budget Health"
-              value={fmtShortCur(netBudget)}
-              sub={netBudget >= 0 ? 'Remaining from portfolio budget' : 'Exceeded portfolio budget'}
-              icon="trend"
+              label="Over-budget Scenes"
+              value={`${overScenesPct}%`}
+              sub={`${totalOverScenes} of ${totalScenes} scenes are over budget in the portfolio`}
+              icon={totalOverScenes > 0 ? "trendDown" : "trend"}
             />
           </div>
 
           {/* Projects Overview table */}
           <div className="card mt-4">
-            <table className="tbl">
+            <table className="tbl table-fixed">
               <thead>
                 <tr>
-                  <th className="w-full">Movies</th>
-                  <th className="text-right whitespace-nowrap">Planned Budget</th>
-                  <th className="text-right whitespace-nowrap">Wallet</th>
-                  <th className="text-right whitespace-nowrap">Pending Bills</th>
-                  <th className="text-right whitespace-nowrap">Actual Spent</th>
-                  <th className="text-right whitespace-nowrap">Over Budget</th>
-                  <th className="text-right whitespace-nowrap">Scenes</th>
-                  <th className="text-right whitespace-nowrap">Status</th>
-                  {isLP && <th className="w-8" />}
+                  <th className="w-[42%] text-left">Movies</th>
+                  <th className="!text-right whitespace-nowrap w-[8.5%]">Planned Budget</th>
+                  <th className="!text-right whitespace-nowrap w-[6.5%]">Wallet</th>
+                  <th className="!text-right whitespace-nowrap w-[8.5%]">Pending Bills</th>
+                  <th className="!text-right whitespace-nowrap w-[8.5%]">Actual Spent</th>
+                  <th className="!text-right whitespace-nowrap w-[8.5%]">Over Budget</th>
+                  <th className="!text-right whitespace-nowrap w-[5.5%]">Scenes</th>
+                  <th className="!text-right whitespace-nowrap w-[8%]">Status</th>
+                  {isLP && <th className="w-[4%]" />}
                 </tr>
               </thead>
               <tbody>
                 {visibleProjects.length === 0 ? (
-                  <tr><td colSpan={isLP ? 10 : 9} className="text-center text-gray-500 px-5 py-6">No movies yet</td></tr>
+                  <tr><td colSpan={isLP ? 9 : 8} className="text-center text-gray-500 px-5 py-6">No movies yet</td></tr>
                 ) : visibleProjects.map(p => {
                   const cur = p.currency ?? 'INR';
                   const fmt = (n: number) => fmtShortCur(n, cur);
                   return (
                     <tr key={p.id} onClick={() => router.push(`/projects/${p.id}`)} className="cursor-pointer">
-                      <td className="w-full">
-                        <div className="font-semibold text-[#f0f2f5]">{p.name}</div>
+                      <td className="w-[42%] break-words">
+                        <div className="font-semibold text-[#f0f2f5] leading-tight">{p.name}</div>
                       </td>
                       <td className="text-right whitespace-nowrap">
                         <span className="num text-[13px] text-[#f0f2f5]">{fmt(p.total_budget)}</span>
