@@ -70,12 +70,6 @@ export default function DashboardPage() {
               <span>New Movie</span>
             </button>
           )}
-          <button
-            className="btn btn-primary btn-sm flex-1 justify-center"
-            onClick={() => setAddFundsOpen(true)}
-          >
-            <Icon name="plus" size={13} /> Add Money
-          </button>
         </div>
       </div>
 
