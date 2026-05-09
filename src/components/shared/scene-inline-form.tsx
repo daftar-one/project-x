@@ -476,7 +476,7 @@ export function SceneInlineForm({ projectId, sceneId, isDraft, isLP, vendors, pr
                   ...(isFirstPostLock ? [
                     <tr key={`lock-label-${rowIdx}`}>
                       <td colSpan={colCount} className="px-3 pt-[10px] pb-1 bg-[rgba(255,255,255,.02)]">
-                        <div className="flex items-center gap-1.5">
+                        <div className="flex items-center justify-center gap-1.5">
                           <Icon name="lock" size={11} style={{ color: '#a5b4fc' }} />
                           <span className="text-[10px] font-bold text-[#a5b4fc] uppercase tracking-[0.08em]">
                             Budget is Locked
@@ -620,16 +620,33 @@ export function SceneInlineForm({ projectId, sceneId, isDraft, isLP, vendors, pr
 
               {/* Show locked separator at the end if budget just locked and no unplanned rows yet */}
               {locked && lockedRowCount !== null && rows.length === lockedRowCount && (
-                <tr key="lock-label-final">
-                  <td colSpan={colCount} className="px-3 pt-[10px] pb-1 bg-[rgba(255,255,255,.02)]">
-                    <div className="flex items-center gap-1.5">
-                      <Icon name="lock" size={11} style={{ color: '#a5b4fc' }} />
-                      <span className="text-[10px] font-bold text-[#a5b4fc] uppercase tracking-[0.08em]">
-                        Budget is Locked
-                      </span>
-                    </div>
-                  </td>
-                </tr>
+                <>
+                  <tr key="lock-label-final">
+                    <td colSpan={colCount} className="px-3 pt-[10px] pb-1 bg-[rgba(255,255,255,.02)]">
+                      <div className="flex items-center justify-center gap-1.5">
+                        <Icon name="lock" size={11} style={{ color: '#a5b4fc' }} />
+                        <span className="text-[10px] font-bold text-[#a5b4fc] uppercase tracking-[0.08em]">
+                          Budget is Locked
+                        </span>
+                      </div>
+                    </td>
+                  </tr>
+                  <tr key="separator-final">
+                    <td colSpan={colCount} className="p-0">
+                      <div style={{
+                        display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 8,
+                        padding: '7px 12px',
+                        background: 'rgba(251,191,36,.06)',
+                        borderTop: '2px dashed rgba(251,191,36,.35)',
+                        borderBottom: '2px dashed rgba(251,191,36,.35)',
+                      }}>
+                        <span className="text-[10px] font-bold text-[#fbbf24] uppercase tracking-[0.08em]">
+                          Unplanned Budget
+                        </span>
+                      </div>
+                    </td>
+                  </tr>
+                </>
               )}
 
               {/* Add Row inline form */}
