@@ -699,7 +699,7 @@ export function SceneInlineForm({ projectId, sceneId, isDraft, isLP, vendors, pr
                   </td>
                 </tr>
               )} */}
-₹
+
               {/* Total row */}
               {rows.length > 0 && (
                 <tr className="bg-[rgba(255,255,255,.04)]">
