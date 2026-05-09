@@ -190,15 +190,15 @@ export default function PlanPage() {
               <div className="flex flex-wrap gap-x-8 gap-y-4">
                 <div className="flex items-center gap-2">
                   <Icon name="check" size={14} className="text-[#34d399]" />
+                  <span className="text-[13px] text-gray-400">Unlimited Team Members</span>
+                </div>
+                <div className="flex items-center gap-2">
+                  <Icon name="check" size={14} className="text-[#34d399]" />
                   <span className="text-[13px] text-gray-400">Unlimited Movies</span>
                 </div>
                 <div className="flex items-center gap-2">
                   <Icon name="check" size={14} className="text-[#34d399]" />
-                  <span className="text-[13px] text-gray-400">Unlimited Collaborators</span>
-                </div>
-                <div className="flex items-center gap-2">
-                  <Icon name="check" size={14} className="text-[#34d399]" />
-                  <span className="text-[13px] text-gray-400">Vendor Portal Access</span>
+                  <span className="text-[13px] text-gray-400">Unlimited Scenes</span>
                 </div>
                 <div className="flex items-center gap-2">
                   <Icon name="check" size={14} className="text-[#34d399]" />
