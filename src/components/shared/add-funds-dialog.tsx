@@ -19,7 +19,7 @@ const inputCls = "w-full bg-transparent border-0 border-b border-[rgba(255,255,2
 const readonlyCls = "w-full bg-transparent border-0 border-b border-[rgba(255,255,255,.07)] text-gray-500 text-[14px] py-2 pl-7 pr-0 cursor-default";
 
 export function AddFundsDialog({ open, onClose, scope = 'ph', projectId, sceneId }: Props) {
-  const [selectedMovieId, setSelectedMovieId] = useState(projectId ?? '');
+  const [selectedProjectId, setSelectedProjectId] = useState(projectId ?? '');
   const [selectedSceneId, setSelectedSceneId] = useState(sceneId ?? '');
   const [amount, setAmount] = useState('');
   const [unit, setUnit] = useState('L');
@@ -28,16 +28,16 @@ export function AddFundsDialog({ open, onClose, scope = 'ph', projectId, sceneId
 
   if (!open) return null;
 
-  const prefilledMovie = scope !== 'ph' ? MOCK_PROJECTS.find(p => p.id === projectId) : null;
+  const prefilledProject = scope !== 'ph' ? MOCK_PROJECTS.find(p => p.id === projectId) : null;
   const prefilledScene = scope === 'scene'
     ? (MOCK_SCENES[projectId ?? ''] ?? []).find(s => s.id === sceneId)
     : null;
 
-  const movieIdForScenes = scope === 'ph' ? selectedMovieId : (projectId ?? '');
-  const scenes = movieIdForScenes ? (MOCK_SCENES[movieIdForScenes] ?? []) : [];
+  const projectIdForScenes = scope === 'ph' ? selectedProjectId : (projectId ?? '');
+  const scenes = projectIdForScenes ? (MOCK_SCENES[projectIdForScenes] ?? []) : [];
 
-  function handleMovieChange(id: string) {
-    setSelectedMovieId(id);
+  function handleProjectChange(id: string) {
+    setSelectedProjectId(id);
     setSelectedSceneId('');
   }
 
@@ -52,10 +52,10 @@ export function AddFundsDialog({ open, onClose, scope = 'ph', projectId, sceneId
   const finalAmt = numericAmt * getMultiplier(unit);
 
   function handleRequestSubmit() {
-    const effectiveMovieId = scope === 'ph' ? selectedMovieId : (projectId ?? '');
+    const effectiveProjectId = scope === 'ph' ? selectedProjectId : (projectId ?? '');
     const effectiveSceneId = scope === 'scene' ? (sceneId ?? '') : selectedSceneId;
 
-    if (!effectiveMovieId) { toast.error('Select a movie'); return; }
+    if (!effectiveProjectId) { toast.error('Select a project'); return; }
     if (!effectiveSceneId) { toast.error('Select a scene'); return; }
     if (finalAmt <= 0) { toast.error('Enter a valid amount'); return; }
 
@@ -63,29 +63,29 @@ export function AddFundsDialog({ open, onClose, scope = 'ph', projectId, sceneId
   }
 
   async function handleConfirm() {
-    const effectiveMovieId = scope === 'ph' ? selectedMovieId : (projectId ?? '');
+    const effectiveProjectId = scope === 'ph' ? selectedProjectId : (projectId ?? '');
     const effectiveSceneId = scope === 'scene' ? (sceneId ?? '') : selectedSceneId;
 
     setSaving(true);
     await new Promise(r => setTimeout(r, 400));
 
-    const movie = MOCK_PROJECTS.find(p => p.id === effectiveMovieId);
-    const scene = (MOCK_SCENES[effectiveMovieId] ?? []).find(s => s.id === effectiveSceneId);
-    toast.success(`Added ${fmtShort(finalAmt)} to ${scene?.name} (${movie?.name})`);
+    const project = MOCK_PROJECTS.find(p => p.id === effectiveProjectId);
+    const scene = (MOCK_SCENES[effectiveProjectId] ?? []).find(s => s.id === effectiveSceneId);
+    toast.success(`Added ${fmtShort(finalAmt)} to ${scene?.name} (${project?.name})`);
 
     setSaving(false);
     setConfirming(false);
-    setSelectedMovieId(projectId ?? '');
+    setSelectedProjectId(projectId ?? '');
     setSelectedSceneId(sceneId ?? '');
     setAmount('');
     setUnit('L');
     onClose();
   }
 
-  const effectiveMovieId = scope === 'ph' ? selectedMovieId : (projectId ?? '');
+  const effectiveProjectId = scope === 'ph' ? selectedProjectId : (projectId ?? '');
   const effectiveSceneId = scope === 'scene' ? (sceneId ?? '') : selectedSceneId;
-  const confirmMovie = MOCK_PROJECTS.find(p => p.id === effectiveMovieId);
-  const confirmScene = (MOCK_SCENES[effectiveMovieId] ?? []).find(s => s.id === effectiveSceneId);
+  const confirmProject = MOCK_PROJECTS.find(p => p.id === effectiveProjectId);
+  const confirmScene = (MOCK_SCENES[effectiveProjectId] ?? []).find(s => s.id === effectiveSceneId);
 
   return (
     <Modal open={open} onClose={onClose}>
@@ -96,7 +96,7 @@ export function AddFundsDialog({ open, onClose, scope = 'ph', projectId, sceneId
           </div>
           <div className="text-[17px] font-bold text-[#f9fafb] mb-2 tracking-[-0.01em]">Add Money?</div>
           <p className="text-[13px] text-gray-400 m-0 mb-4 leading-[1.7]">
-            Are you sure you want to add <span className="text-[#34d399] font-semibold">{fmtShort(finalAmt)}</span> to <span className="text-[#f0f2f5] font-semibold">{confirmScene?.name}</span>{confirmMovie && <> ({confirmMovie.name})</>}?
+            Are you sure you want to add <span className="text-[#34d399] font-semibold">{fmtShort(finalAmt)}</span> to <span className="text-[#f0f2f5] font-semibold">{confirmScene?.name}</span>{confirmProject && <> ({confirmProject.name})</>}?
           </p>
           <div className="h-px bg-[rgba(255,255,255,.06)] mb-5" />
           <div className="flex gap-2">
@@ -125,24 +125,24 @@ export function AddFundsDialog({ open, onClose, scope = 'ph', projectId, sceneId
           </div>
 
           <div className="flex flex-col gap-6">
-            {/* Movie */}
+            {/* Project */}
             <div>
-              <label className="text-[11px] font-semibold text-gray-500 uppercase tracking-[0.07em] mb-1 block">Movie</label>
+              <label className="text-[11px] font-semibold text-gray-500 uppercase tracking-[0.07em] mb-1 block">Project</label>
               <div className="relative w-full">
                 <span className="absolute left-0 top-1/2 -translate-y-1/2 text-gray-500 flex items-center"><Icon name="film" size={15} /></span>
                 {scope === 'ph' ? (
                   <select
-                    value={selectedMovieId}
-                    onChange={e => handleMovieChange(e.target.value)}
+                    value={selectedProjectId}
+                    onChange={e => handleProjectChange(e.target.value)}
                     className={inputCls}
                   >
-                    <option value="" disabled>Select a movie…</option>
+                    <option value="" disabled>Select a project…</option>
                     {MOCK_PROJECTS.map(p => (
                       <option key={p.id} value={p.id}>{p.name}</option>
                     ))}
                   </select>
                 ) : (
-                  <div className={readonlyCls}>{prefilledMovie?.name ?? '—'}</div>
+                  <div className={readonlyCls}>{prefilledProject?.name ?? '—'}</div>
                 )}
               </div>
             </div>
@@ -160,12 +160,12 @@ export function AddFundsDialog({ open, onClose, scope = 'ph', projectId, sceneId
                   <select
                     value={selectedSceneId}
                     onChange={e => setSelectedSceneId(e.target.value)}
-                    disabled={!movieIdForScenes}
+                    disabled={!projectIdForScenes}
                     className={inputCls}
-                    style={{ opacity: movieIdForScenes ? 1 : 0.45 }}
+                    style={{ opacity: projectIdForScenes ? 1 : 0.45 }}
                   >
                     <option value="" disabled>
-                      {movieIdForScenes ? 'Select a scene…' : 'Select a movie first'}
+                      {projectIdForScenes ? 'Select a scene…' : 'Select a project first'}
                     </option>
                     {scenes.map(s => (
                       <option key={s.id} value={s.id}>{s.num} · {s.name}</option>

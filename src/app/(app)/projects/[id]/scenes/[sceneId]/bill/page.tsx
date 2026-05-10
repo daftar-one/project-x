@@ -53,7 +53,7 @@ export default function BillReviewPage() {
   return (
     <AppFrame>
       <div className="flex items-center gap-[10px] mb-[6px] text-gray-400 text-[12px]">
-        <span className="cursor-pointer" onClick={() => router.push('/projects')}>Movies</span>
+        <span className="cursor-pointer" onClick={() => router.push('/projects')}>Projects</span>
         <Icon name="chevronRight" size={12} />
         <span className="cursor-pointer" onClick={() => router.push(`/projects/${id}`)}>{project?.name ?? '…'}</span>
         <Icon name="chevronRight" size={12} />

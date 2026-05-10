@@ -283,7 +283,7 @@ export default function ProjectPage() {
 
   const [projectWrapped, setProjectWrapped] = useState(false);
   const [wrapConfirmOpen, setWrapConfirmOpen] = useState(false);
-  const [deleteMovieOpen, setDeleteMovieOpen] = useState(false);
+  const [deleteProjectOpen, setDeleteProjectOpen] = useState(false);
   const [wrappedSceneIds, setWrappedSceneIds] = useState<Set<string>>(new Set());
   const [deletedSceneIds, setDeletedSceneIds] = useState<Set<string>>(new Set());
   const [lockedSceneIds, setLockedSceneIds] = useState<Set<string>>(new Set());
@@ -347,13 +347,13 @@ export default function ProjectPage() {
   const kpiWrapped    = scenes.filter(s => s.status === 'Wrapped' || wrappedSceneIds.has(s.id)).length;
   const kpiSceneTotal = scenes.length;
 
-  const isMovieLocked = projectWrapped || p.status === 'Wrapped';
+  const isProjectLocked = projectWrapped || p.status === 'Wrapped';
 
   const visibleScenes = orderedScenes.filter(s => !deletedSceneIds.has(s.id));
 
   const handleAddScene = () => {
-    if (isMovieLocked) {
-      toast.warning('Movie is wrapped — new scenes will be tracked as over budget.');
+    if (isProjectLocked) {
+      toast.warning('Project is wrapped — new scenes will be tracked as over budget.');
     }
     if (draftSceneId) {
       setView({ sceneId: draftSceneId, isDraft: true });
@@ -366,16 +366,16 @@ export default function ProjectPage() {
     toast.success('Added a new scene to "' + p.name+'"');
   };
 
-  const handleWrapMovie = () => {
+  const handleWrapProject = () => {
     const allWrapped = visibleScenes.every(s => s.status === 'Wrapped' || wrappedSceneIds.has(s.id));
     if (!allWrapped) {
-      toast.error('Some scenes are not wrapped. Please wrap all scenes before wrapping the movie.');
+      toast.error('Some scenes are not wrapped. Please wrap all scenes before wrapping the project.');
       return;
     }
     setWrapConfirmOpen(true);
   };
 
-  /* ── project subnav (renders in primary sidebar below movie list) ── */
+  /* ── project subnav (renders in primary sidebar below project list) ── */
   const projectSubnav = (
     <div className="pb-1">
       {/* Nav items */}
@@ -475,26 +475,26 @@ export default function ProjectPage() {
           {/* Action buttons on the right */}
           <div className="flex items-center gap-2 shrink-0">
             {isLP && !(projectWrapped || p.status === 'Wrapped') && (
-              <button className="btn btn-secondary btn-sm" onClick={handleWrapMovie}>
-                Wrap Movie
+              <button className="btn btn-secondary btn-sm" onClick={handleWrapProject}>
+                Wrap Project
               </button>
             )}
             {isLP && (
               <button
                 className="btn btn-danger-ghost btn-sm"
-                onClick={() => setDeleteMovieOpen(true)}
-                title="Delete movie"
+                onClick={() => setDeleteProjectOpen(true)}
+                title="Delete project"
               >
                 <Icon name="trash" size={13} />
-                Delete Movie
+                Delete Project
               </button>
             )}
           </div>
         </div>
         {p.genre && <div className="text-[13px] text-gray-500 mb-[10px]">{p.genre}</div>}
 
-        {/* Movie Dashboard KPIs */}
-        <div className="text-[10px] font-bold text-gray-500 uppercase tracking-[.08em] mb-2">Movie Dashboard</div>
+        {/* Project Dashboard KPIs */}
+        <div className="text-[10px] font-bold text-gray-500 uppercase tracking-[.08em] mb-2">Project Dashboard</div>
         <div className="grid grid-cols-5 gap-3">
           <KPI label="Planned Budget"  value={kpiPlanned > 0 ? fmtShort(kpiPlanned) : '—'} icon="wallet" />
           <KPI label="Actual Spent"    value={kpiActual  > 0 ? fmtShort(kpiActual)  : '—'} icon="trend"  />
@@ -598,23 +598,23 @@ export default function ProjectPage() {
         </div>
       </Modal>
 
-      {/* ── Delete Movie Confirmation ── */}
-      <Modal open={deleteMovieOpen} onClose={() => setDeleteMovieOpen(false)}>
+      {/* ── Delete Project Confirmation ── */}
+      <Modal open={deleteProjectOpen} onClose={() => setDeleteProjectOpen(false)}>
         <div className="p-8">
           <div className="w-[52px] h-[52px] rounded-[14px] mb-5 bg-[rgba(239,68,68,.1)] border border-[rgba(239,68,68,.2)] flex items-center justify-center">
             <Icon name="trash" size={22} style={{ color: '#f87171' }} />
           </div>
-          <div className="text-[17px] font-bold text-[#f9fafb] mb-2 tracking-[-0.01em]">Delete Movie?</div>
+          <div className="text-[17px] font-bold text-[#f9fafb] mb-2 tracking-[-0.01em]">Delete Project?</div>
           <p className="text-[13px] text-gray-400 m-0 mb-4 leading-[1.7]">
             Are you sure you want to delete &ldquo;{p.name}&rdquo;? This action cannot be undone and all project data will be permanently removed.
           </p>
           <div className="h-px bg-[rgba(255,255,255,.06)] mb-5" />
           <div className="flex gap-2">
-            <button className="btn btn-secondary btn-sm flex-1 justify-center" onClick={() => setDeleteMovieOpen(false)}>Cancel</button>
+            <button className="btn btn-secondary btn-sm flex-1 justify-center" onClick={() => setDeleteProjectOpen(false)}>Cancel</button>
             <button
               className="btn btn-danger btn-sm flex-1 justify-center"
               onClick={() => {
-                setDeleteMovieOpen(false);
+                setDeleteProjectOpen(false);
                 toast.success(`"${p.name}" deleted`);
                 router.replace('/dashboard');
               }}
@@ -625,21 +625,21 @@ export default function ProjectPage() {
         </div>
       </Modal>
 
-      {/* ── Wrap Movie Confirmation ── */}
+      {/* ── Wrap Project Confirmation ── */}
       <Modal open={wrapConfirmOpen} onClose={() => setWrapConfirmOpen(false)}>
         <div className="p-8">
           <div className="w-[52px] h-[52px] rounded-[14px] mb-5 bg-[rgba(16,185,129,.1)] border border-[rgba(16,185,129,.2)] flex items-center justify-center">
             <Icon name="film" size={22} style={{ color: '#34d399' }} />
           </div>
-          <div className="text-[17px] font-bold text-[#f9fafb] mb-2 tracking-[-0.01em]">Wrap Movie?</div>
+          <div className="text-[17px] font-bold text-[#f9fafb] mb-2 tracking-[-0.01em]">Wrap Project?</div>
           <p className="text-[13px] text-gray-400 m-0 mb-4 leading-[1.7]">
-            Are you sure you want to wrap &ldquo;{p.name}&rdquo;? This will mark the movie as complete. This action cannot be undone.
+            Are you sure you want to wrap &ldquo;{p.name}&rdquo;? This will mark the project as complete. This action cannot be undone.
           </p>
           <div className="h-px bg-[rgba(255,255,255,.06)] mb-5" />
           <div className="flex gap-2">
             <button className="btn btn-secondary btn-sm flex-1 justify-center" onClick={() => setWrapConfirmOpen(false)}>Cancel</button>
             <button className="btn btn-primary btn-sm flex-1 justify-center" style={{ background: '#059669' }} onClick={() => { setProjectWrapped(true); setWrapConfirmOpen(false); toast.success(`"${p.name}" marked as wrapped`); }}>
-              Wrap Movie
+              Wrap Project
             </button>
           </div>
         </div>

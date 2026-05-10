@@ -18,7 +18,7 @@ interface Note {
 const INITIAL_NOTES: Note[] = [
   {
     id: 'n-1',
-    title: 'Dhurandhar 1 — Shoot reminders',
+    title: 'TVF Pitchers — Shoot reminders',
     body: 'Confirm port location permit with Mumbai civic authority by end of week.\nVFX team needs final storyboard 2 weeks before night shoot.\nBackup explosives team on standby for SC-02.',
     createdAt: '2026-05-10T09:00:00Z',
     updatedAt: '2026-05-10T09:00:00Z',

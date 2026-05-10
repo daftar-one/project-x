@@ -8,11 +8,11 @@ import { useVendorStore } from "@/store/vendor-auth";
 
 interface VendorFrameProps {
   children: ReactNode;
-  movies?: string[];
-  selectedMovie?: string | null;
+  projects?: string[];
+  selectedProject?: string | null;
 }
 
-export function VendorFrame({ children, movies, selectedMovie }: VendorFrameProps) {
+export function VendorFrame({ children, projects, selectedProject }: VendorFrameProps) {
   const router = useRouter();
   const pathname = usePathname();
   const { name, email, clearVendor } = useVendorStore();
@@ -35,7 +35,7 @@ export function VendorFrame({ children, movies, selectedMovie }: VendorFrameProp
         </div>
 
         <div
-          className={`side-item${pathname === "/vendor/portal" && !selectedMovie ? " active" : ""}`}
+          className={`side-item${pathname === "/vendor/portal" && !selectedProject ? " active" : ""}`}
           onClick={() => router.push("/vendor/portal")}
         >
           <Icon name="list" size={16} stroke={1.5} />
@@ -43,21 +43,21 @@ export function VendorFrame({ children, movies, selectedMovie }: VendorFrameProp
         </div>
 
         <div className="sidebar-scroll">
-          {movies && movies.length > 0 && (
+          {projects && projects.length > 0 && (
             <>
-              <div className="side-section-label">Movies</div>
-              {movies.map(movie => (
+              <div className="side-section-label">Projects</div>
+              {projects.map(project => (
                 <div
-                  key={movie}
-                  className={`side-item-project${selectedMovie === movie ? " active" : ""}`}
-                  onClick={() => router.push(`/vendor/portal?movie=${encodeURIComponent(movie)}`)}
-                  title={movie}
+                  key={project}
+                  className={`side-item-project${selectedProject === project ? " active" : ""}`}
+                  onClick={() => router.push(`/vendor/portal?project=${encodeURIComponent(project)}`)}
+                  title={project}
                 >
                   <div
                     className="w-1.5 h-1.5 rounded-[2px] shrink-0"
-                    style={{ background: selectedMovie === movie ? "#a5b4fc" : "#374151" }}
+                    style={{ background: selectedProject === project ? "#a5b4fc" : "#374151" }}
                   />
-                  <span className="overflow-hidden text-ellipsis flex-1">{movie}</span>
+                  <span className="overflow-hidden text-ellipsis flex-1">{project}</span>
                 </div>
               ))}
             </>

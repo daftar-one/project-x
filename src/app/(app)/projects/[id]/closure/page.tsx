@@ -28,7 +28,7 @@ export default function ClosurePage() {
 
   return (
     <AppFrame>
-      <PageTitle title={`Movie Closure · ${p.name}`} sub="All 42 scenes wrapped. All bills settled. Ready to archive." />
+      <PageTitle title={`Project Closure · ${p.name}`} sub="All 42 scenes wrapped. All bills settled. Ready to archive." />
 
       <div className="card text-center py-10 px-6 mb-5">
         <div className="w-16 h-16 rounded-[16px] mx-auto mb-[18px] bg-gradient-to-br from-[#10b981] to-[#059669] flex items-center justify-center text-white">
@@ -98,7 +98,7 @@ export default function ClosurePage() {
           <div className="mt-6 p-[14px] bg-[rgba(255,255,255,.05)] rounded-lg">
             <div className="label">What happens on close?</div>
             <ul className="mt-2 mb-0 pl-[18px] text-[12px] text-gray-500 leading-[1.6]">
-              <li>Movie moves to Archived state (read-only)</li>
+              <li>Project moves to Archived state (read-only)</li>
               <li>Full audit trail + reports locked</li>
               <li>Vendor links deactivated</li>
               <li>Team access preserved for 180 days</li>

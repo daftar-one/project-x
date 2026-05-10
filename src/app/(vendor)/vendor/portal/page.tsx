@@ -42,21 +42,21 @@ interface Payment {
 /* ─── mock catalogue — Prime VFX Studios (Active) budget lines ──────── */
 
 const VENDOR_BREAKDOWNS: Record<string, Record<string, Breakdown[]>> = {
-  "Dhurandhar 1": {
-    "SC-02 – Mumbai Port Explosion": [
+  "TVF Pitchers": {
+    "SC-02 – Investor Meeting Gone Wrong": [
       { id: "bl-d1-02-1", reason: "VFX & digital effects" },
     ],
   },
-  "Bhoot Bangla": {
-    "SC-02 – Police HQ Infiltration": [
+  "Permanent Roommates": {
+    "SC-02 – Tanya meets Mikesh’s Family": [
       { id: "bl-d2-02-4", reason: "VFX cleanup & compositing" },
     ],
   },
 };
 
 const PROJECTS = [
-  { name: "Dhurandhar 1", currency: "INR" },
-  { name: "Bhoot Bangla", currency: "INR" },
+  { name: "TVF Pitchers", currency: "INR" },
+  { name: "Permanent Roommates", currency: "INR" },
 ];
 
 function scenesForProject(project: string) {
@@ -68,10 +68,10 @@ function breakdownsForScene(project: string, scene: string): Breakdown[] {
 }
 
 const INITIAL_PAYMENTS: Payment[] = [
-  { id: "b-d1-02-1r1", project: "Dhurandhar 1", projectCurrency: "INR", scene: "SC-02 – Mumbai Port Explosion", location: "Mumbai", breakdownId: "bl-d1-02-1", breakdown: "VFX & digital effects", amount: 30_000_000, currency: "INR", exchangeRate: 1, status: "Rejected", submittedAt: "2026-04-10", statusChangedAt: "2026-04-15", billFileName: "vfx_invoice_v1.pdf" },
-  { id: "b-d1-02-1r2", project: "Dhurandhar 1", projectCurrency: "INR", scene: "SC-02 – Mumbai Port Explosion", location: "Mumbai", breakdownId: "bl-d1-02-1", breakdown: "VFX & digital effects", amount: 25_000_000, currency: "INR", exchangeRate: 1, status: "Rejected", submittedAt: "2026-04-20", statusChangedAt: "2026-04-25", billFileName: "vfx_invoice_v2.pdf" },
-  { id: "b-d1-02-1", project: "Dhurandhar 1", projectCurrency: "INR", scene: "SC-02 – Mumbai Port Explosion", location: "Mumbai", breakdownId: "bl-d1-02-1", breakdown: "VFX & digital effects", amount: 76_000, currency: "USD", exchangeRate: 93, status: "Paid", submittedAt: "2026-04-26", statusChangedAt: "2026-04-28", billFileName: "vfx_invoice_final.pdf" },
-  { id: "b-d2-02-4", project: "Bhoot Bangla", projectCurrency: "INR", scene: "SC-02 – Police HQ Infiltration", location: "Mumbai", breakdownId: "bl-d2-02-4", breakdown: "VFX cleanup & compositing", amount: 12_000_000, currency: "INR", exchangeRate: 1, status: "Pending", submittedAt: "2026-04-23", statusChangedAt: null, billFileName: "vfx_compositing_inv.pdf" },
+  { id: "b-d1-02-1r1", project: "TVF Pitchers", projectCurrency: "INR", scene: "SC-02 – Investor Meeting Gone Wrong", location: "Mumbai", breakdownId: "bl-d1-02-1", breakdown: "VFX & digital effects", amount: 30_000_000, currency: "INR", exchangeRate: 1, status: "Rejected", submittedAt: "2026-04-10", statusChangedAt: "2026-04-15", billFileName: "vfx_invoice_v1.pdf" },
+  { id: "b-d1-02-1r2", project: "TVF Pitchers", projectCurrency: "INR", scene: "SC-02 – Investor Meeting Gone Wrong", location: "Mumbai", breakdownId: "bl-d1-02-1", breakdown: "VFX & digital effects", amount: 25_000_000, currency: "INR", exchangeRate: 1, status: "Rejected", submittedAt: "2026-04-20", statusChangedAt: "2026-04-25", billFileName: "vfx_invoice_v2.pdf" },
+  { id: "b-d1-02-1", project: "TVF Pitchers", projectCurrency: "INR", scene: "SC-02 – Investor Meeting Gone Wrong", location: "Mumbai", breakdownId: "bl-d1-02-1", breakdown: "VFX & digital effects", amount: 76_000, currency: "USD", exchangeRate: 93, status: "Paid", submittedAt: "2026-04-26", statusChangedAt: "2026-04-28", billFileName: "vfx_invoice_final.pdf" },
+  { id: "b-d2-02-4", project: "Permanent Roommates", projectCurrency: "INR", scene: "SC-02 – Tanya meets Mikesh’s Family", location: "Mumbai", breakdownId: "bl-d2-02-4", breakdown: "VFX cleanup & compositing", amount: 12_000_000, currency: "INR", exchangeRate: 1, status: "Pending", submittedAt: "2026-04-23", statusChangedAt: null, billFileName: "vfx_compositing_inv.pdf" },
 ];
 
 function getGroupedPayments(payments: Payment[]) {
@@ -139,7 +139,7 @@ const DEMO_VENDOR = { name: "Prime VFX Studios", email: "contact@primevfx.com" }
 
 function VendorPortalPage() {
   const searchParams = useSearchParams();
-  const selectedMovie = searchParams.get("movie");
+  const selectedProject = searchParams.get("project");
   const { name, email } = useVendorStore();
   const displayName = name || DEMO_VENDOR.name;
   const displayEmail = email || DEMO_VENDOR.email;
@@ -217,8 +217,8 @@ function VendorPortalPage() {
     setMpFiles(prev => prev.filter((_, i) => i !== idx));
   }
 
-  const allMovies = PROJECTS.map(p => p.name);
-  const scopedPayments = selectedMovie ? payments.filter(p => p.project === selectedMovie) : payments;
+  const allProjects = PROJECTS.map(p => p.name);
+  const scopedPayments = selectedProject ? payments.filter(p => p.project === selectedProject) : payments;
 
   const totalSettled = scopedPayments.filter(p => p.status === "Paid").reduce((s, p) => s + (p.amount * p.exchangeRate), 0);
   const totalPending = scopedPayments.filter(p => p.status === "Pending").reduce((s, p) => s + (p.amount * p.exchangeRate), 0);
@@ -226,15 +226,15 @@ function VendorPortalPage() {
   const paidCount = scopedPayments.filter(p => p.status === "Paid").length;
   const rejectedCount = scopedPayments.filter(p => p.status === "Rejected").length;
   const pendingCount = scopedPayments.filter(p => p.status === "Pending").length;
-  const movieCount = new Set(payments.map(p => p.project)).size;
-  const sceneCount = selectedMovie ? new Set(scopedPayments.map(p => p.scene)).size : 0;
+  const projectCount = new Set(payments.map(p => p.project)).size;
+  const sceneCount = selectedProject ? new Set(scopedPayments.map(p => p.scene)).size : 0;
 
   const groupedPayments = getGroupedPayments(scopedPayments);
 
-  const movieCurrency = selectedMovie ? PROJECTS.find(p => p.name === selectedMovie)?.currency ?? 'INR' : 'INR';
+  const projectCurrency = selectedProject ? PROJECTS.find(p => p.name === selectedProject)?.currency ?? 'INR' : 'INR';
 
   return (
-    <VendorFrame movies={allMovies} selectedMovie={selectedMovie}>
+    <VendorFrame projects={allProjects} selectedProject={selectedProject}>
       <div className="flex flex-col h-full">
 
         {/* Fixed header */}
@@ -269,23 +269,23 @@ function VendorPortalPage() {
             </div>
           </div>
 
-          {/* KPI strip — values in the movie's currency (or INR as fallback) */}
+          {/* KPI strip — values in the project's currency (or INR as fallback) */}
           <div className="grid grid-cols-4 gap-3 mb-5">
-            <KPI label="Total Settled" value={fmtShortCur(totalSettled, movieCurrency)} sub={`${paidCount} bills`} icon="wallet" />
-            <KPI label="Total Pending" value={fmtShortCur(totalPending, movieCurrency)} sub={`${pendingCount} bills`} icon="rupee" />
-            <KPI label="Total Rejected" value={fmtShortCur(totalRejectedAmt, movieCurrency)} sub={`${rejectedCount} bills`} icon="trendDown" />
-            {selectedMovie
-              ? <KPI label="Scenes" value={sceneCount} sub="In this movie" icon="camera" />
-              : <KPI label="Movies" value={movieCount} sub="Across portfolio" icon="film" />
+            <KPI label="Total Settled" value={fmtShortCur(totalSettled, projectCurrency)} sub={`${paidCount} bills`} icon="wallet" />
+            <KPI label="Total Pending" value={fmtShortCur(totalPending, projectCurrency)} sub={`${pendingCount} bills`} icon="rupee" />
+            <KPI label="Total Rejected" value={fmtShortCur(totalRejectedAmt, projectCurrency)} sub={`${rejectedCount} bills`} icon="trendDown" />
+            {selectedProject
+              ? <KPI label="Scenes" value={sceneCount} sub="In this project" icon="camera" />
+              : <KPI label="Projects" value={projectCount} sub="Across portfolio" icon="film" />
             }
           </div>
         </div>
 
-        {/* Scrollable list — only shown when a movie is selected */}
+        {/* Scrollable list — only shown when a project is selected */}
         <div className="flex-1 min-h-0 overflow-y-auto">
-          {!selectedMovie ? (
+          {!selectedProject ? (
             <div className="text-center py-[60px] px-5 text-gray-500 text-[13px]">
-              Select a movie from the sidebar to view payment history.
+              Select a project from the sidebar to view payment history.
             </div>
           ) : scopedPayments.length === 0 ? (
             <div className="text-center py-[60px] px-5 text-gray-600 text-[13px]">
@@ -299,7 +299,7 @@ function VendorPortalPage() {
                   <table className="w-full border-collapse min-w-[900px]">
                     <thead>
                       <tr>
-                        <th className={thCls}>Movie Name</th>
+                        <th className={thCls}>Project Name</th>
                         <th className={thCls}>Scene Name</th>
                         <th className={thCls}>Reason</th>
                         <th className={thRCls}>Requested Amount</th>
@@ -357,7 +357,7 @@ function VendorPortalPage() {
                             </tr>
                             {isLastOfProject && (
                               <tr className="bg-[rgba(255,255,255,.04)]">
-                                <td colSpan={3} className={`${tdCls} font-bold text-gray-500 text-[10px] text-right tracking-[0.05em]`}>Movie Total</td>
+                                <td colSpan={3} className={`${tdCls} font-bold text-gray-500 text-[10px] text-right tracking-[0.05em]`}>Project Total</td>
                                 <td className={`${tdRCls} font-bold text-[#f0f2f5]`}>{fmtShortCur(projectTotal, projectCur)}</td>
                                 <td colSpan={2} className={tdCls} />
                               </tr>
@@ -407,7 +407,7 @@ function VendorPortalPage() {
 
           {/* Project */}
           <div className="field">
-            <label className="label">Movie</label>
+            <label className="label">Project</label>
             <div className="input-underline">
               <Icon name="film" size={16} />
               <select value={mpProject} onChange={e => { setMpProject(e.target.value); setMpScene(""); setMpBdId(""); }}>
@@ -416,9 +416,9 @@ function VendorPortalPage() {
             </div>
           </div>
 
-          {/* Movie Currency (Read-only) */}
+          {/* Project Currency (Read-only) */}
           <div className="field">
-            <label className="label">Movie Base Currency</label>
+            <label className="label">Project Base Currency</label>
             <div className="input-underline opacity-60 cursor-not-allowed">
               <Icon name="rupee" size={16} />
               <input value={`${projectCur}`} readOnly tabIndex={-1} className="cursor-not-allowed" />

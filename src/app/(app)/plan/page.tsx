@@ -194,7 +194,7 @@ export default function PlanPage() {
                 </div>
                 <div className="flex items-center gap-2">
                   <Icon name="check" size={14} className="text-[#34d399]" />
-                  <span className="text-[13px] text-gray-400">Unlimited Movies</span>
+                  <span className="text-[13px] text-gray-400">Unlimited Projects</span>
                 </div>
                 <div className="flex items-center gap-2">
                   <Icon name="check" size={14} className="text-[#34d399]" />

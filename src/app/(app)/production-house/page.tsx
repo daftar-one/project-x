@@ -27,7 +27,7 @@ function PHProfileCard({ isLP }: { isLP: boolean }) {
   const [editing, setEditing] = useState(false);
   const [name, setName] = useState(house?.brand_name ?? house?.name ?? 'Studio One Films');
   const [location, setLocation] = useState('Mumbai, Maharashtra');
-  const [email, setEmail] = useState('contact@universalstudio.in');
+  const [email, setEmail] = useState('contact@tvfmotionpitctures.in');
   const [phone, setPhone] = useState('+91 22 4567 8900');
   const [logoUrl, setLogoUrl] = useState<string | null>(null);
 

@@ -49,8 +49,8 @@ export default function DashboardPage() {
   const totalOverScenes = visibleProjects.reduce((a, p) => a + (p.over_scenes || 0), 0);
   const overScenesPct = totalScenes > 0 ? Math.round((totalOverScenes / totalScenes) * 100) : 0;
 
-  const deleteMovie = (id: string) => {
-    const name = projects.find(p => p.id === id)?.name ?? 'Movie';
+  const deleteProject = (id: string) => {
+    const name = projects.find(p => p.id === id)?.name ?? 'Project';
     setDeletedIds(prev => new Set([...prev, id]));
     setDeleteConfirmId(null);
     toast.success(`"${name}" deleted`);
@@ -67,7 +67,7 @@ export default function DashboardPage() {
               className="btn btn-primary btn-sm w-32 flex-1 justify-center"
             >
               <Icon name="plus" size={13} />
-              <span>New Movie</span>
+              <span>New Project</span>
             </button>
           )}
         </div>
@@ -78,7 +78,7 @@ export default function DashboardPage() {
           {/* KPI Strip */}
           <div className="grid grid-cols-3 gap-3">
             <KPI label="Portfolio" value={fmtShortCur(totalBudget)} sub="Total portfolio budget" icon="wallet" />
-            <KPI label="Movies" value={visibleProjects.length} sub="Across portfolio" icon="film" />
+            <KPI label="Projects" value={visibleProjects.length} sub="Across portfolio" icon="film" />
             <KPI
               label="Over-budget Scenes"
               value={`${overScenesPct}%`}
@@ -92,7 +92,7 @@ export default function DashboardPage() {
             <table className="tbl table-fixed">
               <thead>
                 <tr>
-                  <th className="w-[42%] text-left">Movies</th>
+                  <th className="w-[42%] text-left">Projects</th>
                   <th className="!text-right whitespace-nowrap w-[8.5%]">Planned Budget</th>
                   <th className="!text-right whitespace-nowrap w-[6.5%]">Wallet</th>
                   <th className="!text-right whitespace-nowrap w-[8.5%]">Pending Bills</th>
@@ -105,7 +105,7 @@ export default function DashboardPage() {
               </thead>
               <tbody>
                 {visibleProjects.length === 0 ? (
-                  <tr><td colSpan={isLP ? 9 : 8} className="text-center text-gray-500 px-5 py-6">No movies yet</td></tr>
+                  <tr><td colSpan={isLP ? 9 : 8} className="text-center text-gray-500 px-5 py-6">No projects yet</td></tr>
                 ) : visibleProjects.map(p => {
                   const cur = p.currency ?? 'INR';
                   const fmt = (n: number) => fmtShortCur(n, cur);
@@ -140,7 +140,7 @@ export default function DashboardPage() {
                           <button
                             className="btn btn-danger-ghost btn-sm"
                             onClick={e => { e.stopPropagation(); setDeleteConfirmId(p.id); }}
-                            title="Delete movie"
+                            title="Delete project"
                           >
                             <Icon name="trash" size={13} />
                           </button>
@@ -158,24 +158,24 @@ export default function DashboardPage() {
       <ModalNewProject open={createOpen} onClose={() => setCreateOpen(false)} />
       <AddFundsDialog open={addFundsOpen} onClose={() => setAddFundsOpen(false)} />
 
-      {/* Delete movie confirmation */}
+      {/* Delete project confirmation */}
       <Modal open={deleteConfirmId !== null} onClose={() => setDeleteConfirmId(null)}>
         <div className="p-8">
           <div className="w-[52px] h-[52px] rounded-[14px] mb-5 bg-[rgba(239,68,68,.1)] border border-[rgba(239,68,68,.2)] flex items-center justify-center">
             <Icon name="trash" size={22} style={{ color: '#f87171' }} />
           </div>
-          <div className="text-[17px] font-bold text-[#f9fafb] mb-2 tracking-[-0.01em]">Delete Movie?</div>
+          <div className="text-[17px] font-bold text-[#f9fafb] mb-2 tracking-[-0.01em]">Delete Project?</div>
           <p className="text-[13px] text-gray-400 m-0 mb-4 leading-[1.7]">
-            This will permanently delete &ldquo;{projects.find(p => p.id === deleteConfirmId)?.name ?? 'this movie'}&rdquo; and all its data. This action cannot be undone.
+            This will permanently delete &ldquo;{projects.find(p => p.id === deleteConfirmId)?.name ?? 'this project'}&rdquo; and all its data. This action cannot be undone.
           </p>
           <div className="h-px bg-[rgba(255,255,255,.06)] mb-5" />
           <div className="flex gap-2">
             <button className="btn btn-secondary btn-sm flex-1 justify-center" onClick={() => setDeleteConfirmId(null)}>Cancel</button>
             <button
               className="btn btn-danger btn-sm flex-1 justify-center"
-              onClick={() => deleteConfirmId && deleteMovie(deleteConfirmId)}
+              onClick={() => deleteConfirmId && deleteProject(deleteConfirmId)}
             >
-              <Icon name="trash" size={13} /> Delete Movie
+              <Icon name="trash" size={13} /> Delete Project
             </button>
           </div>
         </div>

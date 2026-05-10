@@ -1,7 +1,7 @@
 import { ReactNode } from 'react';
 
 export function generateStaticParams() {
-  return [{ id: 'dhurandhar-1' }, { id: 'dhurandhar-2' }];
+  return [{ id: 'tvf-pitchers' }, { id: 'permanent-roommates' }];
 }
 
 export default function ProjectLayout({ children }: { children: ReactNode }) {

@@ -77,7 +77,7 @@ export function BillViewerDialog({ bill, onClose }: BillViewerDialogProps) {
             </div> */}
             {bill.project_name && (
               <div>
-                <div className="text-[10px] text-gray-500 uppercase tracking-wider font-bold mb-1">Movie Name</div>
+                <div className="text-[10px] text-gray-500 uppercase tracking-wider font-bold mb-1">Project Name</div>
                 <div className="text-[13px] text-[#e5e7eb] font-medium">{bill.project_name}</div>
               </div>
             )}

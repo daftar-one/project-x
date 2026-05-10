@@ -42,7 +42,7 @@ export function ModalNewProject({ open, onClose }: { open: boolean; onClose: () 
     <Modal open={open} onClose={handleClose}>
       <div className="p-8">
         <div className="flex items-center justify-between mb-7">
-          <div className="text-[16px] font-bold text-[#f9fafb]">New Movie</div>
+          <div className="text-[16px] font-bold text-[#f9fafb]">New Project</div>
           <button
             onClick={handleClose}
             className="w-7 h-7 rounded-[6px] bg-[rgba(255,255,255,.06)] border-0 text-gray-400 cursor-pointer flex items-center justify-center shrink-0"
@@ -53,12 +53,12 @@ export function ModalNewProject({ open, onClose }: { open: boolean; onClose: () 
 
         <div className="flex flex-col gap-6">
           <div>
-            <label className="text-[11px] font-semibold text-gray-500 uppercase tracking-[0.07em] mb-1 block">Movie Name *</label>
+            <label className="text-[11px] font-semibold text-gray-500 uppercase tracking-[0.07em] mb-1 block">Project Name *</label>
             <div className="relative w-full">
               <span className="absolute left-0 top-1/2 -translate-y-1/2 text-gray-500 flex items-center"><Icon name="film" size={15} /></span>
               <input
                 className={inputCls}
-                placeholder="Enter movie name…"
+                placeholder="Enter project name…"
                 value={filmName}
                 onChange={e => setFilmName(e.target.value)}
                 onKeyDown={e => e.key === 'Enter' && handleCreate()}
@@ -106,7 +106,7 @@ export function ModalNewProject({ open, onClose }: { open: boolean; onClose: () 
             onClick={handleCreate}
             disabled={!filmName.trim() || saving}
           >
-            {saving ? 'Adding…' : 'Add Movie'}
+            {saving ? 'Adding…' : 'Add Project'}
           </button>
         </div>
       </div>
@@ -207,7 +207,7 @@ export function AppFrame({ children, secondarySidebar, projectSubnav, innerBg }:
 
         {/* Productions section — scrollable */}
         <div className="sidebar-scroll">
-          <div className="side-section-label">Movies</div>
+          <div className="side-section-label">Projects</div>
 
           {projects.map(p => (
             <div
@@ -231,7 +231,7 @@ export function AppFrame({ children, secondarySidebar, projectSubnav, innerBg }:
           )}
 
           {projects.length === 0 && (
-            <div className="text-[12px] text-gray-600 py-1.5 pl-8 pr-5">No movies</div>
+            <div className="text-[12px] text-gray-600 py-1.5 pl-8 pr-5">No projects</div>
           )}
         </div>
 
@@ -256,6 +256,17 @@ export function AppFrame({ children, secondarySidebar, projectSubnav, innerBg }:
           >
             <Icon name="wallet" size={15} stroke={pathname === '/plan' ? 2 : 1.5} />
             <span className={`text-[13px] font-medium ${pathname === '/plan' ? 'text-[#e0e7ff]' : ''}`}>Plan</span>
+          </div>
+        )}
+
+        {/* Feedback */}
+        {isLP && (
+          <div
+            className={`flex items-center gap-2.5 px-5 py-2 mx-2 mb-0.5 rounded-lg cursor-pointer transition-[background,color] duration-[120ms] ${pathname === '/feedback' ? 'bg-[rgba(99,102,241,.12)] text-[#fff]' : 'text-gray-500 hover:bg-[rgba(255,255,255,.04)]'}`}
+            onClick={() => router.push('/feedback')}
+          >
+            <Icon name="message-square" size={15} stroke={pathname === '/feedback' ? 2 : 1.5} />
+            <span className={`text-[13px] font-medium ${pathname === '/feedback' ? 'text-[#e0e7ff]' : ''}`}>Feedback</span>
           </div>
         )}
 

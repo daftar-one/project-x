@@ -3,7 +3,7 @@ import type { WalletCredit } from '@/components/shared/transaction-history';
 
 // ─── IDs ──────────────────────────────────────────────────────────────────────
 
-export const PROJECT_IDS = { D1: 'dhurandhar-1', D2: 'dhurandhar-2' };
+export const PROJECT_IDS = { D1: 'tvf-pitchers', D2: 'permanent-roommates' };
 
 // Scene IDs whose budgets are pre-locked (but not yet wrapped)
 export const MOCK_LOCKED_SCENE_IDS: ReadonlySet<string> = new Set(['d2-sc-01']);
@@ -66,9 +66,9 @@ export const MOCK_PROJECTS: ProjectWithStats[] = [
   {
     id: D1,
     production_house_id: 'ph-1',
-    name: 'Dhurandhar 1',
+    name: 'TVF Pitchers',
     director: 'Rohit Shetty',
-    genre: 'Action',
+    genre: 'Drama',
     status: 'Live',
     currency: 'INR',
     pending: 15_000_000,       // b-d1-01-3 Pending only (SC-02 all Paid)
@@ -88,9 +88,9 @@ export const MOCK_PROJECTS: ProjectWithStats[] = [
   {
     id: D2,
     production_house_id: 'ph-1',
-    name: 'Bhoot Bangla',
+    name: 'Permanent Roommates',
     director: 'Rohit Shetty',
-    genre: 'Action',
+    genre: 'Romantic Comedy',
     status: 'Live',
     currency: 'INR',
     pending: 77_000_000,        // SC-01 (25M+20M) + SC-02 (20M+12M) Pending bills
@@ -112,13 +112,13 @@ export const MOCK_PROJECTS: ProjectWithStats[] = [
 // ─── Scenes ──────────────────────────────────────────────────────────────────
 
 const D1_SCENES: SceneWithActual[] = [
-  { id: S.d1_01, project_id: D1, num: 'SC-01', name: 'Gateway of India Chase', location: 'Mumbai', scene_type: 'Exterior · Day',  budget: 40_000_000,  status: 'Live',    created_at: now, actual: 12_000_000  },
-  { id: S.d1_02, project_id: D1, num: 'SC-02', name: 'Mumbai Port Explosion',  location: 'Mumbai', scene_type: 'Exterior · Night', budget: 208_000_000, status: 'Wrapped', created_at: now, actual: 123_000_000 },
+  { id: S.d1_01, project_id: D1, num: 'SC-01', name: 'The Resignation Pact', location: 'Mumbai', scene_type: 'Exterior · Day',  budget: 40_000_000,  status: 'Live',    created_at: now, actual: 12_000_000  },
+  { id: S.d1_02, project_id: D1, num: 'SC-02', name: 'Investor Meeting Gone Wrong',  location: 'Mumbai', scene_type: 'Exterior · Night', budget: 208_000_000, status: 'Wrapped', created_at: now, actual: 123_000_000 },
 ];
 
 const D2_SCENES: SceneWithActual[] = [
-  { id: S.d2_01, project_id: D2, num: 'SC-01', name: 'Goa Beach Heist',        location: 'Goa',    scene_type: 'Exterior · Day',  budget: 160_000_000, status: 'Live',    created_at: now, actual: 92_000_000  },
-  { id: S.d2_02, project_id: D2, num: 'SC-02', name: 'Police HQ Infiltration', location: 'Mumbai', scene_type: 'Interior · Night', budget: 110_000_000, status: 'Wrapped', created_at: now, actual: 51_500_000  },
+  { id: S.d2_01, project_id: D2, num: 'SC-01', name: 'The Marriage Ultimatum',        location: 'Goa',    scene_type: 'Exterior · Day',  budget: 160_000_000, status: 'Live',    created_at: now, actual: 92_000_000  },
+  { id: S.d2_02, project_id: D2, num: 'SC-02', name: 'Tanya meets Mikesh’s Family', location: 'Mumbai', scene_type: 'Interior · Night', budget: 110_000_000, status: 'Wrapped', created_at: now, actual: 51_500_000  },
 ];
 
 export const MOCK_SCENES: Record<string, SceneWithActual[]> = {
@@ -225,20 +225,20 @@ function wallet(id: string, balance: number, opts: { ph?: string; project?: stri
 export const PH_WALLET = wallet('w-ph', 500_000_000, { ph: 'ph-1' }, [
   { id: 'wt-ph-1', type: 'credit', amount: 2_000_000_000, description: 'Initial capital injection',     date: '2026-04-01T00:00:00Z' },
   { id: 'wt-ph-2', type: 'credit', amount: 1_500_000_000, description: 'Investor top-up — Series B',    date: '2026-04-15T00:00:00Z' },
-  { id: 'wt-ph-3', type: 'debit',  amount:   260_000_000, description: 'Dhurandhar 1 — project budget', date: '2026-04-05T00:00:00Z' },
-  { id: 'wt-ph-4', type: 'debit',  amount:   300_000_000, description: 'Bhoot Bangla — initial budget',  date: '2026-04-20T00:00:00Z' },
+  { id: 'wt-ph-3', type: 'debit',  amount:   260_000_000, description: 'TVF Pitchers — project budget', date: '2026-04-05T00:00:00Z' },
+  { id: 'wt-ph-4', type: 'debit',  amount:   300_000_000, description: 'Permanent Roommates — initial budget',  date: '2026-04-20T00:00:00Z' },
 ]);
 
 export const PROJECT_WALLETS: Record<string, Wallet> = {
   [D1]: wallet('w-d1', 113_000_000, { project: D1 }, [
     { id: 'wt-d1-1', type: 'credit', amount: 260_000_000, description: 'Initial budget',               date: '2026-04-05T00:00:00Z' },
-    { id: 'wt-d1-2', type: 'debit',  amount:  40_000_000, description: 'SC-01 Gateway of India Chase', date: '2026-04-20T00:00:00Z' },
-    { id: 'wt-d1-3', type: 'debit',  amount:  95_000_000, description: 'SC-02 Mumbai Port Explosion',  date: '2026-04-25T00:00:00Z' },
+    { id: 'wt-d1-2', type: 'debit',  amount:  40_000_000, description: 'SC-01 The Resignation Pact', date: '2026-04-20T00:00:00Z' },
+    { id: 'wt-d1-3', type: 'debit',  amount:  95_000_000, description: 'SC-02 Investor Meeting Gone Wrong',  date: '2026-04-25T00:00:00Z' },
   ]),
   [D2]: wallet('w-d2', 126_500_000, { project: D2 }, [
     { id: 'wt-d2-1', type: 'credit', amount: 300_000_000, description: 'Initial budget',               date: '2026-04-20T00:00:00Z' },
-    { id: 'wt-d2-2', type: 'debit',  amount:  92_000_000, description: 'SC-01 Goa Beach Heist',        date: '2026-04-10T00:00:00Z' },
-    { id: 'wt-d2-3', type: 'debit',  amount:  51_500_000, description: 'SC-02 Police HQ Infiltration', date: '2026-04-25T00:00:00Z' },
+    { id: 'wt-d2-2', type: 'debit',  amount:  92_000_000, description: 'SC-01 The Marriage Ultimatum',        date: '2026-04-10T00:00:00Z' },
+    { id: 'wt-d2-3', type: 'debit',  amount:  51_500_000, description: 'SC-02 Tanya meets Mikesh’s Family', date: '2026-04-25T00:00:00Z' },
   ]),
 };
 
